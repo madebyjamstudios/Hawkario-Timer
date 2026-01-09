@@ -702,7 +702,7 @@ function createDefaultPreset() {
       style: {
         fontFamily: 'Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
         fontWeight: '600',
-        fontSizeVw: 10,
+        fontSizeVw: 20,
         color: '#ffffff',
         opacity: 1,
         strokeWidth: 2,

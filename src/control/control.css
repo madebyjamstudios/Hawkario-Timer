@@ -223,7 +223,7 @@ button:disabled {
   border-radius: 8px;
   background: #0a0a0a;
   aspect-ratio: 16 / 9;
-  max-width: 100%;
+  max-width: 280px;
   overflow: hidden;
 }
 
