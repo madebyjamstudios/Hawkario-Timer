@@ -31,12 +31,18 @@ html, body {
   color: #999;
   font-size: 12px;
   opacity: 0.7;
-  transition: opacity 0.3s ease;
+  transition: opacity 2s ease;
   pointer-events: none;
+}
+
+.fs-hint.fade-out {
+  opacity: 0;
+  transition: opacity 5s ease;
 }
 
 .fs-hint.hidden {
   opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 /* When in fullscreen, hide the hint after a delay */
