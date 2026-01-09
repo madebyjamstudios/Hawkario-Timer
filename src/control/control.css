@@ -200,10 +200,9 @@ button:disabled {
 
 /* Size slider */
 .size-slider-container {
-  padding: 8px 4px;
   display: flex;
-  align-items: center;
-  gap: 8px;
+  justify-content: flex-end;
+  padding: 4px 4px 8px 4px;
 }
 
 .size-slider-container.hidden {
@@ -211,8 +210,8 @@ button:disabled {
 }
 
 .size-slider-container input[type="range"] {
-  flex: 1;
-  height: 4px;
+  width: 50px;
+  height: 3px;
   background: #333;
   border-radius: 2px;
   appearance: none;
@@ -221,16 +220,16 @@ button:disabled {
 
 .size-slider-container input[type="range"]::-webkit-slider-thumb {
   appearance: none;
-  width: 14px;
-  height: 14px;
-  background: #888;
+  width: 10px;
+  height: 10px;
+  background: #666;
   border-radius: 50%;
   cursor: pointer;
   transition: background 0.15s;
 }
 
 .size-slider-container input[type="range"]::-webkit-slider-thumb:hover {
-  background: #aaa;
+  background: #888;
 }
 
 .preset-item {
