@@ -48,6 +48,7 @@ const els = {
   previewSection: document.getElementById('previewSection'),
   previewResizeHandle: document.getElementById('previewResizeHandle'),
   previewWrapper: document.getElementById('previewWrapper'),
+  livePreviewContainer: document.querySelector('.live-preview-wrapper'),
   livePreview: document.getElementById('livePreview'),
   livePreviewTimer: document.getElementById('livePreviewTimer'),
 
@@ -286,10 +287,10 @@ function saveSectionsState() {
 
 // ============ Preview Panel Resize ============
 
-const PREVIEW_HEIGHT_KEY = 'hawkario:previewHeight';
+const PREVIEW_WIDTH_KEY = 'hawkario:previewWidth';
 let isResizing = false;
 let startY = 0;
-let startHeight = 0;
+let startWidth = 0;
 
 function setupPreviewResize() {
   els.previewResizeHandle.addEventListener('mousedown', startResize);
@@ -300,7 +301,7 @@ function setupPreviewResize() {
 function startResize(e) {
   isResizing = true;
   startY = e.clientY;
-  startHeight = els.previewWrapper.offsetHeight;
+  startWidth = els.previewWrapper.offsetWidth;
   document.body.style.cursor = 'ns-resize';
   document.body.style.userSelect = 'none';
 }
@@ -308,10 +309,14 @@ function startResize(e) {
 function doResize(e) {
   if (!isResizing) return;
 
-  // Dragging up increases height, dragging down decreases
+  // Dragging up increases size, dragging down decreases
+  // We control width, and CSS aspect-ratio handles height
   const delta = startY - e.clientY;
-  const newHeight = Math.max(30, Math.min(200, startHeight + delta));
-  els.previewWrapper.style.height = newHeight + 'px';
+  // Convert vertical drag to width change (scaled by aspect ratio)
+  const widthDelta = delta * (16 / 9);
+  const containerWidth = els.previewSection.offsetWidth;
+  const newWidth = Math.max(150, Math.min(containerWidth, startWidth + widthDelta));
+  els.previewWrapper.style.width = newWidth + 'px';
 }
 
 function stopResize() {
@@ -320,15 +325,15 @@ function stopResize() {
   document.body.style.cursor = '';
   document.body.style.userSelect = '';
 
-  // Save the height
-  const height = els.previewWrapper.offsetHeight;
-  localStorage.setItem(PREVIEW_HEIGHT_KEY, height);
+  // Save the width
+  const width = els.previewWrapper.offsetWidth;
+  localStorage.setItem(PREVIEW_WIDTH_KEY, width);
 }
 
-function restorePreviewHeight() {
-  const saved = localStorage.getItem(PREVIEW_HEIGHT_KEY);
+function restorePreviewWidth() {
+  const saved = localStorage.getItem(PREVIEW_WIDTH_KEY);
   if (saved) {
-    els.previewWrapper.style.height = saved + 'px';
+    els.previewWrapper.style.width = saved + 'px';
   }
 }
 
@@ -897,7 +902,7 @@ function createDefaultPreset() {
       style: {
         fontFamily: 'Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
         fontWeight: '600',
-        fontSizeVw: 30,
+        fontSizeVw: 40,
         color: '#ffffff',
         opacity: 1,
         strokeWidth: 2,
@@ -1080,7 +1085,7 @@ function setupEventListeners() {
       style: {
         fontFamily: 'Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
         fontWeight: '600',
-        fontSizeVw: 30,
+        fontSizeVw: 40,
         color: '#ffffff',
         opacity: 1,
         strokeWidth: 2,
@@ -1179,7 +1184,7 @@ function init() {
 
   // Setup preview resize
   setupPreviewResize();
-  restorePreviewHeight();
+  restorePreviewWidth();
 
   // Create default preset on first launch
   createDefaultPreset();
