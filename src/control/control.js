@@ -667,13 +667,13 @@ function cancelEdit() {
 }
 
 function handleAddTimer() {
-  // Generate a unique name
+  // Generate a unique name (Timer 1, Timer 2, etc.)
   const presets = loadPresets();
-  let name = 'New Timer';
   let counter = 1;
+  let name = `Timer ${counter}`;
   while (presets.some(p => p.name === name)) {
     counter++;
-    name = `New Timer ${counter}`;
+    name = `Timer ${counter}`;
   }
 
   // Create preset with current config
@@ -730,7 +730,7 @@ function createDefaultPreset() {
     };
 
     presets.push({
-      name: '10 Minute Timer',
+      name: 'Timer 1',
       config: defaultConfig
     });
     savePresets(presets);
