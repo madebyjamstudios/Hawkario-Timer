@@ -76,7 +76,7 @@ function toggleBlackout() {
 }
 
 /**
- * Flash the timer with slow yellow glow and white stroke
+ * Flash the timer: white glow (0.5s) → grey (0.5s) × 3 times
  */
 function triggerFlash() {
   const originalColor = timerEl.style.color;
@@ -84,25 +84,42 @@ function triggerFlash() {
   const originalStroke = timerEl.style.webkitTextStrokeColor;
   const originalStrokeWidth = timerEl.style.webkitTextStrokeWidth;
 
-  // Apply flash style - yellow with white stroke border, compact tight glow
-  timerEl.style.color = '#ffeb3b';
-  timerEl.style.webkitTextStrokeColor = '#ffffff';
-  timerEl.style.webkitTextStrokeWidth = '3px';
-  timerEl.style.textShadow = '0 0 8px rgba(255,255,255,1), 0 0 15px rgba(255,235,59,0.9)';
-  timerEl.style.transition = 'all 0.5s ease-out';
+  let flashCount = 0;
+  const maxFlashes = 3;
+  const glowDuration = 500;  // 0.5s white glow
+  const greyDuration = 500;  // 0.5s grey
 
-  // Slowly fade back to original over 2 seconds
-  setTimeout(() => {
-    timerEl.style.color = originalColor;
-    timerEl.style.webkitTextStrokeColor = originalStroke;
-    timerEl.style.webkitTextStrokeWidth = originalStrokeWidth;
-    timerEl.style.textShadow = originalShadow;
+  const doFlash = () => {
+    if (flashCount >= maxFlashes) {
+      // Restore original after all flashes
+      timerEl.style.color = originalColor;
+      timerEl.style.textShadow = originalShadow;
+      timerEl.style.webkitTextStrokeColor = originalStroke;
+      timerEl.style.webkitTextStrokeWidth = originalStrokeWidth;
+      return;
+    }
 
-    // Remove transition after animation completes
+    // White glow phase
+    timerEl.style.color = '#ffffff';
+    timerEl.style.webkitTextStrokeColor = '#ffffff';
+    timerEl.style.webkitTextStrokeWidth = '2px';
+    timerEl.style.textShadow = '0 0 8px rgba(255,255,255,1), 0 0 15px rgba(255,255,255,0.8)';
+
     setTimeout(() => {
-      timerEl.style.transition = '';
-    }, 500);
-  }, 1500);
+      // Grey phase
+      timerEl.style.color = '#666666';
+      timerEl.style.textShadow = 'none';
+      timerEl.style.webkitTextStrokeColor = 'transparent';
+      timerEl.style.webkitTextStrokeWidth = '0';
+
+      setTimeout(() => {
+        flashCount++;
+        doFlash();
+      }, greyDuration);
+    }, glowDuration);
+  };
+
+  doFlash();
 }
 
 /**

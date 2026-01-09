@@ -1294,34 +1294,52 @@ function setupEventListeners() {
     window.hawkario.toggleBlackout();
   });
 
-  // Flash button (one-time effect, synced with viewer)
+  // Flash button (synced with viewer): white glow → grey × 3
   els.flashBtn.addEventListener('click', () => {
     // Store original styles for live preview
     const originalColor = els.livePreviewTimer.style.color;
     const originalShadow = els.livePreviewTimer.style.textShadow;
     const originalStroke = els.livePreviewTimer.style.webkitTextStrokeColor;
+    const originalStrokeWidth = els.livePreviewTimer.style.webkitTextStrokeWidth;
 
-    // Flash button animation
-    els.flashBtn.classList.add('flashing');
-    setTimeout(() => els.flashBtn.classList.remove('flashing'), 1500);
+    let flashCount = 0;
+    const maxFlashes = 3;
+    const glowDuration = 500;  // 0.5s white glow
+    const greyDuration = 500;  // 0.5s grey
 
-    // Flash live preview - yellow with white stroke, compact tight glow
-    els.livePreviewTimer.style.color = '#ffeb3b';
-    els.livePreviewTimer.style.webkitTextStrokeColor = '#ffffff';
-    els.livePreviewTimer.style.textShadow = '0 0 8px rgba(255,255,255,1), 0 0 15px rgba(255,235,59,0.9)';
-    els.livePreviewTimer.style.transition = 'all 0.5s ease-out';
+    const doFlash = () => {
+      if (flashCount >= maxFlashes) {
+        // Restore original after all flashes
+        els.livePreviewTimer.style.color = originalColor;
+        els.livePreviewTimer.style.textShadow = originalShadow;
+        els.livePreviewTimer.style.webkitTextStrokeColor = originalStroke;
+        els.livePreviewTimer.style.webkitTextStrokeWidth = originalStrokeWidth;
+        return;
+      }
 
-    // Slowly fade back to original
-    setTimeout(() => {
-      els.livePreviewTimer.style.color = originalColor;
-      els.livePreviewTimer.style.webkitTextStrokeColor = originalStroke;
-      els.livePreviewTimer.style.textShadow = originalShadow;
+      // White glow phase - button flashes yellow, timer flashes white
+      els.flashBtn.classList.add('flashing');
+      els.livePreviewTimer.style.color = '#ffffff';
+      els.livePreviewTimer.style.webkitTextStrokeColor = '#ffffff';
+      els.livePreviewTimer.style.webkitTextStrokeWidth = '2px';
+      els.livePreviewTimer.style.textShadow = '0 0 8px rgba(255,255,255,1), 0 0 15px rgba(255,255,255,0.8)';
 
       setTimeout(() => {
-        els.livePreviewTimer.style.transition = '';
-      }, 500);
-    }, 1500);
+        // Grey phase - button off, timer grey
+        els.flashBtn.classList.remove('flashing');
+        els.livePreviewTimer.style.color = '#666666';
+        els.livePreviewTimer.style.textShadow = 'none';
+        els.livePreviewTimer.style.webkitTextStrokeColor = 'transparent';
+        els.livePreviewTimer.style.webkitTextStrokeWidth = '0';
 
+        setTimeout(() => {
+          flashCount++;
+          doFlash();
+        }, greyDuration);
+      }, glowDuration);
+    };
+
+    doFlash();
     window.hawkario.sendTimerCommand('flash', getCurrentConfig());
   });
 
