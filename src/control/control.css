@@ -126,8 +126,8 @@ button:disabled {
 }
 
 .live-preview .timer-preview {
-  font-size: 24px !important;
   white-space: nowrap;
+  /* Font size set dynamically in JS to match output scaling */
 }
 
 .live-preview.blackout::before {

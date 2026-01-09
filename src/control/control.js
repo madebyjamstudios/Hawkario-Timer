@@ -92,7 +92,7 @@ let isBlackedOut = false;
 // SVG Icons
 const ICONS = {
   reset: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>',
-  settings: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>',
+  settings: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>',
   play: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>',
   pause: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>',
   more: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>',
@@ -257,6 +257,7 @@ const debouncedPreview = debounce(applyPreview, 50);
 
 /**
  * Apply styles to live preview (mirrors output window)
+ * Scales font size proportionally to preview box width
  */
 function applyLivePreviewStyle() {
   const bgOpacity = parseFloat(els.bgOpacity.value) || 0;
@@ -267,10 +268,21 @@ function applyLivePreviewStyle() {
   els.livePreview.style.background = bg;
   els.livePreviewTimer.style.fontFamily = els.fontFamily.value;
   els.livePreviewTimer.style.fontWeight = els.fontWeight.value;
-  els.livePreviewTimer.style.fontSize = els.fontSize.value + 'vw';
+
+  // Calculate scaled font size based on preview box width
+  // vw units are relative to viewport, so we scale based on preview width
+  const previewWidth = els.livePreview.offsetWidth || 200;
+  const fontSizeVw = parseFloat(els.fontSize.value) || 10;
+  const scaledFontSize = (fontSizeVw / 100) * previewWidth;
+  els.livePreviewTimer.style.fontSize = scaledFontSize + 'px';
+
+  // Scale stroke width proportionally too
+  const strokeWidth = parseInt(els.strokeWidth.value, 10) || 0;
+  const scaledStroke = Math.max(0.5, (strokeWidth / 100) * previewWidth * 0.1);
+  els.livePreviewTimer.style.webkitTextStrokeWidth = scaledStroke + 'px';
+
   els.livePreviewTimer.style.color = els.fontColor.value;
   els.livePreviewTimer.style.opacity = els.opacity.value;
-  els.livePreviewTimer.style.webkitTextStrokeWidth = els.strokeWidth.value + 'px';
   els.livePreviewTimer.style.webkitTextStrokeColor = els.strokeColor.value;
   els.livePreviewTimer.style.textShadow = els.shadow.value;
   els.livePreviewTimer.style.letterSpacing = els.letterSpacing.value + 'em';
@@ -476,7 +488,22 @@ function updateControlStates() {
 
 function loadPresets() {
   try {
-    const data = localStorage.getItem(STORAGE_KEYS.PRESETS);
+    // Check for presets in current key
+    let data = localStorage.getItem(STORAGE_KEYS.PRESETS);
+
+    // Migration: check for old key from first version
+    if (!data) {
+      const oldKey = 'hawktimer-pro-presets-v1';
+      const oldData = localStorage.getItem(oldKey);
+      if (oldData) {
+        // Migrate old presets to new key
+        localStorage.setItem(STORAGE_KEYS.PRESETS, oldData);
+        localStorage.removeItem(oldKey); // Clean up old key
+        data = oldData;
+        showToast('Migrated presets from previous version', 'success');
+      }
+    }
+
     return data ? validatePresets(JSON.parse(data)) : [];
   } catch {
     return [];
