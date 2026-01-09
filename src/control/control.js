@@ -1282,14 +1282,27 @@ function setupEventListeners() {
     const maxFlashes = 3;
     const flashDuration = 100;
 
+    // Store original styles for live preview
+    const originalColor = els.livePreviewTimer.style.color;
+    const originalShadow = els.livePreviewTimer.style.textShadow;
+
     const doFlash = () => {
       if (flashCount >= maxFlashes * 2) {
+        // Restore live preview styles
+        els.livePreviewTimer.style.color = originalColor;
+        els.livePreviewTimer.style.textShadow = originalShadow;
         return;
       }
       if (flashCount % 2 === 0) {
         els.flashBtn.classList.add('flashing');
+        // Flash live preview yellow
+        els.livePreviewTimer.style.color = '#ffeb3b';
+        els.livePreviewTimer.style.textShadow = '0 0 20px #ffeb3b, 0 0 40px #ffeb3b';
       } else {
         els.flashBtn.classList.remove('flashing');
+        // Restore live preview
+        els.livePreviewTimer.style.color = originalColor;
+        els.livePreviewTimer.style.textShadow = originalShadow;
       }
       flashCount++;
       setTimeout(doFlash, flashDuration);

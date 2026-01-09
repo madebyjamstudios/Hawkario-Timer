@@ -58,15 +58,21 @@ let endSoundPlayed = false;
 let isBlackedOut = false;
 const blackoutEl = document.createElement('div');
 blackoutEl.className = 'blackout-overlay';
-blackoutEl.style.cssText = 'position:fixed;inset:0;background:#000;z-index:9999;display:none;';
+blackoutEl.style.cssText = 'position:fixed;inset:0;background:#000;z-index:9999;opacity:0;pointer-events:none;transition:opacity 0.5s ease;';
 document.body.appendChild(blackoutEl);
 
 /**
- * Toggle blackout overlay
+ * Toggle blackout overlay with fade animation
  */
 function toggleBlackout() {
   isBlackedOut = !isBlackedOut;
-  blackoutEl.style.display = isBlackedOut ? 'block' : 'none';
+  if (isBlackedOut) {
+    blackoutEl.style.pointerEvents = 'auto';
+    blackoutEl.style.opacity = '1';
+  } else {
+    blackoutEl.style.opacity = '0';
+    blackoutEl.style.pointerEvents = 'none';
+  }
 }
 
 /**
