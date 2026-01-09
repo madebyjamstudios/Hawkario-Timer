@@ -97,7 +97,16 @@ const els = {
   defaultFontColor: document.getElementById('defaultFontColor'),
   defaultWarnEnabled: document.getElementById('defaultWarnEnabled'),
   defaultWarnTime: document.getElementById('defaultWarnTime'),
-  defaultEndSound: document.getElementById('defaultEndSound')
+  defaultEndSound: document.getElementById('defaultEndSound'),
+
+  // Confirm Dialog
+  confirmDialog: document.getElementById('confirmDialog'),
+  confirmTitle: document.getElementById('confirmTitle'),
+  confirmMessage: document.getElementById('confirmMessage'),
+  confirmDontAskContainer: document.getElementById('confirmDontAskContainer'),
+  confirmDontAsk: document.getElementById('confirmDontAsk'),
+  confirmCancel: document.getElementById('confirmCancel'),
+  confirmDeleteBtn: document.getElementById('confirmDelete')
 };
 
 // State
@@ -217,6 +226,59 @@ function saveAppSettingsFromForm() {
 
   saveAppSettings(settings);
   closeAppSettings();
+}
+
+// ============ Custom Confirm Dialog ============
+
+let confirmResolver = null;
+
+function showConfirmDialog(options = {}) {
+  return new Promise((resolve) => {
+    confirmResolver = resolve;
+
+    // Set content
+    els.confirmTitle.textContent = options.title || 'Confirm';
+    els.confirmMessage.textContent = options.message || 'Are you sure?';
+
+    // Reset checkbox
+    els.confirmDontAsk.checked = false;
+
+    // Show/hide "Don't ask again" checkbox
+    els.confirmDontAskContainer.style.display = options.showDontAsk !== false ? 'flex' : 'none';
+
+    // Show dialog
+    els.confirmDialog.classList.remove('hidden');
+  });
+}
+
+function closeConfirmDialog(result) {
+  els.confirmDialog.classList.add('hidden');
+  if (confirmResolver) {
+    confirmResolver({
+      confirmed: result,
+      dontAskAgain: els.confirmDontAsk.checked
+    });
+    confirmResolver = null;
+  }
+}
+
+function setupConfirmDialog() {
+  els.confirmCancel.addEventListener('click', () => closeConfirmDialog(false));
+  els.confirmDeleteBtn.addEventListener('click', () => closeConfirmDialog(true));
+
+  // Close on overlay click
+  els.confirmDialog.addEventListener('click', (e) => {
+    if (e.target === els.confirmDialog) {
+      closeConfirmDialog(false);
+    }
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !els.confirmDialog.classList.contains('hidden')) {
+      closeConfirmDialog(false);
+    }
+  });
 }
 
 function getDefaultTimerConfig() {
@@ -448,9 +510,9 @@ function startResize(e) {
 function doResize(e) {
   if (!isResizing) return;
 
-  // Dragging up increases size, dragging down decreases
+  // Dragging down increases size (handle is at bottom)
   // We control width, and CSS aspect-ratio handles height
-  const delta = startY - e.clientY;
+  const delta = e.clientY - startY;
   // Convert vertical drag to width change (scaled by aspect ratio)
   const widthDelta = delta * (16 / 9);
   const containerWidth = els.previewSection.offsetWidth;
@@ -1048,17 +1110,28 @@ function showPresetMenu(idx, preset, anchorEl) {
     menu.remove();
 
     const appSettings = loadAppSettings();
-    let confirmed = true;
+    let shouldDelete = true;
 
     // Only show confirm dialog if setting is enabled
     if (appSettings.confirmDelete) {
-      confirmed = await window.hawkario.showConfirm({
-        title: 'Delete Timer',
-        message: `Delete "${preset.name}"?`
+      const result = await showConfirmDialog({
+        title: 'Delete Timer?',
+        message: `Delete "${preset.name}"? This action cannot be undone.`,
+        showDontAsk: true
       });
+
+      shouldDelete = result.confirmed;
+
+      // If user checked "Don't ask again", update settings
+      if (result.confirmed && result.dontAskAgain) {
+        const updatedSettings = loadAppSettings();
+        updatedSettings.confirmDelete = false;
+        saveAppSettings(updatedSettings);
+        populateAppSettingsForm();
+      }
     }
 
-    if (confirmed) {
+    if (shouldDelete) {
       const presets = loadPresets();
       presets.splice(idx, 1);
       savePresets(presets);
@@ -1340,6 +1413,9 @@ function init() {
   // Setup preview resize
   setupPreviewResize();
   restorePreviewWidth();
+
+  // Setup custom confirm dialog
+  setupConfirmDialog();
 
   // Create default preset on first launch
   createDefaultPreset();

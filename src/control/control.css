@@ -987,3 +987,78 @@ h3 {
 .settings-row button {
   flex: 1;
 }
+
+/* Confirm Dialog */
+.confirm-dialog {
+  background: #1e1e1e;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 320px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.confirm-icon {
+  margin-bottom: 16px;
+}
+
+.confirm-icon svg {
+  width: 48px;
+  height: 48px;
+}
+
+.confirm-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 8px 0;
+}
+
+.confirm-message {
+  font-size: 13px;
+  color: #999;
+  margin: 0 0 16px 0;
+}
+
+.confirm-checkbox-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+
+.confirm-checkbox-label input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+.confirm-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.confirm-buttons button {
+  flex: 1;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+button.danger {
+  background: #d32f2f;
+  color: #fff;
+}
+
+button.danger:hover {
+  background: #e53935;
+}
+
+button.danger:active {
+  background: #c62828;
+}
