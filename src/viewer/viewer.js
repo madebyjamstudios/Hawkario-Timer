@@ -22,7 +22,7 @@ const state = {
   style: {
     fontFamily: 'Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
     fontWeight: '600',
-    fontSizeVw: 10,
+    fontSizeVw: 30,
     color: '#ffffff',
     opacity: 1,
     strokeWidth: 2,
@@ -67,6 +67,41 @@ document.body.appendChild(blackoutEl);
 function toggleBlackout() {
   isBlackedOut = !isBlackedOut;
   blackoutEl.style.display = isBlackedOut ? 'block' : 'none';
+}
+
+/**
+ * Flash the timer yellow a few times
+ */
+function triggerFlash() {
+  const originalColor = timerEl.style.color;
+  const originalShadow = timerEl.style.textShadow;
+  let flashCount = 0;
+  const maxFlashes = 3;
+  const flashDuration = 100;
+
+  const flash = () => {
+    if (flashCount >= maxFlashes * 2) {
+      // Restore original styling
+      timerEl.style.color = originalColor;
+      timerEl.style.textShadow = originalShadow;
+      return;
+    }
+
+    if (flashCount % 2 === 0) {
+      // Flash on - bright yellow with glow
+      timerEl.style.color = '#ffeb3b';
+      timerEl.style.textShadow = '0 0 20px #ffeb3b, 0 0 40px #ffeb3b, 0 0 60px #ffeb3b';
+    } else {
+      // Flash off - restore original
+      timerEl.style.color = originalColor;
+      timerEl.style.textShadow = originalShadow;
+    }
+
+    flashCount++;
+    setTimeout(flash, flashDuration);
+  };
+
+  flash();
 }
 
 /**
@@ -287,6 +322,11 @@ function handleTimerUpdate(data) {
 
     case 'config':
       // Config-only update, no command
+      break;
+
+    case 'flash':
+      // Flash the timer white a few times
+      triggerFlash();
       break;
   }
 }

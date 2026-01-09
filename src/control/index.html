@@ -37,8 +37,14 @@
     <!-- Utility Controls -->
     <div class="utility-bar">
       <button id="openOutput">Output</button>
-      <button id="goFullscreen" class="secondary">Fullscreen</button>
-      <button id="blackoutBtn" class="blackout-btn">Blackout</button>
+      <button id="flashBtn" class="flash-btn">
+        <svg class="flash-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        <span class="flash-text">Flash</span>
+      </button>
+      <button id="blackoutBtn" class="blackout-btn">
+        <span class="blackout-indicator"></span>
+        Blackout
+      </button>
       <div class="utility-spacer"></div>
       <button id="exportPresets" class="secondary small">Export</button>
       <button id="importPresets" class="secondary small">Import</button>

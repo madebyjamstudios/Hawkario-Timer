@@ -57,8 +57,8 @@ const els = {
 
   // Controls
   blackoutBtn: document.getElementById('blackoutBtn'),
+  flashBtn: document.getElementById('flashBtn'),
   openOutput: document.getElementById('openOutput'),
-  goFullscreen: document.getElementById('goFullscreen'),
 
   // Presets
   presetName: document.getElementById('presetName'),
@@ -97,6 +97,7 @@ let isBlackedOut = false;
 
 // SVG Icons
 const ICONS = {
+  flash: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
   drag: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="5" width="16" height="2" rx="1"/><rect x="4" y="11" width="16" height="2" rx="1"/><rect x="4" y="17" width="16" height="2" rx="1"/></svg>',
   reset: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="11 19 2 12 11 5 11 19"/><polygon points="22 19 13 12 22 5 22 19"/></svg>',
   clock: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
@@ -110,25 +111,11 @@ const ICONS = {
   pencil: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>'
 };
 
-// ============ Toast Notifications ============
+// ============ Toast Notifications (disabled) ============
 
 function showToast(message, type = 'info') {
-  let container = document.querySelector('.toast-container');
-  if (!container) {
-    container = document.createElement('div');
-    container.className = 'toast-container';
-    document.body.appendChild(container);
-  }
-
-  const toast = document.createElement('div');
-  toast.className = `toast ${type}`;
-  toast.textContent = message;
-  container.appendChild(toast);
-
-  setTimeout(() => {
-    toast.classList.add('fade-out');
-    setTimeout(() => toast.remove(), 200);
-  }, 2500);
+  // Notifications disabled per user request
+  return;
 }
 
 // ============ Timer Progress Bar ============
@@ -910,7 +897,7 @@ function createDefaultPreset() {
       style: {
         fontFamily: 'Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
         fontWeight: '600',
-        fontSizeVw: 20,
+        fontSizeVw: 30,
         color: '#ffffff',
         opacity: 1,
         strokeWidth: 2,
@@ -1033,17 +1020,42 @@ function setupEventListeners() {
     }
   });
 
-  // Blackout button
-  els.blackoutBtn.addEventListener('click', () => window.hawkario.toggleBlackout());
-
-  // Window controls
-  els.openOutput.addEventListener('click', () => {
-    window.hawkario.openOutputWindow();
-    showToast('Opening output window...');
+  // Blackout button (toggle)
+  els.blackoutBtn.addEventListener('click', () => {
+    window.hawkario.toggleBlackout();
   });
 
-  els.goFullscreen.addEventListener('click', () => {
-    window.hawkario.fullscreenOutput();
+  // Flash button (one-time effect, synced with viewer)
+  els.flashBtn.addEventListener('click', () => {
+    // Flash 3 times, 100ms each = 600ms total
+    let flashCount = 0;
+    const maxFlashes = 3;
+    const flashDuration = 100;
+
+    const doFlash = () => {
+      if (flashCount >= maxFlashes * 2) {
+        return;
+      }
+      if (flashCount % 2 === 0) {
+        els.flashBtn.classList.add('flashing');
+      } else {
+        els.flashBtn.classList.remove('flashing');
+      }
+      flashCount++;
+      setTimeout(doFlash, flashDuration);
+    };
+
+    doFlash();
+    window.hawkario.sendTimerCommand('flash', getCurrentConfig());
+  });
+
+  // Output button - opens window if not open, toggles fullscreen if already open
+  els.openOutput.addEventListener('click', () => {
+    if (outputWindowReady) {
+      window.hawkario.fullscreenOutput();
+    } else {
+      window.hawkario.openOutputWindow();
+    }
   });
 
 
@@ -1068,7 +1080,7 @@ function setupEventListeners() {
       style: {
         fontFamily: 'Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
         fontWeight: '600',
-        fontSizeVw: 20,
+        fontSizeVw: 30,
         color: '#ffffff',
         opacity: 1,
         strokeWidth: 2,
@@ -1156,7 +1168,6 @@ function setupEventListeners() {
   window.hawkario.onBlackoutToggle(() => {
     isBlackedOut = !isBlackedOut;
     els.blackoutBtn.classList.toggle('active', isBlackedOut);
-    els.blackoutBtn.textContent = isBlackedOut ? 'Blackout ON' : 'Blackout';
   });
 }
 
