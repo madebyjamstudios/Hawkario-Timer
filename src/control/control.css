@@ -207,7 +207,7 @@ button:disabled {
   border: 2px solid #555;
   position: relative;
   overflow: hidden;
-  transition: all 0.1s ease;
+  transition: all 0.3s ease;
 }
 
 .flash-btn:hover {
@@ -220,11 +220,11 @@ button:disabled {
   height: 14px;
   stroke: #888;
   fill: none;
-  transition: all 0.1s ease;
+  transition: all 0.3s ease;
 }
 
 .flash-btn .flash-text {
-  transition: all 0.1s ease;
+  transition: all 0.3s ease;
 }
 
 .flash-btn.flashing {

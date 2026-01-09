@@ -1300,30 +1300,39 @@ function setupEventListeners() {
     window.hawkario.toggleBlackout();
   });
 
-  // Flash button (synced with viewer): white glow → grey × 3
+  // Flash button (synced with viewer): fade to white glow → fade to grey × 3
   els.flashBtn.addEventListener('click', () => {
     // Store original styles for live preview
     const originalColor = els.livePreviewTimer.style.color;
     const originalShadow = els.livePreviewTimer.style.textShadow;
     const originalStroke = els.livePreviewTimer.style.webkitTextStrokeColor;
     const originalStrokeWidth = els.livePreviewTimer.style.webkitTextStrokeWidth;
+    const originalTransition = els.livePreviewTimer.style.transition;
 
     let flashCount = 0;
     const maxFlashes = 3;
-    const glowDuration = 500;  // 0.5s white glow
-    const greyDuration = 500;  // 0.5s grey
+    const fadeDuration = 300;  // 0.3s fade transition
+    const holdDuration = 200;  // 0.2s hold at peak
+
+    // Enable smooth transitions on timer
+    els.livePreviewTimer.style.transition = 'color 0.3s ease, text-shadow 0.3s ease, -webkit-text-stroke-color 0.3s ease';
 
     const doFlash = () => {
       if (flashCount >= maxFlashes) {
-        // Restore original after all flashes
+        // Fade back to original
         els.livePreviewTimer.style.color = originalColor;
         els.livePreviewTimer.style.textShadow = originalShadow;
         els.livePreviewTimer.style.webkitTextStrokeColor = originalStroke;
         els.livePreviewTimer.style.webkitTextStrokeWidth = originalStrokeWidth;
+
+        // Remove transition after final fade completes
+        setTimeout(() => {
+          els.livePreviewTimer.style.transition = originalTransition;
+        }, fadeDuration);
         return;
       }
 
-      // White glow phase - button flashes yellow, timer flashes white
+      // Fade IN to white glow - button fades to yellow, timer fades to white
       els.flashBtn.classList.add('flashing');
       els.livePreviewTimer.style.color = '#ffffff';
       els.livePreviewTimer.style.webkitTextStrokeColor = '#ffffff';
@@ -1331,18 +1340,18 @@ function setupEventListeners() {
       els.livePreviewTimer.style.textShadow = '0 0 8px rgba(255,255,255,1), 0 0 15px rgba(255,255,255,0.8)';
 
       setTimeout(() => {
-        // Grey phase - button off, timer grey
+        // Fade OUT to grey - button fades off, timer fades to dark grey
         els.flashBtn.classList.remove('flashing');
-        els.livePreviewTimer.style.color = '#666666';
+        els.livePreviewTimer.style.color = '#444444';
         els.livePreviewTimer.style.textShadow = 'none';
-        els.livePreviewTimer.style.webkitTextStrokeColor = 'transparent';
-        els.livePreviewTimer.style.webkitTextStrokeWidth = '0';
+        els.livePreviewTimer.style.webkitTextStrokeColor = '#333333';
+        els.livePreviewTimer.style.webkitTextStrokeWidth = '1px';
 
         setTimeout(() => {
           flashCount++;
           doFlash();
-        }, greyDuration);
-      }, glowDuration);
+        }, fadeDuration + holdDuration);
+      }, fadeDuration + holdDuration);
     };
 
     doFlash();

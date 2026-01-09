@@ -76,47 +76,56 @@ function toggleBlackout() {
 }
 
 /**
- * Flash the timer: white glow (0.5s) → grey (0.5s) × 3 times
+ * Flash the timer: fade to white glow → fade to grey × 3 times
  */
 function triggerFlash() {
   const originalColor = timerEl.style.color;
   const originalShadow = timerEl.style.textShadow;
   const originalStroke = timerEl.style.webkitTextStrokeColor;
   const originalStrokeWidth = timerEl.style.webkitTextStrokeWidth;
+  const originalTransition = timerEl.style.transition;
 
   let flashCount = 0;
   const maxFlashes = 3;
-  const glowDuration = 500;  // 0.5s white glow
-  const greyDuration = 500;  // 0.5s grey
+  const fadeDuration = 300;  // 0.3s fade transition
+  const holdDuration = 200;  // 0.2s hold at peak
+
+  // Enable smooth transitions
+  timerEl.style.transition = 'color 0.3s ease, text-shadow 0.3s ease, -webkit-text-stroke-color 0.3s ease';
 
   const doFlash = () => {
     if (flashCount >= maxFlashes) {
-      // Restore original after all flashes
+      // Fade back to original
       timerEl.style.color = originalColor;
       timerEl.style.textShadow = originalShadow;
       timerEl.style.webkitTextStrokeColor = originalStroke;
       timerEl.style.webkitTextStrokeWidth = originalStrokeWidth;
+
+      // Remove transition after final fade completes
+      setTimeout(() => {
+        timerEl.style.transition = originalTransition;
+      }, fadeDuration);
       return;
     }
 
-    // White glow phase
+    // Fade IN to white glow
     timerEl.style.color = '#ffffff';
     timerEl.style.webkitTextStrokeColor = '#ffffff';
     timerEl.style.webkitTextStrokeWidth = '2px';
     timerEl.style.textShadow = '0 0 8px rgba(255,255,255,1), 0 0 15px rgba(255,255,255,0.8)';
 
     setTimeout(() => {
-      // Grey phase
-      timerEl.style.color = '#666666';
+      // Fade OUT to grey (high contrast)
+      timerEl.style.color = '#444444';
       timerEl.style.textShadow = 'none';
-      timerEl.style.webkitTextStrokeColor = 'transparent';
-      timerEl.style.webkitTextStrokeWidth = '0';
+      timerEl.style.webkitTextStrokeColor = '#333333';
+      timerEl.style.webkitTextStrokeWidth = '1px';
 
       setTimeout(() => {
         flashCount++;
         doFlash();
-      }, greyDuration);
-    }, glowDuration);
+      }, fadeDuration + holdDuration);
+    }, fadeDuration + holdDuration);
   };
 
   doFlash();
