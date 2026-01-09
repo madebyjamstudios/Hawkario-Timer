@@ -27,10 +27,10 @@ let lastTimerConfig = null;
 
 function createMainWindow() {
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
-    minWidth: 900,
-    minHeight: 600,
+    width: 400,
+    height: 700,
+    minWidth: 280,
+    minHeight: 400,
     center: true,
     title: 'Hawkario',
     webPreferences: {

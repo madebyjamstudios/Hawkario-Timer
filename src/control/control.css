@@ -194,15 +194,15 @@ button:disabled {
   justify-content: space-between;
   align-items: center;
   padding: 14px 16px;
-  background: linear-gradient(135deg, #1f6feb 0%, #1a5fd4 100%);
+  background: linear-gradient(135deg, #1a5fd4 0%, #1550b8 100%);
   border: none;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(31, 111, 235, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 8px rgba(21, 80, 184, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   transition: all 0.15s ease;
 }
 
 .preset-item:hover {
-  background: linear-gradient(135deg, #388bfd 0%, #1f6feb 100%);
+  background: linear-gradient(135deg, #1f6feb 0%, #1a5fd4 100%);
   box-shadow: 0 4px 12px rgba(31, 111, 235, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
