@@ -266,7 +266,7 @@ button:disabled {
   background: #444;
   border-radius: 50%;
   border: 1px solid #666;
-  transition: all 0.5s ease;
+  transition: all 1s ease;
   position: relative;
 }
 
@@ -294,6 +294,38 @@ button:disabled {
   100% {
     transform: scale(1);
     box-shadow: 0 0 8px #f85149, 0 0 16px #f85149, 0 0 24px #f85149;
+  }
+}
+
+/* Blackout button transitioning state - grey stripes animation */
+.blackout-btn.transitioning::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 4px,
+    rgba(100, 100, 100, 0.3) 4px,
+    rgba(100, 100, 100, 0.3) 8px
+  );
+  background-size: 200% 200%;
+  animation: stripe-slide 0.5s linear infinite;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.blackout-btn > * {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes stripe-slide {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 20px 20px;
   }
 }
 

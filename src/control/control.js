@@ -1283,45 +1283,45 @@ function setupEventListeners() {
     }
   });
 
-  // Blackout button (toggle)
+  // Blackout button (toggle) with stripe animation
   els.blackoutBtn.addEventListener('click', () => {
+    // Add transitioning stripes for 1 second
+    els.blackoutBtn.classList.add('transitioning');
+    setTimeout(() => {
+      els.blackoutBtn.classList.remove('transitioning');
+    }, 1000);
+
     window.hawkario.toggleBlackout();
   });
 
   // Flash button (one-time effect, synced with viewer)
   els.flashBtn.addEventListener('click', () => {
-    // Flash 3 times, 100ms each = 600ms total
-    let flashCount = 0;
-    const maxFlashes = 3;
-    const flashDuration = 100;
-
     // Store original styles for live preview
     const originalColor = els.livePreviewTimer.style.color;
     const originalShadow = els.livePreviewTimer.style.textShadow;
+    const originalStroke = els.livePreviewTimer.style.webkitTextStrokeColor;
 
-    const doFlash = () => {
-      if (flashCount >= maxFlashes * 2) {
-        // Restore live preview styles
-        els.livePreviewTimer.style.color = originalColor;
-        els.livePreviewTimer.style.textShadow = originalShadow;
-        return;
-      }
-      if (flashCount % 2 === 0) {
-        els.flashBtn.classList.add('flashing');
-        // Flash live preview yellow
-        els.livePreviewTimer.style.color = '#ffeb3b';
-        els.livePreviewTimer.style.textShadow = '0 0 20px #ffeb3b, 0 0 40px #ffeb3b';
-      } else {
-        els.flashBtn.classList.remove('flashing');
-        // Restore live preview
-        els.livePreviewTimer.style.color = originalColor;
-        els.livePreviewTimer.style.textShadow = originalShadow;
-      }
-      flashCount++;
-      setTimeout(doFlash, flashDuration);
-    };
+    // Flash button animation
+    els.flashBtn.classList.add('flashing');
+    setTimeout(() => els.flashBtn.classList.remove('flashing'), 1500);
 
-    doFlash();
+    // Flash live preview - yellow with white stroke, slow fade
+    els.livePreviewTimer.style.color = '#ffeb3b';
+    els.livePreviewTimer.style.webkitTextStrokeColor = '#ffffff';
+    els.livePreviewTimer.style.textShadow = '0 0 20px rgba(255,255,255,0.8), 0 0 40px rgba(255,235,59,0.6)';
+    els.livePreviewTimer.style.transition = 'all 0.5s ease-out';
+
+    // Slowly fade back to original
+    setTimeout(() => {
+      els.livePreviewTimer.style.color = originalColor;
+      els.livePreviewTimer.style.webkitTextStrokeColor = originalStroke;
+      els.livePreviewTimer.style.textShadow = originalShadow;
+
+      setTimeout(() => {
+        els.livePreviewTimer.style.transition = '';
+      }, 500);
+    }, 1500);
+
     window.hawkario.sendTimerCommand('flash', getCurrentConfig());
   });
 

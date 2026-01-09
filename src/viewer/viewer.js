@@ -58,7 +58,7 @@ let endSoundPlayed = false;
 let isBlackedOut = false;
 const blackoutEl = document.createElement('div');
 blackoutEl.className = 'blackout-overlay';
-blackoutEl.style.cssText = 'position:fixed;inset:0;background:#000;z-index:9999;opacity:0;pointer-events:none;transition:opacity 0.5s ease;';
+blackoutEl.style.cssText = 'position:fixed;inset:0;background:#000;z-index:9999;opacity:0;pointer-events:none;transition:opacity 1s ease;';
 document.body.appendChild(blackoutEl);
 
 /**
@@ -76,38 +76,33 @@ function toggleBlackout() {
 }
 
 /**
- * Flash the timer yellow a few times
+ * Flash the timer with slow yellow glow and white stroke
  */
 function triggerFlash() {
   const originalColor = timerEl.style.color;
   const originalShadow = timerEl.style.textShadow;
-  let flashCount = 0;
-  const maxFlashes = 3;
-  const flashDuration = 100;
+  const originalStroke = timerEl.style.webkitTextStrokeColor;
+  const originalStrokeWidth = timerEl.style.webkitTextStrokeWidth;
 
-  const flash = () => {
-    if (flashCount >= maxFlashes * 2) {
-      // Restore original styling
-      timerEl.style.color = originalColor;
-      timerEl.style.textShadow = originalShadow;
-      return;
-    }
+  // Apply flash style - yellow with white stroke border
+  timerEl.style.color = '#ffeb3b';
+  timerEl.style.webkitTextStrokeColor = '#ffffff';
+  timerEl.style.webkitTextStrokeWidth = '3px';
+  timerEl.style.textShadow = '0 0 30px rgba(255,255,255,0.8), 0 0 60px rgba(255,235,59,0.6)';
+  timerEl.style.transition = 'all 0.5s ease-out';
 
-    if (flashCount % 2 === 0) {
-      // Flash on - bright yellow with glow
-      timerEl.style.color = '#ffeb3b';
-      timerEl.style.textShadow = '0 0 20px #ffeb3b, 0 0 40px #ffeb3b, 0 0 60px #ffeb3b';
-    } else {
-      // Flash off - restore original
-      timerEl.style.color = originalColor;
-      timerEl.style.textShadow = originalShadow;
-    }
+  // Slowly fade back to original over 2 seconds
+  setTimeout(() => {
+    timerEl.style.color = originalColor;
+    timerEl.style.webkitTextStrokeColor = originalStroke;
+    timerEl.style.webkitTextStrokeWidth = originalStrokeWidth;
+    timerEl.style.textShadow = originalShadow;
 
-    flashCount++;
-    setTimeout(flash, flashDuration);
-  };
-
-  flash();
+    // Remove transition after animation completes
+    setTimeout(() => {
+      timerEl.style.transition = '';
+    }, 500);
+  }, 1500);
 }
 
 /**
