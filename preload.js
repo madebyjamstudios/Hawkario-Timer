@@ -59,6 +59,9 @@ contextBridge.exposeInMainWorld('hawkario', {
   // Get app info
   getVersion: () => ipcRenderer.invoke('app:version'),
 
+  // Show confirm dialog with app icon
+  showConfirm: (options) => ipcRenderer.invoke('dialog:confirm', options),
+
   // Cleanup listeners (call when window closes)
   removeAllListeners: () => {
     ipcRenderer.removeAllListeners('timer:update');

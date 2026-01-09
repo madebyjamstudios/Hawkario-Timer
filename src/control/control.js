@@ -591,8 +591,13 @@ function showPresetMenu(idx, preset, anchorEl) {
   const deleteItem = document.createElement('button');
   deleteItem.className = 'menu-item delete';
   deleteItem.innerHTML = `${ICONS.delete} Delete`;
-  deleteItem.onclick = () => {
-    if (confirm(`Delete "${preset.name}"?`)) {
+  deleteItem.onclick = async () => {
+    menu.remove();
+    const confirmed = await window.hawkario.showConfirm({
+      title: 'Delete Preset',
+      message: `Delete "${preset.name}"?`
+    });
+    if (confirmed) {
       const presets = loadPresets();
       presets.splice(idx, 1);
       savePresets(presets);
@@ -603,7 +608,6 @@ function showPresetMenu(idx, preset, anchorEl) {
       renderPresetList();
       showToast('Preset deleted');
     }
-    menu.remove();
   };
 
   menu.append(cloneItem, deleteItem);
