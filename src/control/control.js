@@ -83,6 +83,7 @@ const els = {
 let isRunning = false;
 let outputWindowReady = false;
 let editingPresetIndex = null; // Track which preset is being edited
+let activePresetIndex = null; // Track which preset is currently playing
 
 // Timer state for live preview
 const timerState = {
@@ -135,6 +136,42 @@ function updateTimerScale(scale) {
   localStorage.setItem(TIMER_SCALE_KEY, scale);
 }
 
+function findMaxSafeScale() {
+  // Find the maximum scale before content overflows horizontally
+  const list = els.presetList;
+  if (!list || !list.children.length) return 1.5;
+
+  const containerWidth = list.clientWidth;
+  const currentScale = parseFloat(els.timerSizeSlider.value) || 1;
+
+  // Check each preset item for overflow
+  let maxScale = 1.5;
+  for (const item of list.children) {
+    if (item.classList.contains('preset-item')) {
+      const itemWidth = item.scrollWidth;
+      if (itemWidth > containerWidth) {
+        // Already overflowing, calculate safe scale
+        const safeScale = currentScale * (containerWidth / itemWidth) * 0.98;
+        maxScale = Math.min(maxScale, safeScale);
+      }
+    }
+  }
+
+  return Math.max(0.5, maxScale);
+}
+
+function updateSliderMax() {
+  const maxScale = findMaxSafeScale();
+  els.timerSizeSlider.max = maxScale;
+
+  // If current value exceeds max, clamp it
+  const currentValue = parseFloat(els.timerSizeSlider.value);
+  if (currentValue > maxScale) {
+    els.timerSizeSlider.value = maxScale;
+    updateTimerScale(maxScale);
+  }
+}
+
 function checkSliderVisibility() {
   const list = els.presetList;
   if (!list) return;
@@ -143,6 +180,8 @@ function checkSliderVisibility() {
   const presetCount = loadPresets().length;
   if (presetCount >= 3) {
     els.sizeSliderContainer.classList.remove('hidden');
+    // Update max after a brief delay for layout
+    setTimeout(updateSliderMax, 50);
   } else {
     els.sizeSliderContainer.classList.add('hidden');
   }
@@ -613,16 +652,26 @@ function renderPresetList() {
       openModal(idx);
     };
 
-    // Play button (play icon, green)
+    // Play/Pause button
     const playBtn = document.createElement('button');
-    playBtn.className = 'icon-btn play-btn';
-    playBtn.innerHTML = ICONS.play;
-    playBtn.title = 'Load & Start';
+    const isActiveAndRunning = activePresetIndex === idx && isRunning;
+    playBtn.className = isActiveAndRunning ? 'icon-btn pause-btn' : 'icon-btn play-btn';
+    playBtn.innerHTML = isActiveAndRunning ? ICONS.pause : ICONS.play;
+    playBtn.title = isActiveAndRunning ? 'Pause' : 'Load & Start';
     playBtn.onclick = (e) => {
       e.stopPropagation();
-      applyConfig(preset.config);
-      sendCommand('start');
-      showToast(`Started "${preset.name}"`);
+      if (isActiveAndRunning) {
+        // Pause the timer
+        sendCommand('pause');
+        showToast('Paused');
+      } else {
+        // Start this preset
+        applyConfig(preset.config);
+        activePresetIndex = idx;
+        sendCommand('start');
+        showToast(`Started "${preset.name}"`);
+      }
+      renderPresetList(); // Re-render to update button states
     };
 
     // More button (three dots)
@@ -862,7 +911,8 @@ function setupEventListeners() {
   // Timer size slider
   els.timerSizeSlider.addEventListener('input', (e) => {
     updateTimerScale(e.target.value);
-    checkSliderVisibility();
+    // Update max limit dynamically as user slides
+    setTimeout(updateSliderMax, 10);
   });
 
   // Preset controls

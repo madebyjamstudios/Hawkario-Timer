@@ -333,6 +333,17 @@ button:disabled {
   border-color: #3fb950;
 }
 
+/* Pause button - red */
+.icon-btn.pause-btn {
+  background: #da3633;
+  border-color: #f85149;
+}
+
+.icon-btn.pause-btn:hover {
+  background: #f85149;
+  border-color: #ff6b6b;
+}
+
 /* Preset dropdown menu */
 .preset-menu {
   position: fixed;
