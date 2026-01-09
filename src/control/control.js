@@ -45,6 +45,8 @@ const els = {
   soundVolume: document.getElementById('soundVolume'),
 
   // Live Preview (main window)
+  previewSection: document.getElementById('previewSection'),
+  previewHeader: document.getElementById('previewHeader'),
   livePreview: document.getElementById('livePreview'),
   livePreviewTimer: document.getElementById('livePreviewTimer'),
 
@@ -64,8 +66,10 @@ const els = {
   presetName: document.getElementById('presetName'),
   presetList: document.getElementById('presetList'),
   presetListContainer: document.querySelector('.preset-list-container'),
-  sizeSliderContainer: document.getElementById('sizeSliderContainer'),
-  timerSizeSlider: document.getElementById('timerSizeSlider'),
+  timerProgressContainer: document.getElementById('timerProgressContainer'),
+  elapsedTime: document.getElementById('elapsedTime'),
+  remainingTime: document.getElementById('remainingTime'),
+  progressFill: document.getElementById('progressFill'),
   exportPresets: document.getElementById('exportPresets'),
   importPresets: document.getElementById('importPresets'),
   importFile: document.getElementById('importFile'),
@@ -96,6 +100,7 @@ let isBlackedOut = false;
 // SVG Icons
 const ICONS = {
   reset: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="11 19 2 12 11 5 11 19"/><polygon points="22 19 13 12 22 5 22 19"/></svg>',
+  clock: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
   settings: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>',
   play: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>',
   pause: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>',
@@ -127,66 +132,28 @@ function showToast(message, type = 'info') {
   }, 2500);
 }
 
-// ============ Timer Size Slider ============
+// ============ Timer Progress Bar ============
 
-const TIMER_SCALE_KEY = 'hawkario:timerScale';
-
-function updateTimerScale(scale) {
-  els.presetList.style.setProperty('--timer-scale', scale);
-  localStorage.setItem(TIMER_SCALE_KEY, scale);
-}
-
-function findMaxSafeScale() {
-  // Calculate max scale based on window/container width
-  const list = els.presetList;
-  if (!list || !list.children.length) return 2;
-
-  const containerWidth = list.clientWidth;
-
-  // Base calculation: wider container = more zoom allowed
-  // At 280px (min width), max scale ~0.8
-  // At 400px, max scale ~1.0
-  // At 600px+, max scale can go higher
-  const baseMaxScale = containerWidth / 350;
-
-  // Clamp between 0.5 and 2.5
-  return Math.max(0.5, Math.min(2.5, baseMaxScale));
-}
-
-function updateSliderMax() {
-  const maxScale = findMaxSafeScale();
-  els.timerSizeSlider.max = maxScale;
-
-  // If current value exceeds max, clamp it
-  const currentValue = parseFloat(els.timerSizeSlider.value);
-  if (currentValue > maxScale) {
-    els.timerSizeSlider.value = maxScale;
-    updateTimerScale(maxScale);
+/**
+ * Update the progress bar with elapsed/remaining time
+ * @param {number} elapsedMs - Elapsed time in milliseconds
+ * @param {number} totalMs - Total duration in milliseconds
+ */
+function updateProgressBar(elapsedMs, totalMs) {
+  // Only show progress bar when a timer is running or paused with progress
+  if (activePresetIndex === null || (!isRunning && timerState.startedAt === null)) {
+    els.timerProgressContainer.classList.add('hidden');
+    return;
   }
-}
 
-function checkSliderVisibility() {
-  const list = els.presetList;
-  if (!list) return;
+  els.timerProgressContainer.classList.remove('hidden');
 
-  // Show slider if there are 3+ timers (likely to need resizing)
-  const presetCount = loadPresets().length;
-  if (presetCount >= 3) {
-    els.sizeSliderContainer.classList.remove('hidden');
-    // Update max after a brief delay for layout
-    setTimeout(updateSliderMax, 50);
-  } else {
-    els.sizeSliderContainer.classList.add('hidden');
-  }
-}
+  const remainingMs = Math.max(0, totalMs - elapsedMs);
+  const progressPercent = Math.min(100, (elapsedMs / totalMs) * 100);
 
-function restoreTimerScale() {
-  const savedScale = localStorage.getItem(TIMER_SCALE_KEY);
-  if (savedScale) {
-    const scale = parseFloat(savedScale);
-    els.timerSizeSlider.value = scale;
-    updateTimerScale(scale);
-  }
+  els.progressFill.style.width = progressPercent + '%';
+  els.elapsedTime.textContent = formatTime(elapsedMs, 'MM:SS');
+  els.remainingTime.textContent = formatTime(remainingMs, 'MM:SS');
 }
 
 // ============ Modal Management ============
@@ -311,6 +278,23 @@ function saveSectionsState() {
   localStorage.setItem(SECTIONS_STATE_KEY, JSON.stringify(state));
 }
 
+// ============ Preview Panel Toggle ============
+
+const PREVIEW_COLLAPSED_KEY = 'hawkario:previewCollapsed';
+
+function togglePreviewPanel() {
+  els.previewSection.classList.toggle('collapsed');
+  const isCollapsed = els.previewSection.classList.contains('collapsed');
+  localStorage.setItem(PREVIEW_COLLAPSED_KEY, isCollapsed ? 'true' : 'false');
+}
+
+function restorePreviewState() {
+  const saved = localStorage.getItem(PREVIEW_COLLAPSED_KEY);
+  if (saved === 'true') {
+    els.previewSection.classList.add('collapsed');
+  }
+}
+
 // ============ Preview ============
 
 function applyPreview() {
@@ -398,6 +382,11 @@ function renderLivePreview() {
 
   // Update display
   els.livePreviewTimer.textContent = formatTime(elapsed, els.format.value);
+
+  // Update progress bar
+  const totalMs = durationSec * 1000;
+  const elapsedMs = mode === 'countdown' ? totalMs - elapsed : elapsed;
+  updateProgressBar(elapsedMs, totalMs);
 
   // Warning state
   const warnActive = mode === 'countdown' &&
@@ -599,7 +588,8 @@ function renderPresetList() {
 
   list.forEach((preset, idx) => {
     const row = document.createElement('div');
-    row.className = 'preset-item';
+    const isSelected = activePresetIndex === idx;
+    row.className = isSelected ? 'preset-item selected' : 'preset-item';
 
     // Name with pencil edit icon
     const name = document.createElement('div');
@@ -623,17 +613,32 @@ function renderPresetList() {
     const actions = document.createElement('div');
     actions.className = 'preset-actions';
 
-    // Reset button (rewind icon)
-    const resetBtn = document.createElement('button');
-    resetBtn.className = 'icon-btn';
-    resetBtn.innerHTML = ICONS.reset;
-    resetBtn.title = 'Load & Reset';
-    resetBtn.onclick = (e) => {
-      e.stopPropagation();
-      applyConfig(preset.config);
-      sendCommand('reset');
-      showToast(`Loaded "${preset.name}"`);
-    };
+    // First button: Clock (select) or Rewind (reset) depending on selection state
+    const selectResetBtn = document.createElement('button');
+    selectResetBtn.className = 'icon-btn';
+    if (isSelected) {
+      // Selected timer shows rewind icon to reset
+      selectResetBtn.innerHTML = ICONS.reset;
+      selectResetBtn.title = 'Reset timer';
+      selectResetBtn.onclick = (e) => {
+        e.stopPropagation();
+        sendCommand('reset');
+        showToast('Timer reset');
+      };
+    } else {
+      // Non-selected timer shows clock icon to select
+      selectResetBtn.innerHTML = ICONS.clock;
+      selectResetBtn.title = 'Select timer';
+      selectResetBtn.onclick = (e) => {
+        e.stopPropagation();
+        // Select this timer without starting
+        applyConfig(preset.config);
+        activePresetIndex = idx;
+        sendCommand('reset');
+        renderPresetList();
+        showToast(`Selected "${preset.name}"`);
+      };
+    }
 
     // Edit button (settings icon)
     const editBtn = document.createElement('button');
@@ -647,7 +652,7 @@ function renderPresetList() {
 
     // Play/Pause button
     const playBtn = document.createElement('button');
-    const isActiveAndRunning = activePresetIndex === idx && isRunning;
+    const isActiveAndRunning = isSelected && isRunning;
     playBtn.className = isActiveAndRunning ? 'icon-btn pause-btn' : 'icon-btn play-btn';
     playBtn.innerHTML = isActiveAndRunning ? ICONS.pause : ICONS.play;
     playBtn.title = isActiveAndRunning ? 'Pause' : 'Load & Start';
@@ -677,13 +682,10 @@ function renderPresetList() {
       showPresetMenu(idx, preset, moreBtn);
     };
 
-    actions.append(resetBtn, editBtn, playBtn, moreBtn);
+    actions.append(selectResetBtn, editBtn, playBtn, moreBtn);
     row.append(name, actions);
     els.presetList.appendChild(row);
   });
-
-  // Check if slider should be visible after rendering
-  setTimeout(checkSliderVisibility, 50);
 }
 
 // Dropdown menu for preset actions
@@ -762,7 +764,7 @@ function createDefaultPreset() {
       style: {
         fontFamily: 'Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
         fontWeight: '600',
-        fontSizeVw: 40,
+        fontSizeVw: 20,
         color: '#ffffff',
         opacity: 1,
         strokeWidth: 2,
@@ -901,12 +903,8 @@ function setupEventListeners() {
     window.hawkario.fullscreenOutput();
   });
 
-  // Timer size slider
-  els.timerSizeSlider.addEventListener('input', (e) => {
-    updateTimerScale(e.target.value);
-    // Update max limit dynamically as user slides
-    setTimeout(updateSliderMax, 10);
-  });
+  // Preview panel toggle
+  els.previewHeader.addEventListener('click', togglePreviewPanel);
 
   // Preset controls
   els.exportPresets.addEventListener('click', handleExportPresets);
@@ -929,7 +927,7 @@ function setupEventListeners() {
       style: {
         fontFamily: 'Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
         fontWeight: '600',
-        fontSizeVw: 40,
+        fontSizeVw: 20,
         color: '#ffffff',
         opacity: 1,
         strokeWidth: 2,
@@ -1027,8 +1025,8 @@ function init() {
   // Setup collapsible sections in modal
   setupCollapsibleSections();
 
-  // Restore timer scale
-  restoreTimerScale();
+  // Restore preview panel state
+  restorePreviewState();
 
   // Create default preset on first launch
   createDefaultPreset();
@@ -1037,15 +1035,6 @@ function init() {
   applyPreview();
   renderPresetList();
   updateControlStates();
-
-  // Check if slider should be visible after a short delay (for layout to settle)
-  setTimeout(checkSliderVisibility, 100);
-
-  // Recheck on window resize
-  window.addEventListener('resize', debounce(() => {
-    checkSliderVisibility();
-    updateSliderMax();
-  }, 100));
 
   // Start live preview render loop
   renderLivePreview();
