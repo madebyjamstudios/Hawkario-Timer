@@ -106,7 +106,7 @@ const els = {
   confirmDontAskContainer: document.getElementById('confirmDontAskContainer'),
   confirmDontAsk: document.getElementById('confirmDontAsk'),
   confirmCancel: document.getElementById('confirmCancel'),
-  confirmDeleteBtn: document.getElementById('confirmDelete')
+  confirmDeleteBtn: document.getElementById('confirmDeleteBtn')
 };
 
 // State
