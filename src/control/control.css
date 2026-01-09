@@ -191,6 +191,7 @@ button:disabled {
 .preset-list {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   gap: calc(8px * var(--timer-scale, 1));
@@ -236,12 +237,14 @@ button:disabled {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: calc(14px * var(--timer-scale, 1)) calc(16px * var(--timer-scale, 1));
+  padding: calc(14px * var(--timer-scale, 1)) 16px;
   background: linear-gradient(135deg, #1a5fd4 0%, #1550b8 100%);
   border: none;
   border-radius: calc(12px * var(--timer-scale, 1));
   box-shadow: 0 2px 8px rgba(21, 80, 184, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   transition: all 0.15s ease;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .preset-item:hover {
@@ -284,7 +287,8 @@ button:disabled {
 
 .preset-actions {
   display: flex;
-  gap: calc(6px * var(--timer-scale, 1));
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 /* Icon buttons for preset actions */
@@ -292,15 +296,16 @@ button:disabled {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: calc(32px * var(--timer-scale, 1));
+  width: 32px;
   height: calc(32px * var(--timer-scale, 1));
   padding: 0;
   background: rgba(255, 255, 255, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: calc(8px * var(--timer-scale, 1));
+  border-radius: 8px;
   color: #fff;
   cursor: pointer;
   transition: all 0.15s ease;
+  flex-shrink: 0;
 }
 
 .icon-btn:hover {
