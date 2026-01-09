@@ -1,0 +1,273 @@
+/**
+ * Hawkario - Control Window Styles
+ */
+
+/* Base layout */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  height: 100%;
+}
+
+.panel {
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin: 6px 0;
+  flex-wrap: wrap;
+}
+
+/* Form elements */
+label {
+  color: #bbb;
+  font-size: 11px;
+}
+
+input[type="text"],
+input[type="number"],
+input[type="color"],
+select {
+  background: #0a0a0a;
+  color: #eee;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 5px 6px;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus {
+  border-color: #1f6feb;
+  outline: none;
+}
+
+input[type="range"] {
+  width: 150px;
+}
+
+input[type="color"] {
+  width: 50px;
+  height: 28px;
+  padding: 2px;
+  cursor: pointer;
+}
+
+/* Buttons */
+button {
+  background: #1f6feb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 7px 10px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.15s ease;
+}
+
+button:hover {
+  background: #388bfd;
+}
+
+button:active {
+  background: #1a5fc9;
+}
+
+button.secondary {
+  background: #444;
+}
+
+button.secondary:hover {
+  background: #555;
+}
+
+button.secondary:active {
+  background: #333;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Preview */
+.preview {
+  outline: 1px dashed #333;
+  min-height: 72px;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.timer-preview {
+  font-variant-numeric: tabular-nums lining-nums;
+  user-select: none;
+}
+
+/* Layout helpers */
+.kv {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 3px;
+  align-items: center;
+}
+
+.stack {
+  display: grid;
+  gap: 3px;
+}
+
+.space {
+  height: 4px;
+}
+
+/* Timer controls */
+.timer-controls button {
+  min-width: 92px;
+}
+
+/* Presets */
+.preset-list {
+  height: calc(100% - 96px);
+  overflow: auto;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 6px;
+}
+
+.preset-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px dashed #333;
+}
+
+.preset-item:last-child {
+  border-bottom: none;
+}
+
+.preset-name {
+  color: #eee;
+  font-size: 13px;
+}
+
+.preset-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.preset-actions button {
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+/* Header */
+header {
+  padding: 8px 12px;
+  position: relative;
+}
+
+.brand {
+  margin: 0;
+  font-size: 20px;
+}
+
+.hawk-icon {
+  position: absolute;
+  right: 12px;
+  top: 10px;
+}
+
+/* Footer */
+footer {
+  margin-top: 6px;
+  padding: 0 12px;
+}
+
+footer small {
+  color: #666;
+}
+
+/* Toast notifications */
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.toast {
+  background: #333;
+  color: #fff;
+  padding: 10px 16px;
+  border-radius: 6px;
+  margin-top: 8px;
+  font-size: 13px;
+  animation: toast-in 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.toast.success {
+  background: #238636;
+}
+
+.toast.error {
+  background: #da3633;
+}
+
+.toast.fade-out {
+  animation: toast-out 0.2s ease forwards;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toast-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* Section headers */
+h2 {
+  font-size: 14px;
+  margin: 0 0 8px 0;
+  color: #eee;
+}
+
+h3 {
+  font-size: 12px;
+  margin: 8px 0 4px 0;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Keyboard shortcut hints */
+.shortcut-hint {
+  color: #666;
+  font-size: 10px;
+  margin-left: 4px;
+}

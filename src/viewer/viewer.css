@@ -1,0 +1,63 @@
+/**
+ * Hawkario - Viewer Window Styles
+ */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  overflow: hidden;
+}
+
+.stage {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: transparent;
+}
+
+.timer {
+  font-variant-numeric: tabular-nums lining-nums;
+  user-select: none;
+  white-space: nowrap;
+}
+
+/* Fullscreen hint */
+.fs-hint {
+  position: fixed;
+  left: 8px;
+  bottom: 8px;
+  color: #999;
+  font-size: 12px;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.fs-hint.hidden {
+  opacity: 0;
+}
+
+/* When in fullscreen, hide the hint after a delay */
+:fullscreen .fs-hint,
+:-webkit-full-screen .fs-hint {
+  opacity: 0;
+}
+
+/* Timer states */
+.timer.warning {
+  /* Applied via JS for warning state */
+}
+
+.timer.flash-on {
+  /* Applied via JS for flash effect */
+}
+
+.timer.flash-off {
+  /* Applied via JS for flash effect */
+}
+
+.timer.ended {
+  /* Applied via JS when timer ends */
+}
