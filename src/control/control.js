@@ -157,7 +157,7 @@ const DEFAULT_APP_SETTINGS = {
     mode: 'countdown',
     durationSec: 600,
     format: 'MM:SS',
-    fontSizeVw: 30,
+    fontSizeVw: 35,
     fontColor: '#ffffff',
     warnEnabled: true,
     warnSeconds: 60,
@@ -216,7 +216,7 @@ function saveAppSettingsFromForm() {
       mode: els.defaultMode.value,
       durationSec: parseHMS(els.defaultDuration.value),
       format: els.defaultFormat.value,
-      fontSizeVw: parseInt(els.defaultFontSize.value, 10) || 30,
+      fontSizeVw: parseInt(els.defaultFontSize.value, 10) || 35,
       fontColor: els.defaultFontColor.value,
       warnEnabled: els.defaultWarnEnabled.value === 'on',
       warnSeconds: parseHMS(els.defaultWarnTime.value),
@@ -328,13 +328,13 @@ function getDefaultTimerConfig() {
  * @param {number} totalMs - Total duration in milliseconds
  */
 function updateProgressBar(elapsedMs, totalMs) {
-  // Only show progress bar when a timer is running or paused with progress
+  // Show empty state when no timer is active
   if (activePresetIndex === null || (!isRunning && timerState.startedAt === null)) {
-    els.timerProgressContainer.classList.add('hidden');
+    els.progressFill.style.width = '0%';
+    els.elapsedTime.textContent = '00:00';
+    els.remainingTime.textContent = '00:00';
     return;
   }
-
-  els.timerProgressContainer.classList.remove('hidden');
 
   const remainingMs = Math.max(0, totalMs - elapsedMs);
   const progressPercent = Math.min(100, (elapsedMs / totalMs) * 100);
@@ -549,7 +549,7 @@ function restorePreviewWidth() {
  */
 function updatePreviewScale() {
   const previewWidth = els.previewWrapper.offsetWidth || 300;
-  const fontSizeVw = parseFloat(els.fontSize.value) || 30;
+  const fontSizeVw = parseFloat(els.fontSize.value) || 35;
 
   // Scale font size: vw units mean percentage of width
   const scaledFontSize = (fontSizeVw / 100) * previewWidth;
@@ -615,7 +615,6 @@ function renderLivePreview() {
   // Handle hidden mode
   if (mode === 'hidden') {
     els.livePreviewTimer.style.visibility = 'hidden';
-    els.timerProgressContainer.classList.add('hidden');
     requestAnimationFrame(renderLivePreview);
     return;
   } else {
@@ -629,7 +628,6 @@ function renderLivePreview() {
     els.livePreviewTimer.style.color = els.fontColor.value;
     els.livePreviewTimer.style.opacity = els.opacity.value;
     els.livePreview.classList.remove('warning');
-    els.timerProgressContainer.classList.add('hidden');
     requestAnimationFrame(renderLivePreview);
     return;
   }
@@ -674,13 +672,21 @@ function renderLivePreview() {
   // Update display
   els.livePreviewTimer.textContent = displayText;
 
-  // Update progress bar (only for countdown modes)
+  // Update progress bar
   if (isCountdown) {
     const totalMs = durationSec * 1000;
     const elapsedMs = totalMs - elapsed;
     updateProgressBar(elapsedMs, totalMs);
+  } else if (isCountup) {
+    // For countup, show elapsed time with no max
+    els.progressFill.style.width = '0%';
+    els.elapsedTime.textContent = formatTime(elapsed, 'MM:SS');
+    els.remainingTime.textContent = '--:--';
   } else {
-    els.timerProgressContainer.classList.add('hidden');
+    // Reset for other modes
+    els.progressFill.style.width = '0%';
+    els.elapsedTime.textContent = '00:00';
+    els.remainingTime.textContent = '00:00';
   }
 
   // Warning state (only for countdown modes)
