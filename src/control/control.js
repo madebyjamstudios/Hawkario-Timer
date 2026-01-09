@@ -46,7 +46,8 @@ const els = {
 
   // Live Preview (main window)
   previewSection: document.getElementById('previewSection'),
-  previewHeader: document.getElementById('previewHeader'),
+  previewResizeHandle: document.getElementById('previewResizeHandle'),
+  previewWrapper: document.getElementById('previewWrapper'),
   livePreview: document.getElementById('livePreview'),
   livePreviewTimer: document.getElementById('livePreviewTimer'),
 
@@ -55,9 +56,6 @@ const els = {
   modalPreviewTimer: document.getElementById('modalPreviewTimer'),
 
   // Controls
-  startBtn: document.getElementById('startBtn'),
-  pauseBtn: document.getElementById('pauseBtn'),
-  resetBtn: document.getElementById('resetBtn'),
   blackoutBtn: document.getElementById('blackoutBtn'),
   openOutput: document.getElementById('openOutput'),
   goFullscreen: document.getElementById('goFullscreen'),
@@ -278,20 +276,51 @@ function saveSectionsState() {
   localStorage.setItem(SECTIONS_STATE_KEY, JSON.stringify(state));
 }
 
-// ============ Preview Panel Toggle ============
+// ============ Preview Panel Resize ============
 
-const PREVIEW_COLLAPSED_KEY = 'hawkario:previewCollapsed';
+const PREVIEW_HEIGHT_KEY = 'hawkario:previewHeight';
+let isResizing = false;
+let startY = 0;
+let startHeight = 0;
 
-function togglePreviewPanel() {
-  els.previewSection.classList.toggle('collapsed');
-  const isCollapsed = els.previewSection.classList.contains('collapsed');
-  localStorage.setItem(PREVIEW_COLLAPSED_KEY, isCollapsed ? 'true' : 'false');
+function setupPreviewResize() {
+  els.previewResizeHandle.addEventListener('mousedown', startResize);
+  document.addEventListener('mousemove', doResize);
+  document.addEventListener('mouseup', stopResize);
 }
 
-function restorePreviewState() {
-  const saved = localStorage.getItem(PREVIEW_COLLAPSED_KEY);
-  if (saved === 'true') {
-    els.previewSection.classList.add('collapsed');
+function startResize(e) {
+  isResizing = true;
+  startY = e.clientY;
+  startHeight = els.previewWrapper.offsetHeight;
+  document.body.style.cursor = 'ns-resize';
+  document.body.style.userSelect = 'none';
+}
+
+function doResize(e) {
+  if (!isResizing) return;
+
+  // Dragging up increases height, dragging down decreases
+  const delta = startY - e.clientY;
+  const newHeight = Math.max(30, Math.min(200, startHeight + delta));
+  els.previewWrapper.style.height = newHeight + 'px';
+}
+
+function stopResize() {
+  if (!isResizing) return;
+  isResizing = false;
+  document.body.style.cursor = '';
+  document.body.style.userSelect = '';
+
+  // Save the height
+  const height = els.previewWrapper.offsetHeight;
+  localStorage.setItem(PREVIEW_HEIGHT_KEY, height);
+}
+
+function restorePreviewHeight() {
+  const saved = localStorage.getItem(PREVIEW_HEIGHT_KEY);
+  if (saved) {
+    els.previewWrapper.style.height = saved + 'px';
   }
 }
 
@@ -371,7 +400,7 @@ function renderLivePreview() {
       if (elapsed === 0 && !timerState.ended) {
         timerState.ended = true;
         isRunning = false;
-        updateControlStates();
+        renderPresetList(); // Update button states
       }
     } else {
       // Count up mode
@@ -531,12 +560,6 @@ function sendCommand(command) {
       break;
   }
 
-  updateControlStates();
-}
-
-function updateControlStates() {
-  els.startBtn.disabled = isRunning;
-  els.pauseBtn.disabled = !isRunning;
 }
 
 // ============ Presets ============
@@ -623,7 +646,6 @@ function renderPresetList() {
       selectResetBtn.onclick = (e) => {
         e.stopPropagation();
         sendCommand('reset');
-        showToast('Timer reset');
       };
     } else {
       // Non-selected timer shows clock icon to select
@@ -636,7 +658,6 @@ function renderPresetList() {
         activePresetIndex = idx;
         sendCommand('reset');
         renderPresetList();
-        showToast(`Selected "${preset.name}"`);
       };
     }
 
@@ -661,13 +682,11 @@ function renderPresetList() {
       if (isActiveAndRunning) {
         // Pause the timer
         sendCommand('pause');
-        showToast('Paused');
       } else {
         // Start this preset
         applyConfig(preset.config);
         activePresetIndex = idx;
         sendCommand('start');
-        showToast(`Started "${preset.name}"`);
       }
       renderPresetList(); // Re-render to update button states
     };
@@ -887,10 +906,7 @@ function setupEventListeners() {
     }
   });
 
-  // Timer control buttons
-  els.startBtn.addEventListener('click', () => sendCommand('start'));
-  els.pauseBtn.addEventListener('click', () => sendCommand('pause'));
-  els.resetBtn.addEventListener('click', () => sendCommand('reset'));
+  // Blackout button
   els.blackoutBtn.addEventListener('click', () => window.hawkario.toggleBlackout());
 
   // Window controls
@@ -903,8 +919,6 @@ function setupEventListeners() {
     window.hawkario.fullscreenOutput();
   });
 
-  // Preview panel toggle
-  els.previewHeader.addEventListener('click', togglePreviewPanel);
 
   // Preset controls
   els.exportPresets.addEventListener('click', handleExportPresets);
@@ -1025,8 +1039,9 @@ function init() {
   // Setup collapsible sections in modal
   setupCollapsibleSections();
 
-  // Restore preview panel state
-  restorePreviewState();
+  // Setup preview resize
+  setupPreviewResize();
+  restorePreviewHeight();
 
   // Create default preset on first launch
   createDefaultPreset();
@@ -1034,7 +1049,6 @@ function init() {
   setupEventListeners();
   applyPreview();
   renderPresetList();
-  updateControlStates();
 
   // Start live preview render loop
   renderLivePreview();

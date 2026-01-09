@@ -34,32 +34,23 @@
     </div>
     <button id="addTimer" class="add-timer-btn">+ Add Timer</button>
 
-    <!-- Controls -->
-    <div class="controls-bar">
-      <div class="row timer-controls">
-        <button id="startBtn">Start</button>
-        <button id="pauseBtn" class="secondary" disabled>Pause</button>
-        <button id="resetBtn" class="secondary">Reset</button>
-        <button id="blackoutBtn" class="blackout-btn">Blackout</button>
-      </div>
-      <div class="row">
-        <button id="openOutput">Open Output</button>
-        <button id="goFullscreen" class="secondary">Fullscreen</button>
-        <button id="exportPresets" class="secondary">Export</button>
-        <button id="importPresets" class="secondary">Import</button>
-        <input id="importFile" type="file" accept="application/json" style="display:none" />
-      </div>
+    <!-- Utility Controls -->
+    <div class="utility-bar">
+      <button id="openOutput">Output</button>
+      <button id="goFullscreen" class="secondary">Fullscreen</button>
+      <button id="blackoutBtn" class="blackout-btn">Blackout</button>
+      <div class="utility-spacer"></div>
+      <button id="exportPresets" class="secondary small">Export</button>
+      <button id="importPresets" class="secondary small">Import</button>
+      <input id="importFile" type="file" accept="application/json" style="display:none" />
     </div>
 
-    <!-- Live Preview (collapsible) -->
+    <!-- Live Preview (resizable) -->
     <div id="previewSection" class="preview-section">
-      <div id="previewHeader" class="preview-header">
-        <span class="preview-label">Preview</span>
-        <svg class="preview-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="6 9 12 15 18 9"></polyline>
-        </svg>
+      <div id="previewResizeHandle" class="preview-resize-handle">
+        <div class="resize-grip"></div>
       </div>
-      <div class="live-preview-wrapper">
+      <div id="previewWrapper" class="live-preview-wrapper">
         <div id="livePreview" class="live-preview">
           <div id="livePreviewTimer" class="timer-preview">10:00</div>
         </div>
