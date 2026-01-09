@@ -54,6 +54,21 @@ const state = {
 let warningSoundPlayed = false;
 let endSoundPlayed = false;
 
+// Blackout state
+let isBlackedOut = false;
+const blackoutEl = document.createElement('div');
+blackoutEl.className = 'blackout-overlay';
+blackoutEl.style.cssText = 'position:fixed;inset:0;background:#000;z-index:9999;display:none;';
+document.body.appendChild(blackoutEl);
+
+/**
+ * Toggle blackout overlay
+ */
+function toggleBlackout() {
+  isBlackedOut = !isBlackedOut;
+  blackoutEl.style.display = isBlackedOut ? 'block' : 'none';
+}
+
 /**
  * Apply style configuration to timer element
  */
@@ -255,15 +270,6 @@ function setupKeyboardShortcuts() {
     }
 
     switch (e.key.toLowerCase()) {
-      case 'f':
-        // Toggle fullscreen
-        if (document.fullscreenElement) {
-          document.exitFullscreen().catch(() => {});
-        } else {
-          document.documentElement.requestFullscreen().catch(() => {});
-        }
-        break;
-
       case ' ':
         // Space - toggle play/pause (send to control)
         e.preventDefault();
@@ -275,10 +281,18 @@ function setupKeyboardShortcuts() {
         window.hawkario.sendKeyboardShortcut('reset');
         break;
 
+      case 'b':
+        // Blackout toggle
+        window.hawkario.sendKeyboardShortcut('blackout');
+        break;
+
       case 'escape':
-        // Exit fullscreen (browser handles this, but be explicit)
+        // Toggle fullscreen
+        e.preventDefault();
         if (document.fullscreenElement) {
           document.exitFullscreen().catch(() => {});
+        } else {
+          document.documentElement.requestFullscreen().catch(() => {});
         }
         break;
     }
@@ -286,39 +300,51 @@ function setupKeyboardShortcuts() {
 }
 
 /**
- * Hide fullscreen hint after user interaction
+ * Setup fullscreen hint with slow fade
  */
 function setupFullscreenHint() {
   let hintTimeout;
+  let hasInteracted = false;
 
-  const hideHint = () => {
+  const fadeOutHint = () => {
     if (fsHintEl) {
+      fsHintEl.classList.add('fade-out');
+    }
+  };
+
+  const hideHintFast = () => {
+    if (fsHintEl) {
+      fsHintEl.classList.remove('fade-out');
       fsHintEl.classList.add('hidden');
     }
   };
 
   const showHint = () => {
-    if (fsHintEl) {
-      fsHintEl.classList.remove('hidden');
+    if (fsHintEl && !hasInteracted) {
+      fsHintEl.classList.remove('hidden', 'fade-out');
       clearTimeout(hintTimeout);
-      hintTimeout = setTimeout(hideHint, 3000);
+      // Start slow fade after 2 seconds visible
+      hintTimeout = setTimeout(fadeOutHint, 2000);
     }
   };
 
-  // Hide after first interaction or fullscreen
+  // Hide immediately when entering fullscreen
   document.addEventListener('fullscreenchange', () => {
     if (document.fullscreenElement) {
-      hideHint();
-    } else {
+      hideHintFast();
+      hasInteracted = true;
+    }
+  });
+
+  // Show on mouse movement (only if not interacted yet)
+  document.addEventListener('mousemove', () => {
+    if (!hasInteracted) {
       showHint();
     }
   });
 
-  // Show on mouse movement, hide after delay
-  document.addEventListener('mousemove', showHint);
-
-  // Initial hide after 5 seconds
-  setTimeout(hideHint, 5000);
+  // Initial slow fade after 6 seconds
+  setTimeout(fadeOutHint, 6000);
 }
 
 /**
@@ -344,6 +370,9 @@ function init() {
 
   // Setup IPC listener
   window.hawkario.onTimerUpdate(handleTimerUpdate);
+
+  // Setup blackout listener
+  window.hawkario.onBlackoutToggle(toggleBlackout);
 
   // Setup keyboard shortcuts
   setupKeyboardShortcuts();

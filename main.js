@@ -6,6 +6,19 @@
 const { app, BrowserWindow, Menu, ipcMain, screen } = require('electron');
 const path = require('path');
 
+// Enable hot reload in development (soft reload for src/ files only)
+try {
+  require('electron-reload')(path.join(__dirname, 'src'), {
+    electron: path.join(__dirname, 'node_modules', '.bin', 'electron'),
+    awaitWriteFinish: {
+      stabilityThreshold: 1000,
+      pollInterval: 100
+    }
+  });
+} catch (err) {
+  // electron-reload not available in production
+}
+
 let mainWindow = null;
 let outputWindow = null;
 
@@ -18,6 +31,7 @@ function createMainWindow() {
     height: 800,
     minWidth: 900,
     minHeight: 600,
+    center: true,
     title: 'Hawkario',
     webPreferences: {
       nodeIntegration: false,
@@ -118,6 +132,17 @@ ipcMain.on('window:fullscreen-output', () => {
 ipcMain.on('keyboard:shortcut', (_event, shortcut) => {
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.webContents.send('keyboard:shortcut', shortcut);
+  }
+});
+
+// Blackout toggle: control -> main -> output (and back to control for state sync)
+ipcMain.on('blackout:toggle', () => {
+  if (outputWindow && !outputWindow.isDestroyed()) {
+    outputWindow.webContents.send('blackout:toggle');
+  }
+  // Also notify control window for UI sync
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('blackout:toggle');
   }
 });
 

@@ -46,6 +46,16 @@ contextBridge.exposeInMainWorld('hawkario', {
     ipcRenderer.send('sound:play', soundType);
   },
 
+  // Blackout toggle
+  toggleBlackout: () => {
+    ipcRenderer.send('blackout:toggle');
+  },
+
+  // Listen for blackout toggle (both windows receive)
+  onBlackoutToggle: (callback) => {
+    ipcRenderer.on('blackout:toggle', () => callback());
+  },
+
   // Get app info
   getVersion: () => ipcRenderer.invoke('app:version'),
 
@@ -54,5 +64,6 @@ contextBridge.exposeInMainWorld('hawkario', {
     ipcRenderer.removeAllListeners('timer:update');
     ipcRenderer.removeAllListeners('window:output-ready');
     ipcRenderer.removeAllListeners('keyboard:shortcut');
+    ipcRenderer.removeAllListeners('blackout:toggle');
   }
 });
