@@ -3,7 +3,7 @@
  * Electron main process with IPC message broker
  */
 
-const { app, BrowserWindow, Menu, ipcMain, screen, dialog } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain, screen, dialog, nativeImage } = require('electron');
 const path = require('path');
 
 // Enable hot reload in development (soft reload for src/ files only)
@@ -159,13 +159,17 @@ ipcMain.handle('app:version', () => {
 
 // Confirm dialog with app icon
 ipcMain.handle('dialog:confirm', async (_event, options) => {
+  const iconPath = path.join(__dirname, 'icon.png');
+  const icon = nativeImage.createFromPath(iconPath);
+
   const result = await dialog.showMessageBox(mainWindow, {
     type: 'question',
     buttons: ['Cancel', 'Delete'],
     defaultId: 0,
     cancelId: 0,
     title: options.title || 'Confirm',
-    message: options.message || 'Are you sure?'
+    message: options.message || 'Are you sure?',
+    icon: icon
   });
   return result.response === 1; // true if Delete was clicked
 });
