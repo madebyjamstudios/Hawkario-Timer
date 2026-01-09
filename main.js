@@ -165,16 +165,16 @@ ipcMain.handle('dialog:confirm', async (_event, options) => {
   const icon = nativeImage.createFromPath(iconPath);
 
   const result = await dialog.showMessageBox(mainWindow, {
-    type: 'warning',
-    buttons: ['Delete', 'Cancel'],
-    defaultId: 1,
-    cancelId: 1,
-    destructiveId: 0, // Makes Delete button red on macOS
+    type: 'none',  // Removes yellow warning triangle, shows only app icon
+    buttons: ['Cancel', 'Delete'],
+    defaultId: 0,
+    cancelId: 0,
+    destructiveId: 1, // Makes Delete button red on macOS
     title: options.title || 'Confirm',
     message: options.message || 'Are you sure?',
     icon: icon
   });
-  return result.response === 0; // true if Delete was clicked
+  return result.response === 1; // true if Delete was clicked
 });
 
 // ============ Application Menu ============

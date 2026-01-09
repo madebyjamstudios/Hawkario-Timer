@@ -89,6 +89,7 @@ const els = {
 
   // App Settings Fields
   todFormat: document.getElementById('todFormat'),
+  confirmDelete: document.getElementById('confirmDelete'),
   defaultMode: document.getElementById('defaultMode'),
   defaultDuration: document.getElementById('defaultDuration'),
   defaultFormat: document.getElementById('defaultFormat'),
@@ -142,6 +143,7 @@ const APP_SETTINGS_KEY = 'hawkario:appSettings';
 
 const DEFAULT_APP_SETTINGS = {
   todFormat: '24h',
+  confirmDelete: true,
   defaults: {
     mode: 'countdown',
     durationSec: 600,
@@ -180,6 +182,7 @@ function openAppSettings() {
 
   // Populate form fields
   els.todFormat.value = settings.todFormat;
+  els.confirmDelete.value = settings.confirmDelete ? 'on' : 'off';
   els.defaultMode.value = settings.defaults.mode;
   els.defaultDuration.value = secondsToHMS(settings.defaults.durationSec);
   els.defaultFormat.value = settings.defaults.format;
@@ -199,6 +202,7 @@ function closeAppSettings() {
 function saveAppSettingsFromForm() {
   const settings = {
     todFormat: els.todFormat.value,
+    confirmDelete: els.confirmDelete.value === 'on',
     defaults: {
       mode: els.defaultMode.value,
       durationSec: parseHMS(els.defaultDuration.value),
@@ -744,6 +748,7 @@ function sendCommand(command) {
       timerState.startedAt = null;
       timerState.pausedAcc = 0;
       timerState.ended = false;
+      renderPresetList(); // Update button states
       break;
   }
 
@@ -1041,10 +1046,18 @@ function showPresetMenu(idx, preset, anchorEl) {
   deleteItem.innerHTML = `${ICONS.delete} Delete`;
   deleteItem.onclick = async () => {
     menu.remove();
-    const confirmed = await window.hawkario.showConfirm({
-      title: 'Delete Preset',
-      message: `Delete "${preset.name}"?`
-    });
+
+    const appSettings = loadAppSettings();
+    let confirmed = true;
+
+    // Only show confirm dialog if setting is enabled
+    if (appSettings.confirmDelete) {
+      confirmed = await window.hawkario.showConfirm({
+        title: 'Delete Timer',
+        message: `Delete "${preset.name}"?`
+      });
+    }
+
     if (confirmed) {
       const presets = loadPresets();
       presets.splice(idx, 1);
@@ -1053,8 +1066,13 @@ function showPresetMenu(idx, preset, anchorEl) {
         editingPresetIndex = null;
         els.presetName.value = '';
       }
+      // Update activePresetIndex if needed
+      if (activePresetIndex === idx) {
+        activePresetIndex = null;
+      } else if (activePresetIndex > idx) {
+        activePresetIndex--;
+      }
       renderPresetList();
-      showToast('Preset deleted');
     }
   };
 
@@ -1248,6 +1266,11 @@ function setupEventListeners() {
     presets.push({ name, config: defaultConfig });
     savePresets(presets);
     renderPresetList();
+
+    // Auto-scroll to show the new timer
+    requestAnimationFrame(() => {
+      els.presetList.scrollTop = els.presetList.scrollHeight;
+    });
   });
 
   // Modal controls

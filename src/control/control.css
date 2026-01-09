@@ -106,31 +106,19 @@ button:disabled {
 
 /* Resizable Preview Section */
 .preview-section {
-  margin-top: 4px;
-  border: 1px solid #333;
-  border-radius: 10px;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
+  align-items: center;
 }
 
 .preview-resize-handle {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 6px;
-  background: #1a1a1a;
+  width: 100%;
+  padding: 4px;
   cursor: ns-resize;
   user-select: none;
-  transition: background 0.15s;
-}
-
-.preview-resize-handle:hover {
-  background: #222;
-}
-
-.preview-resize-handle:active {
-  background: #1f6feb;
 }
 
 .resize-grip {
@@ -146,7 +134,7 @@ button:disabled {
 }
 
 .preview-resize-handle:active .resize-grip {
-  background: #fff;
+  background: #1f6feb;
 }
 
 /* Live Preview Mini-Box (main window) */
@@ -155,7 +143,8 @@ button:disabled {
   aspect-ratio: 16 / 9;
   width: 100%;
   min-width: 150px;
-  margin: 0 auto;
+  border: 1px solid #333;
+  border-radius: 10px;
   overflow: hidden;
 }
 
@@ -331,11 +320,12 @@ button:disabled {
 .timer-progress-container {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 4px;
+  gap: 12px;
+  padding: 12px 8px;
   width: 100%;
   pointer-events: none;
   user-select: none;
+  overflow: visible;
 }
 
 .timer-progress-container.hidden {
@@ -362,7 +352,7 @@ button:disabled {
   height: 6px;
   background: rgba(255, 255, 255, 0.8);
   border-radius: 3px;
-  overflow: hidden;
+  position: relative;
 }
 
 .progress-fill {
@@ -370,6 +360,23 @@ button:disabled {
   background: #444;
   width: 0%;
   transition: width 0.1s linear;
+  border-radius: 3px;
+  position: relative;
+}
+
+/* Blue circle indicator on progress bar */
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  background: #1f6feb;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
 }
 
 .preset-item {
@@ -491,12 +498,15 @@ button:disabled {
 .preset-name {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: calc(8px * var(--timer-scale, 1));
   color: #fff;
   font-size: calc(16px * var(--timer-scale, 1));
   font-weight: 600;
   letter-spacing: 0.01em;
   cursor: pointer;
+  flex: 1;
+  text-align: left;
 }
 
 .preset-name .edit-icon {
@@ -665,7 +675,7 @@ button:disabled {
 header {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   padding: 10px 14px;
 }
 
@@ -680,6 +690,23 @@ header {
 
 .header-spacer {
   flex: 1;
+}
+
+.header-btn {
+  padding: 6px 12px;
+  font-size: 12px;
+  background: #333;
+  border: 1px solid #444;
+  border-radius: 6px;
+  color: #ddd;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.header-btn:hover {
+  background: #444;
+  border-color: #555;
+  color: #fff;
 }
 
 .header-settings-btn {
