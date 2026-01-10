@@ -615,18 +615,13 @@ button:disabled {
   z-index: 5;
 }
 
-/* Show grey lines on hover (preview) */
-.link-zone:hover::before {
-  background: linear-gradient(to bottom, transparent 0%, #4ade80 100%);
-  opacity: 0.5;
-}
-
+/* Show grey lines on hover (unlinked state) */
+.link-zone:hover::before,
 .link-zone:hover::after {
-  background: linear-gradient(to bottom, #4ade80 0%, transparent 100%);
-  opacity: 0.5;
+  opacity: 1;
 }
 
-/* Solid green lines when linked - always visible */
+/* Green lines when linked - always visible */
 .link-zone.linked::before {
   background: linear-gradient(to bottom, transparent 0%, #4ade80 100%);
   opacity: 1 !important;
@@ -655,12 +650,10 @@ button:disabled {
   z-index: 10;
 }
 
-/* On hover - show icon with green preview */
+/* On hover (unlinked) - show grey icon */
 .link-zone:hover .link-icon {
   opacity: 1;
   transform: scale(1);
-  border-color: #4ade80;
-  color: #4ade80;
 }
 
 /* When linked - icon always visible with green styling and glow */
