@@ -602,6 +602,12 @@ function restorePreviewWidth() {
   const saved = localStorage.getItem(PREVIEW_WIDTH_KEY);
   if (saved) {
     els.previewWrapper.style.width = saved + 'px';
+  } else {
+    // Default to maximum width on first launch
+    const containerWidth = els.previewSection.offsetWidth;
+    if (containerWidth > 0) {
+      els.previewWrapper.style.width = containerWidth + 'px';
+    }
   }
   // Apply scaling after restoring width
   requestAnimationFrame(() => updatePreviewScale());
