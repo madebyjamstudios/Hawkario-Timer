@@ -170,6 +170,7 @@ function undo() {
 // Drag state for timer reordering (mouse-based drag system)
 const dragState = {
   isDragging: false,
+  dragActivated: false,  // True only after mouse moves 5px+
   fromIndex: null,
   currentIndex: null,
   draggedRow: null,
@@ -177,6 +178,8 @@ const dragState = {
   placeholderEl: null,
   grabOffsetX: 0,
   grabOffsetY: 0,
+  startX: 0,
+  startY: 0,
   originalHeight: 0,
   originalWidth: 0
 };
@@ -975,9 +978,21 @@ function toggleLink(idx) {
   const presets = loadPresets();
   if (idx >= 0 && idx < presets.length - 1) {
     saveUndoState(); // Save state before link change for undo
+    const wasLinked = presets[idx].linkedToNext;
     presets[idx].linkedToNext = !presets[idx].linkedToNext;
     savePresets(presets);
     renderPresetList();
+
+    // Trigger pulse animation when linking (not unlinking)
+    if (!wasLinked) {
+      const linkZones = els.presetList.querySelectorAll('.link-zone');
+      if (linkZones[idx]) {
+        linkZones[idx].classList.add('just-linked');
+        setTimeout(() => {
+          linkZones[idx].classList.remove('just-linked');
+        }, 500);
+      }
+    }
   }
 }
 
@@ -1021,55 +1036,15 @@ function renderPresetList() {
       const rect = row.getBoundingClientRect();
       dragState.grabOffsetX = e.clientX - rect.left;
       dragState.grabOffsetY = e.clientY - rect.top;
+      dragState.startX = e.clientX;
+      dragState.startY = e.clientY;
       dragState.originalHeight = rect.height;
       dragState.originalWidth = rect.width;
       dragState.isDragging = true;
+      dragState.dragActivated = false;  // Don't activate until mouse moves
       dragState.fromIndex = idx;
       dragState.currentIndex = idx;
       dragState.draggedRow = row;
-
-      // Create ghost element (follows cursor - the one you're "holding")
-      const ghost = row.cloneNode(true);
-      ghost.className = 'preset-item drag-ghost';
-      ghost.style.width = rect.width + 'px';
-      ghost.style.position = 'fixed';
-      ghost.style.left = (e.clientX - dragState.grabOffsetX) + 'px';
-      ghost.style.top = (e.clientY - dragState.grabOffsetY) + 'px';
-      ghost.style.pointerEvents = 'none';
-      ghost.style.zIndex = '1000';
-      ghost.style.margin = '0';
-      ghost.style.opacity = '0.9';
-      ghost.style.transform = 'scale(1.02)';
-      ghost.style.boxShadow = '0 8px 32px rgba(0,0,0,0.5)';
-      document.body.appendChild(ghost);
-      dragState.ghostEl = ghost;
-
-      // Create placeholder wrapper (full size with dashed outline)
-      const placeholderWrapper = document.createElement('div');
-      placeholderWrapper.className = 'drag-placeholder-wrapper';
-      placeholderWrapper.style.border = '2px dashed #666';
-      placeholderWrapper.style.borderRadius = '12px';
-      placeholderWrapper.style.padding = '4px';
-      placeholderWrapper.style.display = 'flex';
-      placeholderWrapper.style.justifyContent = 'center';
-      placeholderWrapper.style.alignItems = 'center';
-
-      // Create inner placeholder (95% size, 50% opacity)
-      const placeholderInner = row.cloneNode(true);
-      placeholderInner.className = 'preset-item drag-placeholder-item';
-      placeholderInner.style.opacity = '0.5';
-      placeholderInner.style.pointerEvents = 'none';
-      placeholderInner.style.transform = 'scale(0.95)';
-      placeholderInner.style.transformOrigin = 'center center';
-      placeholderInner.style.margin = '0';
-      placeholderInner.style.width = '100%';
-
-      placeholderWrapper.appendChild(placeholderInner);
-      dragState.placeholderEl = placeholderWrapper;
-
-      // Hide original row completely and insert placeholder in its place
-      row.style.display = 'none';
-      row.parentNode.insertBefore(placeholderWrapper, row);
     });
 
     // Name with pencil edit icon - opens quick edit popup
@@ -1656,7 +1631,71 @@ function setupEventListeners() {
 function setupDragListeners() {
   // Update ghost position and handle drop targets on mousemove
   document.addEventListener('mousemove', (e) => {
-    if (!dragState.isDragging || !dragState.ghostEl) return;
+    if (!dragState.isDragging) return;
+
+    // Check if we should activate drag (mouse moved > 5px)
+    if (!dragState.dragActivated) {
+      const dx = e.clientX - dragState.startX;
+      const dy = e.clientY - dragState.startY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance < 5) return;  // Not moved enough yet
+
+      // Activate drag - create ghost and placeholder
+      dragState.dragActivated = true;
+      const row = dragState.draggedRow;
+
+      // Create ghost element (follows cursor - the one you're "holding")
+      const ghost = row.cloneNode(true);
+      ghost.className = 'preset-item drag-ghost';
+      ghost.style.width = dragState.originalWidth + 'px';
+      ghost.style.position = 'fixed';
+      ghost.style.left = (e.clientX - dragState.grabOffsetX) + 'px';
+      ghost.style.top = (e.clientY - dragState.grabOffsetY) + 'px';
+      ghost.style.pointerEvents = 'none';
+      ghost.style.zIndex = '1000';
+      ghost.style.margin = '0';
+      ghost.style.opacity = '0.9';
+      ghost.style.transform = 'scale(1.02)';
+      ghost.style.boxShadow = '0 8px 32px rgba(0,0,0,0.5)';
+      document.body.appendChild(ghost);
+      dragState.ghostEl = ghost;
+
+      // Create placeholder wrapper (full size with dashed outline)
+      const placeholderWrapper = document.createElement('div');
+      placeholderWrapper.className = 'drag-placeholder-wrapper';
+      placeholderWrapper.style.border = '2px solid #555';
+      placeholderWrapper.style.borderRadius = '12px';
+      placeholderWrapper.style.padding = '4px';
+      placeholderWrapper.style.display = 'flex';
+      placeholderWrapper.style.justifyContent = 'center';
+      placeholderWrapper.style.alignItems = 'center';
+
+      // Create inner placeholder (98% size, 50% opacity)
+      const placeholderInner = row.cloneNode(true);
+      placeholderInner.className = 'preset-item drag-placeholder-item';
+      placeholderInner.style.opacity = '0.5';
+      placeholderInner.style.pointerEvents = 'none';
+      placeholderInner.style.transform = 'scale(0.98)';
+      placeholderInner.style.transformOrigin = 'center center';
+      placeholderInner.style.margin = '0';
+      placeholderInner.style.width = '100%';
+
+      placeholderWrapper.appendChild(placeholderInner);
+      dragState.placeholderEl = placeholderWrapper;
+
+      // Hide original row completely and insert placeholder in its place
+      row.style.display = 'none';
+      row.parentNode.insertBefore(placeholderWrapper, row);
+
+      // Hide all link zones during drag to prevent shifting
+      const linkZones = els.presetList.querySelectorAll('.link-zone');
+      linkZones.forEach(zone => {
+        zone.style.display = 'none';
+      });
+    }
+
+    if (!dragState.ghostEl) return;
 
     // Move ghost to follow cursor exactly
     dragState.ghostEl.style.left = (e.clientX - dragState.grabOffsetX) + 'px';
@@ -1707,6 +1746,16 @@ function setupDragListeners() {
   // Finish drag on mouseup
   document.addEventListener('mouseup', () => {
     if (!dragState.isDragging) return;
+
+    // If drag was never activated (just a click), just reset state
+    if (!dragState.dragActivated) {
+      dragState.isDragging = false;
+      dragState.dragActivated = false;
+      dragState.fromIndex = null;
+      dragState.currentIndex = null;
+      dragState.draggedRow = null;
+      return;
+    }
 
     // Remove ghost
     if (dragState.ghostEl) {
@@ -1771,6 +1820,7 @@ function setupDragListeners() {
 
     // Reset drag state
     dragState.isDragging = false;
+    dragState.dragActivated = false;
     dragState.fromIndex = null;
     dragState.currentIndex = null;
     dragState.draggedRow = null;

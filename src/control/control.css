@@ -363,7 +363,7 @@ button:disabled {
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  gap: calc(8px * var(--timer-scale, 1));
+  gap: calc(4px * var(--timer-scale, 1));
   padding: 4px;
 }
 
@@ -566,23 +566,50 @@ button:disabled {
   white-space: nowrap;
 }
 
-/* Link zone between timers */
+/* Link zone between timers - compact */
 .link-zone {
-  height: 0;
+  height: 4px;
   position: relative;
   display: flex;
   justify-content: center;
+  align-items: center;
   overflow: visible;
+  margin: 0;
+  padding: 6px 0;
+}
+
+/* Connector line - hidden by default, shows on hover */
+.link-zone::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: -8px;
+  bottom: -8px;
+  width: 2px;
+  background: linear-gradient(to bottom, transparent 0%, #4ade80 20%, #4ade80 80%, transparent 100%);
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+/* Show line on hover (preview at 40% opacity) */
+.link-zone:hover::before {
+  opacity: 0.4;
+}
+
+/* Solid line when linked - stays visible at 100% */
+.link-zone.linked::before {
+  opacity: 1 !important;
 }
 
 .link-icon {
-  position: absolute;
-  top: -12px;
-  width: 24px;
-  height: 24px;
+  position: relative;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: #222;
-  border: 1px solid #444;
+  background: #1a1a1a;
+  border: 2px solid #333;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -590,33 +617,37 @@ button:disabled {
   cursor: pointer;
   opacity: 0;
   transform: scale(0.8);
-  transition: opacity 0.3s ease, transform 0.3s ease, background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  transition: all 0.3s ease;
   z-index: 10;
 }
 
-.link-zone:hover .link-icon,
-.link-zone.linked .link-icon {
+/* On hover - show icon with green preview */
+.link-zone:hover .link-icon {
   opacity: 1;
   transform: scale(1);
-}
-
-.link-zone.linked .link-icon {
-  background: #1a3a1a;
-  border-color: #2d5a2d;
+  border-color: #4ade80;
   color: #4ade80;
 }
 
-/* Vertical connector line when linked */
-.link-zone.linked::before {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: -8px;
-  bottom: -8px;
-  width: 2px;
-  background: #4ade80;
-  transform: translateX(-50%);
-  opacity: 0.5;
+/* When linked - icon stays visible with green styling */
+.link-zone.linked .link-icon {
+  opacity: 1 !important;
+  transform: scale(1);
+  background: #1a3a1a;
+  border-color: #4ade80;
+  color: #4ade80;
+  box-shadow: 0 0 8px rgba(74, 222, 128, 0.3);
+}
+
+/* Pulse animation when link is established */
+@keyframes link-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.5); }
+  70% { box-shadow: 0 0 0 8px rgba(74, 222, 128, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+}
+
+.link-zone.linked.just-linked .link-icon {
+  animation: link-pulse 0.5s ease-out;
 }
 
 .preset-actions {
