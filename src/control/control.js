@@ -1604,7 +1604,9 @@ function setupEventListeners() {
   });
 
   // Keyboard shortcuts for app settings modal (Enter to save, Escape to cancel)
-  els.appSettingsModal.addEventListener('keydown', (e) => {
+  document.addEventListener('keydown', (e) => {
+    if (els.appSettingsModal.classList.contains('hidden')) return;
+
     if (e.key === 'Enter' && e.target.tagName !== 'SELECT') {
       e.preventDefault();
       saveAppSettingsFromForm();
@@ -1651,9 +1653,10 @@ function setupEventListeners() {
   });
 
   // Global keyboard shortcuts for settings modal (Enter to save, Escape to cancel)
-  els.settingsModal.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      // Save on Enter from anywhere in the modal
+  document.addEventListener('keydown', (e) => {
+    if (els.settingsModal.classList.contains('hidden')) return;
+
+    if (e.key === 'Enter' && e.target.tagName !== 'SELECT') {
       e.preventDefault();
       saveModal();
     }
