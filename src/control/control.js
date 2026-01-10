@@ -994,12 +994,16 @@ function toggleLink(idx) {
     const wasLinked = presets[idx].linkedToNext;
     presets[idx].linkedToNext = !presets[idx].linkedToNext;
     savePresets(presets);
-    renderPresetList();
 
-    // Trigger pulse animation when linking (not unlinking)
-    if (!wasLinked) {
-      const linkZones = els.presetList.querySelectorAll('.link-zone');
-      if (linkZones[idx]) {
+    // Toggle the class directly without re-rendering to preserve hover state
+    const linkZones = els.presetList.querySelectorAll('.link-zone');
+    if (linkZones[idx]) {
+      if (wasLinked) {
+        // Unlinking - remove the linked class
+        linkZones[idx].classList.remove('linked');
+      } else {
+        // Linking - add the linked class and pulse animation
+        linkZones[idx].classList.add('linked');
         linkZones[idx].classList.add('just-linked');
         setTimeout(() => {
           linkZones[idx].classList.remove('just-linked');
