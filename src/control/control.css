@@ -583,28 +583,45 @@ button:disabled {
   cursor: pointer;
 }
 
-/* Connector line - hidden by default, shows on hover */
+/* Upper connector line - going UP from icon */
 .link-zone::before {
   content: '';
   position: absolute;
   left: 50%;
-  top: -8px;
-  bottom: -8px;
+  top: -12px;
+  height: 10px;
   width: 2px;
-  background: linear-gradient(to bottom, transparent 0%, #4ade80 20%, #4ade80 80%, transparent 100%);
+  background: linear-gradient(to bottom, transparent 0%, #4ade80 100%);
   transform: translateX(-50%);
   opacity: 0;
   transition: opacity 0.3s ease;
   pointer-events: none;
 }
 
-/* Show line on hover (preview at 40% opacity) */
-.link-zone:hover::before {
+/* Lower connector line - going DOWN from icon */
+.link-zone::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -12px;
+  height: 10px;
+  width: 2px;
+  background: linear-gradient(to top, transparent 0%, #4ade80 100%);
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+/* Show lines on hover (preview at 40% opacity) */
+.link-zone:hover::before,
+.link-zone:hover::after {
   opacity: 0.4;
 }
 
-/* Solid line when linked - stays visible at 100% */
-.link-zone.linked::before {
+/* Solid lines when linked - stays visible at 100% */
+.link-zone.linked::before,
+.link-zone.linked::after {
   opacity: 1 !important;
 }
 
@@ -614,31 +631,27 @@ button:disabled {
   height: 22px;
   border-radius: 50%;
   background: #1a1a1a;
-  border: 2px solid #333;
+  border: 2px solid #444;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #666;
+  color: #555;
   cursor: pointer;
-  opacity: 0;
-  transform: scale(0.8);
+  opacity: 1;
+  transform: scale(1);
   transition: all 0.3s ease;
   z-index: 10;
 }
 
-/* On hover - show icon with green preview */
+/* On hover - show green preview */
 .link-zone:hover .link-icon {
-  opacity: 1;
-  transform: scale(1);
   border-color: #4ade80;
   color: #4ade80;
 }
 
-/* When linked - icon stays visible with green styling (even when not hovering) */
+/* When linked - icon has green styling with glow */
 .link-zone.linked .link-icon,
 .link-zone.linked:hover .link-icon {
-  opacity: 1 !important;
-  transform: scale(1) !important;
   background: #1a3a1a;
   border-color: #4ade80;
   color: #4ade80;
