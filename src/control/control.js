@@ -17,7 +17,6 @@ const els = {
   // Typography
   fontFamily: document.getElementById('fontFamily'),
   fontWeight: document.getElementById('fontWeight'),
-  fontSize: document.getElementById('fontSize'),
   fontColor: document.getElementById('fontColor'),
   opacity: document.getElementById('opacity'),
   strokeWidth: document.getElementById('strokeWidth'),
@@ -93,7 +92,6 @@ const els = {
   defaultMode: document.getElementById('defaultMode'),
   defaultDuration: document.getElementById('defaultDuration'),
   defaultFormat: document.getElementById('defaultFormat'),
-  defaultFontSize: document.getElementById('defaultFontSize'),
   defaultFontColor: document.getElementById('defaultFontColor'),
   defaultWarnEnabled: document.getElementById('defaultWarnEnabled'),
   defaultWarnTime: document.getElementById('defaultWarnTime'),
@@ -467,7 +465,6 @@ const DEFAULT_APP_SETTINGS = {
     mode: 'countdown',
     durationSec: 600,
     format: 'MM:SS',
-    fontSizeVw: 35,
     fontColor: '#ffffff',
     warnEnabled: true,
     warnSeconds: 60,
@@ -505,7 +502,6 @@ async function openAppSettings() {
   els.defaultMode.value = settings.defaults.mode;
   setDefaultDurationInputs(settings.defaults.durationSec);
   els.defaultFormat.value = settings.defaults.format;
-  els.defaultFontSize.value = settings.defaults.fontSizeVw;
   els.defaultFontColor.value = settings.defaults.fontColor;
   els.defaultWarnEnabled.value = settings.defaults.warnEnabled ? 'on' : 'off';
   els.defaultWarnTime.value = secondsToHMS(settings.defaults.warnSeconds);
@@ -531,7 +527,6 @@ function saveAppSettingsFromForm() {
       mode: els.defaultMode.value,
       durationSec: getDefaultDurationSeconds(),
       format: els.defaultFormat.value,
-      fontSizeVw: parseInt(els.defaultFontSize.value, 10) || 35,
       fontColor: els.defaultFontColor.value,
       warnEnabled: els.defaultWarnEnabled.value === 'on',
       warnSeconds: parseHMS(els.defaultWarnTime.value),
@@ -619,7 +614,6 @@ function getDefaultTimerConfig() {
     style: {
       fontFamily: 'Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
       fontWeight: '600',
-      fontSizeVw: d.fontSizeVw,
       color: d.fontColor,
       opacity: 1,
       strokeWidth: 2,
@@ -741,25 +735,12 @@ function updateModalPreview() {
     ? hexToRgba(els.bgColor.value, bgOpacity)
     : 'transparent';
 
-  // Scale font size proportionally for the modal preview
-  // vw is relative to viewport, but we need it relative to the modal preview width
-  const modalPreviewWidth = els.modalPreview.offsetWidth || 400;
-  const viewportWidth = window.innerWidth;
-  const scaleFactor = modalPreviewWidth / viewportWidth;
-  const fontSizeVw = parseFloat(els.fontSize.value) || 10;
-  const scaledFontSize = fontSizeVw * viewportWidth * scaleFactor / 100;
-
-  // Scale stroke width proportionally too
-  const strokeWidthPx = parseFloat(els.strokeWidth.value) || 0;
-  const scaledStroke = strokeWidthPx * scaleFactor;
-
   els.modalPreview.style.background = bg;
   els.modalPreviewTimer.style.fontFamily = els.fontFamily.value;
   els.modalPreviewTimer.style.fontWeight = els.fontWeight.value;
-  els.modalPreviewTimer.style.fontSize = scaledFontSize + 'px';
   els.modalPreviewTimer.style.color = els.fontColor.value;
   els.modalPreviewTimer.style.opacity = els.opacity.value;
-  els.modalPreviewTimer.style.webkitTextStrokeWidth = Math.max(0, scaledStroke) + 'px';
+  els.modalPreviewTimer.style.webkitTextStrokeWidth = (parseInt(els.strokeWidth.value, 10) || 0) + 'px';
   els.modalPreviewTimer.style.webkitTextStrokeColor = els.strokeColor.value;
   els.modalPreviewTimer.style.textShadow = els.shadow.value;
   els.modalPreviewTimer.style.letterSpacing = els.letterSpacing.value + 'em';
@@ -786,6 +767,9 @@ function updateModalPreview() {
   }
 
   els.modalPreviewTimer.textContent = displayText;
+
+  // Auto-fit text to fill 90% of container
+  autoFitText(els.modalPreviewTimer, els.modalPreview, 0.9);
 }
 
 // ============ Collapsible Settings Sections ============
@@ -861,7 +845,7 @@ function doResize(e) {
   els.previewWrapper.style.width = newWidth + 'px';
 
   // Update preview text scaling in real-time
-  updatePreviewScale();
+  autoFitText(els.livePreviewTimer, els.livePreview, 0.9);
 }
 
 function stopResize() {
@@ -887,25 +871,32 @@ function restorePreviewWidth() {
     }
   }
   // Apply scaling after restoring width
-  requestAnimationFrame(() => updatePreviewScale());
+  requestAnimationFrame(() => autoFitText(els.livePreviewTimer, els.livePreview, 0.9));
 }
 
 /**
- * Update preview text scale based on current preview width
- * This makes the preview behave like resizing a real window
+ * Auto-fit text element to fill container width
+ * @param {HTMLElement} textEl - The text element to size
+ * @param {HTMLElement} containerEl - The container to fit within
+ * @param {number} targetPercent - Target width percentage (0.9 = 90%)
  */
-function updatePreviewScale() {
-  const previewWidth = els.previewWrapper.offsetWidth || 300;
-  const fontSizeVw = parseFloat(els.fontSize.value) || 35;
+function autoFitText(textEl, containerEl, targetPercent = 0.9) {
+  if (!textEl || !containerEl) return;
 
-  // Scale font size: vw units mean percentage of width
-  const scaledFontSize = (fontSizeVw / 100) * previewWidth;
-  els.livePreviewTimer.style.fontSize = scaledFontSize + 'px';
+  // Reset to measure natural size at a base font size
+  textEl.style.fontSize = '100px';
+  textEl.style.transform = 'scale(1)';
 
-  // Scale stroke width proportionally
-  const strokeWidth = parseInt(els.strokeWidth.value, 10) || 0;
-  const scaledStroke = (strokeWidth / 100) * previewWidth * 0.05;
-  els.livePreviewTimer.style.webkitTextStrokeWidth = Math.max(0, scaledStroke) + 'px';
+  const containerWidth = containerEl.offsetWidth;
+  const targetWidth = containerWidth * targetPercent;
+  const naturalWidth = textEl.scrollWidth;
+
+  if (naturalWidth > 0 && containerWidth > 0) {
+    // Calculate font size to achieve target width
+    const ratio = targetWidth / naturalWidth;
+    const newFontSize = Math.max(10, 100 * ratio); // Min 10px for readability
+    textEl.style.fontSize = newFontSize + 'px';
+  }
 }
 
 // ============ Preview ============
@@ -937,8 +928,7 @@ function applyLivePreviewStyle() {
   els.livePreviewTimer.style.textShadow = els.shadow.value;
   els.livePreviewTimer.style.letterSpacing = els.letterSpacing.value + 'em';
 
-  // Use unified scaling function for font size and stroke
-  updatePreviewScale();
+  // Font size is handled by autoFitText in renderLivePreview
 }
 
 /**
@@ -962,7 +952,6 @@ function broadcastDisplayState(state) {
     style: {
       fontFamily: els.fontFamily.value,
       fontWeight: els.fontWeight.value,
-      fontSizeVw: parseFloat(els.fontSize.value) || 10,
       strokeWidth: parseInt(els.strokeWidth.value, 10) || 0,
       strokeColor: els.strokeColor.value,
       textShadow: els.shadow.value,
@@ -973,24 +962,6 @@ function broadcastDisplayState(state) {
         : 'transparent'
     }
   });
-}
-
-/**
- * Auto-fit live preview timer text to container width
- */
-function autoFitLivePreview() {
-  if (!els.livePreviewTimer || !els.livePreview) return;
-
-  // Reset scale first to measure natural size
-  els.livePreviewTimer.style.transform = 'scale(1)';
-
-  const containerWidth = els.livePreview.offsetWidth * 0.95;
-  const actualWidth = els.livePreviewTimer.scrollWidth;
-
-  if (actualWidth > containerWidth && containerWidth > 0) {
-    const scale = containerWidth / actualWidth;
-    els.livePreviewTimer.style.transform = `scale(${scale})`;
-  }
 }
 
 /**
@@ -1025,7 +996,7 @@ function renderLivePreview() {
   if (mode === 'tod') {
     displayText = formatTimeOfDay();
     els.livePreviewTimer.textContent = displayText;
-    autoFitLivePreview();
+    autoFitText(els.livePreviewTimer, els.livePreview, 0.9);
     els.livePreviewTimer.style.color = els.fontColor.value;
     els.livePreviewTimer.style.opacity = els.opacity.value;
     els.livePreview.classList.remove('warning');
@@ -1121,7 +1092,7 @@ function renderLivePreview() {
 
   // Update display
   els.livePreviewTimer.textContent = displayText;
-  autoFitLivePreview();
+  autoFitText(els.livePreviewTimer, els.livePreview, 0.9);
 
   // Update progress bar
   if (isCountdown) {
@@ -1237,7 +1208,6 @@ function getCurrentConfig() {
     style: {
       fontFamily: els.fontFamily.value,
       fontWeight: els.fontWeight.value,
-      fontSizeVw: parseFloat(els.fontSize.value) || 10,
       color: els.fontColor.value,
       opacity: parseFloat(els.opacity.value) || 1,
       strokeWidth: parseInt(els.strokeWidth.value, 10) || 0,
@@ -1275,7 +1245,6 @@ function applyConfig(config) {
   if (config.style) {
     els.fontFamily.value = config.style.fontFamily || 'Inter, sans-serif';
     els.fontWeight.value = config.style.fontWeight || '600';
-    els.fontSize.value = config.style.fontSizeVw || 10;
     els.fontColor.value = config.style.color || '#ffffff';
     els.opacity.value = config.style.opacity ?? 1;
     els.strokeWidth.value = config.style.strokeWidth ?? 2;
@@ -1841,7 +1810,7 @@ function setupEventListeners() {
   // Input change listeners (debounced) - update both live and modal preview
   const inputEls = [
     els.mode, els.duration, els.format,
-    els.fontFamily, els.fontWeight, els.fontSize, els.fontColor,
+    els.fontFamily, els.fontWeight, els.fontColor,
     els.opacity, els.strokeWidth, els.strokeColor, els.shadow,
     els.align, els.letterSpacing,
     els.bgMode, els.bgColor, els.bgOpacity,
@@ -2111,6 +2080,17 @@ function setupEventListeners() {
     };
     config.isRunning = isRunning;
     window.hawkario.sendTimerCommand('sync', config);
+
+    // Immediately broadcast current display state so output shows correctly
+    const mode = els.mode.value;
+    const displayText = els.livePreviewTimer.textContent || '00:00';
+    broadcastDisplayState({
+      visible: mode !== 'hidden',
+      text: displayText,
+      colorState: 'normal',
+      color: els.fontColor.value,
+      opacity: parseFloat(els.opacity.value)
+    });
   });
 
   // Output window closed notification

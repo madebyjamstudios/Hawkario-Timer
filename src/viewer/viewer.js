@@ -22,7 +22,6 @@ const state = {
   style: {
     fontFamily: 'Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
     fontWeight: '600',
-    fontSizeVw: 25,
     color: '#ffffff',
     opacity: 1,
     strokeWidth: 2,
@@ -170,7 +169,7 @@ function applyStyle(style) {
 
   timerEl.style.fontFamily = style.fontFamily;
   timerEl.style.fontWeight = style.fontWeight;
-  timerEl.style.fontSize = style.fontSizeVw + 'vw';
+  // Font size is auto-calculated by autoFitTimer()
   timerEl.style.color = style.color;
   timerEl.style.opacity = style.opacity;
   timerEl.style.textShadow = style.textShadow;
@@ -264,18 +263,23 @@ function handleDisplayUpdate(newState) {
 }
 
 /**
- * Auto-fit timer text to viewport width
+ * Auto-fit timer text to fill 90% of viewport width
+ * Dynamically adjusts font size so text always fills available space
  */
 function autoFitTimer() {
-  // Reset scale first to measure natural size
+  // Reset to measure natural size at a base font size
+  timerEl.style.fontSize = '100px';
   timerEl.style.transform = 'scale(1)';
 
-  const maxWidth = window.innerWidth * 0.95;
-  const actualWidth = timerEl.scrollWidth;
+  const containerWidth = window.innerWidth;
+  const targetWidth = containerWidth * 0.9; // 5% margin each side
+  const naturalWidth = timerEl.scrollWidth;
 
-  if (actualWidth > maxWidth) {
-    const scale = maxWidth / actualWidth;
-    timerEl.style.transform = `scale(${scale})`;
+  if (naturalWidth > 0 && containerWidth > 0) {
+    // Calculate font size to achieve target width
+    const ratio = targetWidth / naturalWidth;
+    const newFontSize = Math.max(10, 100 * ratio); // Min 10px for readability
+    timerEl.style.fontSize = newFontSize + 'px';
   }
 }
 
