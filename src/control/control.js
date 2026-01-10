@@ -1864,14 +1864,38 @@ function setupDragListeners() {
       }
     });
 
-    // Track target position based on hover
+    // When hovering over a timer, move placeholder to show where it will drop
     // Top half of timer = insert before, bottom half = insert after
-    if (hoveredIndex !== -1) {
+    if (hoveredIndex !== -1 && dragState.placeholderEl) {
       const hoveredItem = visibleItems[hoveredIndex];
       const rect = hoveredItem.getBoundingClientRect();
       const midY = rect.top + rect.height / 2;
       const insertBefore = e.clientY < midY;
+
+      // Calculate target index
       dragState.targetIndex = insertBefore ? hoveredIndex : hoveredIndex + 1;
+
+      // Determine where to insert placeholder
+      let targetSibling;
+      if (insertBefore) {
+        targetSibling = hoveredItem;
+      } else {
+        targetSibling = hoveredItem.nextSibling;
+      }
+
+      // Only move if not already in the right position
+      const currentNext = dragState.placeholderEl.nextSibling;
+      const isCorrectPosition = insertBefore
+        ? (currentNext === hoveredItem)
+        : (dragState.placeholderEl.previousSibling === hoveredItem);
+
+      if (!isCorrectPosition) {
+        if (targetSibling) {
+          els.presetList.insertBefore(dragState.placeholderEl, targetSibling);
+        } else {
+          els.presetList.appendChild(dragState.placeholderEl);
+        }
+      }
     } else {
       dragState.targetIndex = null;
     }
