@@ -179,7 +179,6 @@ const dragState = {
   draggedRow: null,
   ghostEl: null,
   placeholderEl: null,
-  dropIndicator: null,   // Visual line showing drop position
   grabOffsetX: 0,
   grabOffsetY: 0,
   startX: 0,
@@ -1813,25 +1812,19 @@ function setupDragListeners() {
       document.body.appendChild(ghost);
       dragState.ghostEl = ghost;
 
-      // Create simple placeholder (same height, dashed border)
-      const placeholder = document.createElement('div');
-      placeholder.className = 'drag-placeholder';
-      placeholder.style.height = dragState.originalHeight + 'px';
-      placeholder.style.border = '2px dashed #555';
-      placeholder.style.borderRadius = '12px';
-      placeholder.style.boxSizing = 'border-box';
-      placeholder.style.background = 'rgba(255,255,255,0.05)';
+      // Create 99% scale placeholder (cloned from original)
+      const placeholder = row.cloneNode(true);
+      placeholder.className = 'preset-item drag-placeholder';
+      placeholder.style.transform = 'scale(0.97)';
+      placeholder.style.transformOrigin = 'center center';
+      placeholder.style.opacity = '0.5';
+      placeholder.style.pointerEvents = 'none';
+      placeholder.style.boxShadow = 'inset 0 0 0 2px #555';
       dragState.placeholderEl = placeholder;
 
-      // Hide original row but keep reference
+      // Replace original row with placeholder (keeps same DOM position)
       row.style.display = 'none';
       row.parentNode.insertBefore(placeholder, row);
-
-      // Hide all link zones during drag (use visibility to preserve layout)
-      const linkZones = els.presetList.querySelectorAll('.link-zone');
-      linkZones.forEach(zone => {
-        zone.style.visibility = 'hidden';
-      });
     }
 
     if (!dragState.ghostEl) return;
@@ -1871,45 +1864,15 @@ function setupDragListeners() {
       }
     });
 
-    // When hovering over a timer, show drop indicator and track target position
+    // Track target position based on hover
     // Top half of timer = insert before, bottom half = insert after
     if (hoveredIndex !== -1) {
       const hoveredItem = visibleItems[hoveredIndex];
       const rect = hoveredItem.getBoundingClientRect();
       const midY = rect.top + rect.height / 2;
       const insertBefore = e.clientY < midY;
-
-      // Calculate target index
       dragState.targetIndex = insertBefore ? hoveredIndex : hoveredIndex + 1;
-
-      // Show drop indicator line
-      if (!dragState.dropIndicator) {
-        const indicator = document.createElement('div');
-        indicator.className = 'drag-drop-indicator';
-        indicator.style.position = 'absolute';
-        indicator.style.left = '16px';
-        indicator.style.right = '16px';
-        indicator.style.height = '3px';
-        indicator.style.background = '#E64A19';
-        indicator.style.borderRadius = '2px';
-        indicator.style.pointerEvents = 'none';
-        indicator.style.zIndex = '100';
-        indicator.style.boxShadow = '0 0 8px rgba(230, 74, 25, 0.5)';
-        els.presetList.style.position = 'relative';
-        els.presetList.appendChild(indicator);
-        dragState.dropIndicator = indicator;
-      }
-
-      // Position the indicator
-      const listRect = els.presetList.getBoundingClientRect();
-      const indicatorY = insertBefore ? rect.top - listRect.top - 2 : rect.bottom - listRect.top + 2;
-      dragState.dropIndicator.style.top = indicatorY + 'px';
     } else {
-      // Remove indicator when not hovering
-      if (dragState.dropIndicator) {
-        dragState.dropIndicator.remove();
-        dragState.dropIndicator = null;
-      }
       dragState.targetIndex = null;
     }
   });
@@ -1938,12 +1901,6 @@ function setupDragListeners() {
     els.presetList.querySelectorAll('.drag-hover').forEach(item => {
       item.classList.remove('drag-hover');
     });
-
-    // Remove drop indicator
-    if (dragState.dropIndicator) {
-      dragState.dropIndicator.remove();
-      dragState.dropIndicator = null;
-    }
 
     // Remove placeholder
     if (dragState.placeholderEl) {
