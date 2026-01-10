@@ -1811,14 +1811,19 @@ function setupDragListeners() {
       document.body.appendChild(ghost);
       dragState.ghostEl = ghost;
 
-      // Style original row as placeholder - 99% scale shadow effect
-      row.style.opacity = '0.4';
-      row.style.pointerEvents = 'none';
-      row.style.transform = 'scale(0.99)';
-      row.style.outline = '2px dashed #555';
-      row.style.outlineOffset = '-2px';
-      row.classList.add('drag-placeholder');
-      dragState.placeholderEl = row;
+      // Create simple placeholder (same height, dashed border)
+      const placeholder = document.createElement('div');
+      placeholder.className = 'drag-placeholder';
+      placeholder.style.height = dragState.originalHeight + 'px';
+      placeholder.style.border = '2px dashed #555';
+      placeholder.style.borderRadius = '12px';
+      placeholder.style.boxSizing = 'border-box';
+      placeholder.style.background = 'rgba(255,255,255,0.05)';
+      dragState.placeholderEl = placeholder;
+
+      // Hide original row but keep reference
+      row.style.display = 'none';
+      row.parentNode.insertBefore(placeholder, row);
 
       // Hide all link zones during drag (use visibility to preserve layout)
       const linkZones = els.presetList.querySelectorAll('.link-zone');
@@ -1839,7 +1844,7 @@ function setupDragListeners() {
       item.classList.contains('preset-item') &&
       !item.classList.contains('drag-placeholder') &&
       item !== dragState.placeholderEl &&
-      item !== dragState.draggedRow
+      item.style.display !== 'none'
     );
 
     // Find which timer the cursor is hovering over
@@ -1937,22 +1942,22 @@ function setupDragListeners() {
       }
       // Count only visible preset items (not hidden, not placeholder)
       if (child.classList.contains('preset-item') &&
-          child !== dragState.draggedRow &&
+          child.style.display !== 'none' &&
           !child.classList.contains('drag-placeholder')) {
         count++;
       }
     }
 
-    // Restore original row styles (placeholder IS the original row now)
-    if (dragState.draggedRow) {
-      dragState.draggedRow.style.opacity = '';
-      dragState.draggedRow.style.pointerEvents = '';
-      dragState.draggedRow.style.transform = '';
-      dragState.draggedRow.style.outline = '';
-      dragState.draggedRow.style.outlineOffset = '';
-      dragState.draggedRow.classList.remove('drag-placeholder');
+    // Remove placeholder
+    if (dragState.placeholderEl) {
+      dragState.placeholderEl.remove();
+      dragState.placeholderEl = null;
     }
-    dragState.placeholderEl = null;
+
+    // Show original row again
+    if (dragState.draggedRow) {
+      dragState.draggedRow.style.display = '';
+    }
 
     // Reorder if position changed
     const fromIndex = dragState.fromIndex;
