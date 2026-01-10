@@ -1044,11 +1044,15 @@ function renderPresetList() {
       document.body.appendChild(ghost);
       dragState.ghostEl = ghost;
 
-      // Create placeholder (50% transparent copy showing drop position)
+      // Create placeholder (50% transparent, 90% size copy with dashed outline)
       const placeholder = row.cloneNode(true);
       placeholder.className = 'preset-item drag-placeholder-item';
       placeholder.style.opacity = '0.5';
       placeholder.style.pointerEvents = 'none';
+      placeholder.style.transform = 'scale(0.9)';
+      placeholder.style.transformOrigin = 'center center';
+      placeholder.style.outline = '2px dashed #888';
+      placeholder.style.outlineOffset = '4px';
       dragState.placeholderEl = placeholder;
 
       // Hide original row completely and insert placeholder in its place
@@ -1646,14 +1650,19 @@ function setupDragListeners() {
     dragState.ghostEl.style.left = (e.clientX - dragState.grabOffsetX) + 'px';
     dragState.ghostEl.style.top = (e.clientY - dragState.grabOffsetY) + 'px';
 
-    // Find all preset items (excluding the hidden original and the placeholder)
-    const items = Array.from(els.presetList.querySelectorAll('.preset-item:not([style*="display: none"])'))
-      .filter(item => item !== dragState.placeholderEl);
+    // Get all visible preset items (excluding placeholder, including link zones for reference)
+    const allElements = Array.from(els.presetList.children);
+    const visibleItems = allElements.filter(item =>
+      item.classList.contains('preset-item') &&
+      item !== dragState.placeholderEl &&
+      item.style.display !== 'none'
+    );
 
-    // Find which item we're hovering over based on cursor Y position
-    let targetIndex = -1;
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
+    // Find target position based on cursor Y
+    let targetIndex = visibleItems.length; // Default to end
+
+    for (let i = 0; i < visibleItems.length; i++) {
+      const item = visibleItems[i];
       const rect = item.getBoundingClientRect();
       const midY = rect.top + rect.height / 2;
 
@@ -1663,23 +1672,18 @@ function setupDragListeners() {
       }
     }
 
-    // If cursor is below all items, target the end
-    if (targetIndex === -1) {
-      targetIndex = items.length;
-    }
-
     // Only move placeholder if target changed
     if (targetIndex !== dragState.currentIndex && dragState.placeholderEl) {
       // Remove placeholder from current position
       dragState.placeholderEl.remove();
 
       // Insert at new position
-      if (targetIndex >= items.length) {
-        // Append to end (after all items including link zones)
+      if (targetIndex >= visibleItems.length) {
+        // Append to end
         els.presetList.appendChild(dragState.placeholderEl);
       } else {
         // Insert before the target item
-        items[targetIndex].parentNode.insertBefore(dragState.placeholderEl, items[targetIndex]);
+        visibleItems[targetIndex].parentNode.insertBefore(dragState.placeholderEl, visibleItems[targetIndex]);
       }
 
       dragState.currentIndex = targetIndex;

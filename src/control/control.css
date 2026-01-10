@@ -451,11 +451,16 @@ button:disabled {
   position: relative;
 }
 
-/* Drag placeholder - 50% transparent copy showing where item will drop */
+/* Drag placeholder - 50% transparent, scaled down copy showing where item will drop */
 .drag-placeholder-item {
   opacity: 0.5 !important;
-  pointer-events: none;
-  transition: none;
+  pointer-events: none !important;
+  transition: none !important;
+  transform: scale(0.9);
+  transform-origin: center center;
+  outline: 2px dashed #888 !important;
+  outline-offset: 4px;
+  margin: 8px 0;
 }
 
 /* Drag ghost - the item following the cursor */
@@ -463,6 +468,7 @@ button:disabled {
   pointer-events: none !important;
   border-radius: 12px;
   transition: none !important;
+  cursor: grabbing;
 }
 
 /* Drag handle / number indicator */
