@@ -92,7 +92,7 @@ function triggerFlash() {
   const originalStroke = timerEl.style.webkitTextStrokeColor;
   const originalStrokeWidth = timerEl.style.webkitTextStrokeWidth;
 
-  // Mark as flashing to prevent applyWarningState from overriding
+  // Mark as flashing to prevent applyColorState from overriding
   isFlashing = true;
 
   // Timing
@@ -181,31 +181,49 @@ function applyStyle(style) {
 }
 
 /**
- * Apply warning state styling
+ * Apply color state based on percentage remaining
+ * Normal (white): > 20% remaining
+ * Warning (yellow): 10-20% remaining
+ * Danger (red): < 10% remaining
  */
-function applyWarningState(active) {
+function applyColorState(remainingSec, durationSec) {
   // Skip color changes during flash animation
   if (isFlashing) return;
 
-  if (active) {
-    // Color change
-    if (state.warn.colorEnabled) {
-      timerEl.style.color = state.warn.color;
-    }
+  // Reset classes
+  timerEl.classList.remove('warning', 'danger');
 
-    // Flash effect
+  if (durationSec <= 0 || remainingSec <= 0) {
+    timerEl.style.color = state.style.color;
+    timerEl.style.opacity = state.style.opacity;
+    return;
+  }
+
+  const percentRemaining = (remainingSec / durationSec) * 100;
+
+  if (percentRemaining <= 10) {
+    // Danger state - red
+    timerEl.style.color = '#ff3333';
+    timerEl.classList.add('danger');
+
+    // Flash effect in danger zone if enabled
     if (state.warn.flashEnabled) {
       const phase = Math.floor(Date.now() / state.warn.flashRateMs) % 2;
       timerEl.style.opacity = phase
         ? state.style.opacity
         : Math.max(0.15, state.style.opacity * 0.25);
+    } else {
+      timerEl.style.opacity = state.style.opacity;
     }
-
+  } else if (percentRemaining <= 20) {
+    // Warning state - yellow
+    timerEl.style.color = '#ffcc00';
     timerEl.classList.add('warning');
+    timerEl.style.opacity = state.style.opacity;
   } else {
+    // Normal state - use configured color
     timerEl.style.color = state.style.color;
     timerEl.style.opacity = state.style.opacity;
-    timerEl.classList.remove('warning');
   }
 }
 
@@ -229,7 +247,7 @@ function render() {
   // Handle Time of Day modes
   if (state.mode === 'tod') {
     displayText = formatTimeOfDay(state.format);
-    applyWarningState(false);
+    applyColorState(0, 0); // No warning colors for ToD
     timerEl.textContent = displayText;
     requestAnimationFrame(render);
     return;
@@ -245,12 +263,12 @@ function render() {
     elapsed = isCountdown ? state.durationSec * 1000 : 0;
     remainingSec = Math.floor(elapsed / 1000);
 
-    const warnActiveIdle = isCountdown &&
-      state.warn.enabled &&
-      remainingSec <= state.warn.seconds &&
-      remainingSec > 0;
-
-    applyWarningState(warnActiveIdle);
+    // Apply color state based on percentage
+    if (isCountdown) {
+      applyColorState(remainingSec, state.durationSec);
+    } else {
+      applyColorState(0, 0);
+    }
   } else {
     // Timer is running
     const now = Date.now();
@@ -275,15 +293,12 @@ function render() {
         }
       }
 
-      // Warning state
-      const warnActive = state.warn.enabled &&
-        remainingSec <= state.warn.seconds &&
-        remainingSec > 0;
+      // Apply color state based on percentage
+      applyColorState(remainingSec, state.durationSec);
 
-      applyWarningState(warnActive);
-
-      // Play warning sound once
-      if (warnActive && !warningSoundPlayed && state.sound.warnEnabled) {
+      // Play warning sound at 20% threshold
+      const percentRemaining = (remainingSec / state.durationSec) * 100;
+      if (percentRemaining <= 20 && !warningSoundPlayed && state.sound.warnEnabled) {
         playWarningSound(state.sound.volume);
         warningSoundPlayed = true;
       }
@@ -291,7 +306,7 @@ function render() {
       // Count up mode
       elapsed = base;
       remainingSec = Math.floor(elapsed / 1000);
-      applyWarningState(false);
+      applyColorState(0, 0); // No warning colors for count up
     }
   }
 
@@ -377,8 +392,9 @@ function handleTimerUpdate(data) {
       endSoundPlayed = false;
       isOvertime = false;
       overtimeStartedAt = null;
-      timerEl.classList.remove('ended', 'overtime');
-      applyWarningState(false);
+      timerEl.classList.remove('ended', 'overtime', 'warning', 'danger');
+      // Reset to initial color state
+      applyColorState(state.durationSec, state.durationSec);
       break;
 
     case 'config':

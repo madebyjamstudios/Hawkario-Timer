@@ -812,28 +812,42 @@ function renderLivePreview() {
     els.remainingTime.textContent = '00:00';
   }
 
-  // Warning state (only for countdown modes)
-  const warnActive = isCountdown &&
-    warnEnabled &&
-    remainingSec <= warnSeconds &&
-    remainingSec > 0 &&
-    isRunning;
+  // Color states based on percentage remaining (only for countdown modes)
+  // Normal (white): > 20% remaining
+  // Warning (yellow): 10-20% remaining
+  // Danger (red): < 10% remaining
+  if (isCountdown && durationSec > 0) {
+    const percentRemaining = (remainingSec / durationSec) * 100;
 
-  if (warnActive) {
-    if (warnColorEnabled) {
-      els.livePreviewTimer.style.color = warnColor;
+    if (percentRemaining <= 10 && remainingSec > 0) {
+      // Danger state - red
+      els.livePreviewTimer.style.color = '#ff3333';
+      els.livePreview.classList.add('danger');
+      els.livePreview.classList.remove('warning');
+
+      // Flash effect in danger zone if enabled
+      if (warnFlashEnabled) {
+        const phase = Math.floor(Date.now() / flashRateMs) % 2;
+        els.livePreviewTimer.style.opacity = phase
+          ? els.opacity.value
+          : Math.max(0.15, parseFloat(els.opacity.value) * 0.25);
+      }
+    } else if (percentRemaining <= 20 && remainingSec > 0) {
+      // Warning state - yellow
+      els.livePreviewTimer.style.color = '#ffcc00';
+      els.livePreview.classList.add('warning');
+      els.livePreview.classList.remove('danger');
+      els.livePreviewTimer.style.opacity = els.opacity.value;
+    } else {
+      // Normal state - use configured color
+      els.livePreviewTimer.style.color = els.fontColor.value;
+      els.livePreviewTimer.style.opacity = els.opacity.value;
+      els.livePreview.classList.remove('warning', 'danger');
     }
-    if (warnFlashEnabled) {
-      const phase = Math.floor(Date.now() / flashRateMs) % 2;
-      els.livePreviewTimer.style.opacity = phase
-        ? els.opacity.value
-        : Math.max(0.15, parseFloat(els.opacity.value) * 0.25);
-    }
-    els.livePreview.classList.add('warning');
   } else {
     els.livePreviewTimer.style.color = els.fontColor.value;
     els.livePreviewTimer.style.opacity = els.opacity.value;
-    els.livePreview.classList.remove('warning');
+    els.livePreview.classList.remove('warning', 'danger');
   }
 
   // Blackout state
