@@ -856,13 +856,13 @@ header {
 }
 
 .output-btn:hover {
-  background: rgba(230, 74, 25, 0.15);
-  border-color: #FF5722;
+  background: #E64A19;
+  border-color: #E64A19;
   color: #fff;
 }
 
 .output-btn:active {
-  background: rgba(230, 74, 25, 0.25);
+  background: #BF360C;
   border-color: #BF360C;
   color: #fff;
 }
