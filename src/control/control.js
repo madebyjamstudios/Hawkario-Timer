@@ -2045,13 +2045,9 @@ function setupDragListeners() {
       // Remove the timer from old position
       const [moved] = presets.splice(fromIndex, 1);
 
-      // Insert at new position (toIndex is the final visual slot, no adjustment needed)
-      // When moving down, after removing the element, target indices shift down by 1
-      // When moving up, no shift needed
-      let finalIndex = toIndex;
-      if (fromIndex < toIndex) {
-        finalIndex = toIndex - 1;
-      }
+      // Insert at the target slot position (no adjustment needed for transform-based approach)
+      // Example: [A,B,C] drag A(0) to slot 1 → remove A → [B,C] → insert at 1 → [B,A,C] ✓
+      const finalIndex = toIndex;
       presets.splice(finalIndex, 0, moved);
 
       // Re-establish links based on the move:
