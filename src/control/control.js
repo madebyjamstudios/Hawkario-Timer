@@ -1044,20 +1044,32 @@ function renderPresetList() {
       document.body.appendChild(ghost);
       dragState.ghostEl = ghost;
 
-      // Create placeholder (50% transparent, 90% size copy with dashed outline)
-      const placeholder = row.cloneNode(true);
-      placeholder.className = 'preset-item drag-placeholder-item';
-      placeholder.style.opacity = '0.5';
-      placeholder.style.pointerEvents = 'none';
-      placeholder.style.transform = 'scale(0.9)';
-      placeholder.style.transformOrigin = 'center center';
-      placeholder.style.outline = '2px dashed #888';
-      placeholder.style.outlineOffset = '4px';
-      dragState.placeholderEl = placeholder;
+      // Create placeholder wrapper (full size with dashed outline)
+      const placeholderWrapper = document.createElement('div');
+      placeholderWrapper.className = 'drag-placeholder-wrapper';
+      placeholderWrapper.style.border = '2px dashed #666';
+      placeholderWrapper.style.borderRadius = '12px';
+      placeholderWrapper.style.padding = '4px';
+      placeholderWrapper.style.display = 'flex';
+      placeholderWrapper.style.justifyContent = 'center';
+      placeholderWrapper.style.alignItems = 'center';
+
+      // Create inner placeholder (90% size, 50% opacity)
+      const placeholderInner = row.cloneNode(true);
+      placeholderInner.className = 'preset-item drag-placeholder-item';
+      placeholderInner.style.opacity = '0.5';
+      placeholderInner.style.pointerEvents = 'none';
+      placeholderInner.style.transform = 'scale(0.9)';
+      placeholderInner.style.transformOrigin = 'center center';
+      placeholderInner.style.margin = '0';
+      placeholderInner.style.width = '100%';
+
+      placeholderWrapper.appendChild(placeholderInner);
+      dragState.placeholderEl = placeholderWrapper;
 
       // Hide original row completely and insert placeholder in its place
       row.style.display = 'none';
-      row.parentNode.insertBefore(placeholder, row);
+      row.parentNode.insertBefore(placeholderWrapper, row);
     });
 
     // Name with pencil edit icon - opens quick edit popup
@@ -1650,10 +1662,12 @@ function setupDragListeners() {
     dragState.ghostEl.style.left = (e.clientX - dragState.grabOffsetX) + 'px';
     dragState.ghostEl.style.top = (e.clientY - dragState.grabOffsetY) + 'px';
 
-    // Get all visible preset items (excluding placeholder, including link zones for reference)
+    // Get all visible preset items (excluding placeholder wrapper and hidden original)
     const allElements = Array.from(els.presetList.children);
     const visibleItems = allElements.filter(item =>
       item.classList.contains('preset-item') &&
+      !item.classList.contains('drag-placeholder-item') &&
+      !item.classList.contains('drag-placeholder-wrapper') &&
       item !== dragState.placeholderEl &&
       item.style.display !== 'none'
     );
@@ -1702,23 +1716,18 @@ function setupDragListeners() {
 
     // Calculate final index based on placeholder position
     let finalIndex = 0;
-    const allItems = els.presetList.querySelectorAll('.preset-item:not([style*="display: none"])');
-    let placeholderIdx = 0;
-    allItems.forEach((item, i) => {
-      if (item === dragState.placeholderEl) {
-        placeholderIdx = i;
-      }
-    });
-
-    // Count only real preset items before placeholder
-    const itemsBefore = els.presetList.querySelectorAll('.preset-item:not([style*="display: none"]):not(.drag-placeholder-item)');
+    const allChildren = Array.from(els.presetList.children);
     let count = 0;
-    for (const item of allItems) {
-      if (item === dragState.placeholderEl) {
+
+    for (const child of allChildren) {
+      if (child === dragState.placeholderEl) {
         finalIndex = count;
         break;
       }
-      if (!item.classList.contains('drag-placeholder-item')) {
+      // Count only visible preset items (not hidden, not placeholder)
+      if (child.classList.contains('preset-item') &&
+          child.style.display !== 'none' &&
+          !child.classList.contains('drag-placeholder-item')) {
         count++;
       }
     }
