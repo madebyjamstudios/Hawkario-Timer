@@ -174,7 +174,16 @@ function applyStyle(style) {
   // Font size is auto-calculated by autoFitTimer()
   timerEl.style.color = style.color || state.style.color;
   timerEl.style.opacity = FIXED_STYLE.opacity;
-  timerEl.style.textShadow = style.textShadow || getShadowCSS(state.style.shadowSize);
+
+  // Handle both broadcast format (textShadow) and state format (shadowSize)
+  if (style.textShadow) {
+    timerEl.style.textShadow = style.textShadow;
+  } else if (style.shadowSize !== undefined) {
+    timerEl.style.textShadow = getShadowCSS(style.shadowSize);
+  } else {
+    timerEl.style.textShadow = getShadowCSS(state.style.shadowSize);
+  }
+
   timerEl.style.letterSpacing = (style.letterSpacing ?? FIXED_STYLE.letterSpacing) + 'em';
   timerEl.style.webkitTextStrokeWidth = (style.strokeWidth ?? state.style.strokeWidth) + 'px';
   timerEl.style.webkitTextStrokeColor = style.strokeColor || state.style.strokeColor;
@@ -186,8 +195,8 @@ function applyStyle(style) {
   timerEl.style.paddingLeft = '0';
   timerEl.style.paddingRight = '0';
 
-  // Background
-  const bg = style.background || state.style.bgColor;
+  // Background - handle both formats (background from broadcast, bgColor from state)
+  const bg = style.background || style.bgColor || state.style.bgColor;
   document.body.style.background = bg;
   stageEl.style.background = bg;
 }
