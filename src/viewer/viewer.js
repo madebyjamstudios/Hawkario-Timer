@@ -362,6 +362,13 @@ function handleTimerUpdate(data) {
       }
       break;
 
+    case 'resume':
+      // Resume from paused state without resetting
+      state.running = true;
+      state.startedAt = Date.now();
+      // Keep pausedAcc as is - it contains the elapsed time
+      break;
+
     case 'reset':
       state.running = false;
       state.startedAt = null;

@@ -929,6 +929,13 @@ function sendCommand(command) {
       }
       break;
 
+    case 'resume':
+      // Resume from paused state without resetting
+      isRunning = true;
+      timerState.startedAt = Date.now();
+      // Keep pausedAcc as is - it contains the elapsed time
+      break;
+
     case 'reset':
       isRunning = false;
       timerState.startedAt = null;
@@ -1113,16 +1120,20 @@ function renderPresetList() {
     // Play/Pause button
     const playBtn = document.createElement('button');
     const isActiveAndRunning = isSelected && isRunning;
+    const isActiveAndPaused = isSelected && !isRunning && timerState.startedAt !== null;
     playBtn.className = isActiveAndRunning ? 'icon-btn pause-btn' : 'icon-btn play-btn';
     playBtn.innerHTML = isActiveAndRunning ? ICONS.pause : ICONS.play;
-    playBtn.title = isActiveAndRunning ? 'Pause' : 'Load & Start';
+    playBtn.title = isActiveAndRunning ? 'Pause' : (isActiveAndPaused ? 'Resume' : 'Load & Start');
     playBtn.onclick = (e) => {
       e.stopPropagation();
       if (isActiveAndRunning) {
         // Pause the timer
         sendCommand('pause');
+      } else if (isActiveAndPaused) {
+        // Resume the paused timer
+        sendCommand('resume');
       } else {
-        // Start this preset
+        // Start this preset fresh
         applyConfig(preset.config);
         activePresetIndex = idx;
         sendCommand('start');
@@ -1599,7 +1610,15 @@ function setupEventListeners() {
         sendCommand('reset');
         break;
       case 'toggle':
-        sendCommand(isRunning ? 'pause' : 'start');
+        if (isRunning) {
+          sendCommand('pause');
+        } else if (timerState.startedAt !== null) {
+          // Timer is paused - resume
+          sendCommand('resume');
+        } else {
+          // Timer hasn't started - start fresh
+          sendCommand('start');
+        }
         break;
       case 'blackout':
         window.hawkario.toggleBlackout();
@@ -1745,22 +1764,35 @@ function setupDragListeners() {
       }
     });
 
-    // When hovering over a timer, placeholder takes that timer's visual spot
-    // The hovered timer and others shift to fill the gap
-    // Dragging timer 1 over timer 5 results in: 2,3,4,5,[1],6
+    // When hovering over a timer, insert placeholder based on cursor position
+    // Top half of timer = insert before, bottom half = insert after
     if (hoveredIndex !== -1 && dragState.placeholderEl) {
       const hoveredItem = visibleItems[hoveredIndex];
+      const rect = hoveredItem.getBoundingClientRect();
+      const midY = rect.top + rect.height / 2;
+      const insertBefore = e.clientY < midY;
 
-      // Check if placeholder is already right after this item
-      const placeholderIsAfterHovered = hoveredItem.nextSibling === dragState.placeholderEl;
+      // Determine the correct sibling position
+      let targetSibling;
+      if (insertBefore) {
+        targetSibling = hoveredItem; // Insert before hovered item
+      } else {
+        targetSibling = hoveredItem.nextSibling; // Insert after hovered item
+      }
 
-      if (!placeholderIsAfterHovered) {
+      // Check if placeholder is already in the right position
+      const currentNext = dragState.placeholderEl.nextSibling;
+      const isCorrectPosition = insertBefore
+        ? (currentNext === hoveredItem)
+        : (dragState.placeholderEl.previousSibling === hoveredItem);
+
+      if (!isCorrectPosition) {
         // Remove placeholder from current position
         dragState.placeholderEl.remove();
 
-        // Insert placeholder right after the hovered timer
-        if (hoveredItem.nextSibling) {
-          hoveredItem.parentNode.insertBefore(dragState.placeholderEl, hoveredItem.nextSibling);
+        // Insert at new position
+        if (targetSibling) {
+          hoveredItem.parentNode.insertBefore(dragState.placeholderEl, targetSibling);
         } else {
           hoveredItem.parentNode.appendChild(dragState.placeholderEl);
         }
