@@ -1811,17 +1811,19 @@ function setupDragListeners() {
       document.body.appendChild(ghost);
       dragState.ghostEl = ghost;
 
-      // Create placeholder - simple clone with reduced opacity
+      // Create placeholder - 99% scale shadow effect
       const placeholder = row.cloneNode(true);
       placeholder.className = 'preset-item drag-placeholder';
       placeholder.style.opacity = '0.4';
       placeholder.style.pointerEvents = 'none';
+      placeholder.style.transform = 'scale(0.99)';
+      placeholder.style.transformOrigin = 'center center';
       placeholder.style.outline = '2px dashed #555';
       placeholder.style.outlineOffset = '-2px';
       dragState.placeholderEl = placeholder;
 
-      // Hide original row completely and insert placeholder in its place
-      row.style.display = 'none';
+      // Hide original row but keep its space (visibility preserves layout)
+      row.style.visibility = 'hidden';
       row.parentNode.insertBefore(placeholder, row);
 
       // Hide all link zones during drag (use visibility to preserve layout)
@@ -1843,7 +1845,7 @@ function setupDragListeners() {
       item.classList.contains('preset-item') &&
       !item.classList.contains('drag-placeholder') &&
       item !== dragState.placeholderEl &&
-      item.style.display !== 'none'
+      item !== dragState.draggedRow
     );
 
     // Find which timer the cursor is hovering over
@@ -1941,7 +1943,7 @@ function setupDragListeners() {
       }
       // Count only visible preset items (not hidden, not placeholder)
       if (child.classList.contains('preset-item') &&
-          child.style.display !== 'none' &&
+          child !== dragState.draggedRow &&
           !child.classList.contains('drag-placeholder')) {
         count++;
       }
@@ -1955,7 +1957,7 @@ function setupDragListeners() {
 
     // Show original row again
     if (dragState.draggedRow) {
-      dragState.draggedRow.style.display = '';
+      dragState.draggedRow.style.visibility = '';
     }
 
     // Reorder if position changed
