@@ -1688,7 +1688,7 @@ function setupDragListeners() {
       placeholderInner.className = 'preset-item drag-placeholder-item';
       placeholderInner.style.opacity = '0.5';
       placeholderInner.style.pointerEvents = 'none';
-      placeholderInner.style.transform = 'scale(0.98)';
+      placeholderInner.style.transform = 'scale(0.99)';
       placeholderInner.style.transformOrigin = 'center center';
       placeholderInner.style.margin = '0';
       placeholderInner.style.width = '100%';
