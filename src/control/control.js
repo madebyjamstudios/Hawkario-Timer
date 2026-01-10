@@ -175,9 +175,11 @@ const dragState = {
   dragActivated: false,  // True only after mouse moves 5px+
   fromIndex: null,
   currentIndex: null,
+  targetIndex: null,     // Where the timer will be dropped
   draggedRow: null,
   ghostEl: null,
   placeholderEl: null,
+  dropIndicator: null,   // Visual line showing drop position
   grabOffsetX: 0,
   grabOffsetY: 0,
   startX: 0,
@@ -1869,39 +1871,46 @@ function setupDragListeners() {
       }
     });
 
-    // When hovering over a timer, insert placeholder based on cursor position
+    // When hovering over a timer, show drop indicator and track target position
     // Top half of timer = insert before, bottom half = insert after
-    if (hoveredIndex !== -1 && dragState.placeholderEl) {
+    if (hoveredIndex !== -1) {
       const hoveredItem = visibleItems[hoveredIndex];
       const rect = hoveredItem.getBoundingClientRect();
       const midY = rect.top + rect.height / 2;
       const insertBefore = e.clientY < midY;
 
-      // Determine the correct sibling position
-      let targetSibling;
-      if (insertBefore) {
-        targetSibling = hoveredItem; // Insert before hovered item
-      } else {
-        targetSibling = hoveredItem.nextSibling; // Insert after hovered item
+      // Calculate target index
+      dragState.targetIndex = insertBefore ? hoveredIndex : hoveredIndex + 1;
+
+      // Show drop indicator line
+      if (!dragState.dropIndicator) {
+        const indicator = document.createElement('div');
+        indicator.className = 'drag-drop-indicator';
+        indicator.style.position = 'absolute';
+        indicator.style.left = '16px';
+        indicator.style.right = '16px';
+        indicator.style.height = '3px';
+        indicator.style.background = '#E64A19';
+        indicator.style.borderRadius = '2px';
+        indicator.style.pointerEvents = 'none';
+        indicator.style.zIndex = '100';
+        indicator.style.boxShadow = '0 0 8px rgba(230, 74, 25, 0.5)';
+        els.presetList.style.position = 'relative';
+        els.presetList.appendChild(indicator);
+        dragState.dropIndicator = indicator;
       }
 
-      // Check if placeholder is already in the right position
-      const currentNext = dragState.placeholderEl.nextSibling;
-      const isCorrectPosition = insertBefore
-        ? (currentNext === hoveredItem)
-        : (dragState.placeholderEl.previousSibling === hoveredItem);
-
-      if (!isCorrectPosition) {
-        // Remove placeholder from current position
-        dragState.placeholderEl.remove();
-
-        // Insert at new position
-        if (targetSibling) {
-          hoveredItem.parentNode.insertBefore(dragState.placeholderEl, targetSibling);
-        } else {
-          hoveredItem.parentNode.appendChild(dragState.placeholderEl);
-        }
+      // Position the indicator
+      const listRect = els.presetList.getBoundingClientRect();
+      const indicatorY = insertBefore ? rect.top - listRect.top - 2 : rect.bottom - listRect.top + 2;
+      dragState.dropIndicator.style.top = indicatorY + 'px';
+    } else {
+      // Remove indicator when not hovering
+      if (dragState.dropIndicator) {
+        dragState.dropIndicator.remove();
+        dragState.dropIndicator = null;
       }
+      dragState.targetIndex = null;
     }
   });
 
@@ -1930,22 +1939,10 @@ function setupDragListeners() {
       item.classList.remove('drag-hover');
     });
 
-    // Calculate final index based on placeholder position
-    let finalIndex = 0;
-    const allChildren = Array.from(els.presetList.children);
-    let count = 0;
-
-    for (const child of allChildren) {
-      if (child === dragState.placeholderEl) {
-        finalIndex = count;
-        break;
-      }
-      // Count only visible preset items (not hidden, not placeholder)
-      if (child.classList.contains('preset-item') &&
-          child.style.display !== 'none' &&
-          !child.classList.contains('drag-placeholder')) {
-        count++;
-      }
+    // Remove drop indicator
+    if (dragState.dropIndicator) {
+      dragState.dropIndicator.remove();
+      dragState.dropIndicator = null;
     }
 
     // Remove placeholder
@@ -1959,9 +1956,12 @@ function setupDragListeners() {
       dragState.draggedRow.style.display = '';
     }
 
-    // Reorder if position changed
+    // Get final index from tracked target position
+    const finalIndex = dragState.targetIndex;
+
+    // Reorder if position changed and we have a valid target
     const fromIndex = dragState.fromIndex;
-    if (fromIndex !== null && fromIndex !== finalIndex) {
+    if (fromIndex !== null && finalIndex !== null && fromIndex !== finalIndex) {
       saveUndoState(); // Save state before reorder for undo
       const presets = loadPresets();
       const [moved] = presets.splice(fromIndex, 1);
@@ -1990,6 +1990,7 @@ function setupDragListeners() {
     dragState.dragActivated = false;
     dragState.fromIndex = null;
     dragState.currentIndex = null;
+    dragState.targetIndex = null;
     dragState.draggedRow = null;
 
     renderPresetList();
