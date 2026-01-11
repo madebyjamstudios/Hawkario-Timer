@@ -188,6 +188,7 @@ button:disabled {
 /* ToD line (smaller, below main timer, always white) */
 .tod-line {
   font-size: 0.3em;
+  font-weight: 400;
   display: block;
   margin-top: 0.05em;
   color: #ffffff !important;
