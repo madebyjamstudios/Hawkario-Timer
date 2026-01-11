@@ -1136,6 +1136,7 @@ footer small {
   cursor: pointer;
   border-radius: 6px;
   display: flex;
+  user-select: none;
   align-items: center;
   justify-content: center;
 }
