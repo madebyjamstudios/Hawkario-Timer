@@ -194,19 +194,13 @@
             </svg>
           </h3>
           <div class="section-content">
-            <div class="kv kv-inline">
-              <label>Yellow at</label>
-              <div class="inline-controls">
-                <input id="warnYellowSec" type="number" min="0" max="3600" step="1" value="60" class="number-stepper" />
-                <span class="unit-label">sec</span>
-              </div>
+            <div class="kv">
+              <label class="warn-label"><span class="warn-dot warn-dot-yellow"></span>Yellow at</label>
+              <input id="warnYellowSec" type="text" class="time-input time-input-ms" value="01:00" maxlength="5" />
             </div>
-            <div class="kv kv-inline">
-              <label>Orange at</label>
-              <div class="inline-controls">
-                <input id="warnOrangeSec" type="number" min="0" max="3600" step="1" value="15" class="number-stepper" />
-                <span class="unit-label">sec</span>
-              </div>
+            <div class="kv">
+              <label class="warn-label"><span class="warn-dot warn-dot-orange"></span>Orange at</label>
+              <input id="warnOrangeSec" type="text" class="time-input time-input-ms" value="00:15" maxlength="5" />
             </div>
           </div>
         </div>

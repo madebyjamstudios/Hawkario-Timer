@@ -141,6 +141,205 @@ function setDefaultDurationInputs(totalSeconds) {
   els.defaultDuration.value = formatTimeValue(h, m, s);
 }
 
+// Helper functions for MM:SS time input (warning thresholds)
+function formatMSValue(m, s) {
+  const pad = n => String(Math.max(0, n)).padStart(2, '0');
+  const mm = Math.min(99, Math.max(0, m));
+  const ss = Math.min(59, Math.max(0, s));
+  return `${pad(mm)}:${pad(ss)}`;
+}
+
+function parseMSValue(val) {
+  const parts = (val || '00:00').split(':');
+  const m = parseInt(parts[0], 10) || 0;
+  const s = parseInt(parts[1], 10) || 0;
+  return { m, s };
+}
+
+function getMSSeconds(input) {
+  const { m, s } = parseMSValue(input.value);
+  return m * 60 + s;
+}
+
+function setMSInput(input, totalSeconds) {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  input.value = formatMSValue(m, s);
+}
+
+/**
+ * Initialize a MM:SS time input with section-based navigation
+ * Sections: MM (0-1), SS (3-4), colon at 2
+ */
+function initTimeInputMS(input) {
+  if (!input) return;
+
+  // Get section from cursor position
+  const getSection = (pos) => {
+    if (pos <= 2) return 'minutes';
+    return 'seconds';
+  };
+
+  // Get section digit boundaries
+  const getSectionRange = (section) => {
+    switch (section) {
+      case 'minutes': return [0, 2];
+      case 'seconds': return [3, 5];
+    }
+  };
+
+  // Handle click - adjust cursor if on colon
+  input.addEventListener('click', () => {
+    setTimeout(() => {
+      const pos = input.selectionStart;
+      if (pos === 2) {
+        input.setSelectionRange(pos + 1, pos + 1);
+      }
+    }, 0);
+  });
+
+  // Handle keyboard navigation and input
+  input.addEventListener('keydown', (e) => {
+    const pos = input.selectionStart;
+    const selEnd = input.selectionEnd;
+    const section = getSection(pos);
+    const [start, end] = getSectionRange(section);
+    const val = input.value;
+
+    // Arrow keys
+    if (e.key === 'ArrowLeft') {
+      if (pos <= start) {
+        if (section === 'seconds') {
+          e.preventDefault();
+          input.setSelectionRange(2, 2); // Jump to end of minutes
+        } else {
+          e.preventDefault(); // Wall at minutes
+        }
+      }
+      return;
+    }
+
+    if (e.key === 'ArrowRight') {
+      if (pos >= end) {
+        if (section === 'minutes') {
+          e.preventDefault();
+          input.setSelectionRange(3, 3); // Jump to start of seconds
+        } else {
+          e.preventDefault(); // Wall at seconds
+        }
+      }
+      return;
+    }
+
+    // Tab - allow natural behavior
+    if (e.key === 'Tab') return;
+
+    // Cmd/Ctrl+A - select current section only
+    if ((e.metaKey || e.ctrlKey) && e.key === 'a') {
+      e.preventDefault();
+      input.setSelectionRange(start, end);
+      return;
+    }
+
+    // Backspace - replace current digit with 0
+    if (e.key === 'Backspace') {
+      e.preventDefault();
+      if (pos > start) {
+        const newPos = pos - 1;
+        const chars = val.split('');
+        chars[newPos] = '0';
+        input.value = chars.join('');
+        input.setSelectionRange(newPos, newPos);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+      return;
+    }
+
+    // Delete - replace current digit with 0
+    if (e.key === 'Delete') {
+      e.preventDefault();
+      if (pos < end) {
+        const chars = val.split('');
+        chars[pos] = '0';
+        input.value = chars.join('');
+        input.setSelectionRange(pos, pos);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+      return;
+    }
+
+    // Digit input
+    if (/^[0-9]$/.test(e.key)) {
+      e.preventDefault();
+
+      // If selection spans multiple chars, replace the section
+      if (selEnd > pos) {
+        const chars = val.split('');
+        for (let i = start; i < end; i++) {
+          chars[i] = '0';
+        }
+        chars[start] = e.key;
+        input.value = chars.join('');
+        input.setSelectionRange(start + 1, start + 1);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        return;
+      }
+
+      // Insert digit at current position
+      if (pos < end) {
+        const chars = val.split('');
+        chars[pos] = e.key;
+
+        // Validate and reformat
+        const newVal = chars.join('');
+        const { m, s } = parseMSValue(newVal);
+        input.value = formatMSValue(m, s);
+
+        // Move cursor
+        let newPos = pos + 1;
+        if (newPos === 2) newPos++; // Skip colon
+        if (newPos > 4) newPos = 4;
+        input.setSelectionRange(newPos, newPos);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+      return;
+    }
+
+    // Block all other printable characters
+    if (e.key.length === 1 && !e.metaKey && !e.ctrlKey) {
+      e.preventDefault();
+    }
+  });
+
+  // Handle double-click - select current section only
+  input.addEventListener('dblclick', (e) => {
+    e.preventDefault();
+    const pos = input.selectionStart;
+    const section = getSection(pos);
+    const [start, end] = getSectionRange(section);
+    input.setSelectionRange(start, end);
+  });
+
+  // Prevent invalid paste, try to parse time from paste
+  input.addEventListener('paste', (e) => {
+    e.preventDefault();
+    const text = e.clipboardData.getData('text');
+    const match = text.match(/(\d{1,2}):(\d{1,2})/);
+    if (match) {
+      const m = parseInt(match[1], 10);
+      const s = parseInt(match[2], 10);
+      input.value = formatMSValue(m, s);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  });
+
+  // Ensure value is always valid format on blur
+  input.addEventListener('blur', () => {
+    const { m, s } = parseMSValue(input.value);
+    input.value = formatMSValue(m, s);
+  });
+}
+
 /**
  * Initialize a unified time input with section-based navigation
  * Sections: HH (0-1), MM (3-4), SS (6-7), colons at 2 and 5
@@ -1469,9 +1668,9 @@ function getCurrentConfig() {
       endEnabled: els.soundEndEnable.value === 'on',
       volume: parseFloat(els.soundVolume.value) || 0.7
     },
-    // Warning thresholds (seconds remaining)
-    warnYellowSec: parseInt(els.warnYellowSec.value, 10) || 60,
-    warnOrangeSec: parseInt(els.warnOrangeSec.value, 10) || 15
+    // Warning thresholds (seconds remaining) - from MM:SS inputs
+    warnYellowSec: getMSSeconds(els.warnYellowSec) || 60,
+    warnOrangeSec: getMSSeconds(els.warnOrangeSec) || 15
   };
 }
 
@@ -1501,9 +1700,9 @@ function applyConfig(config) {
     updateVolumeRowVisibility();
   }
 
-  // Warning thresholds
-  els.warnYellowSec.value = config.warnYellowSec ?? 60;
-  els.warnOrangeSec.value = config.warnOrangeSec ?? 15;
+  // Warning thresholds - set as MM:SS
+  setMSInput(els.warnYellowSec, config.warnYellowSec ?? 60);
+  setMSInput(els.warnOrangeSec, config.warnOrangeSec ?? 15);
 
   applyPreview();
 }
@@ -2127,6 +2326,8 @@ function setupEventListeners() {
   // Initialize time inputs with section-based navigation
   initTimeInput(els.duration);
   initTimeInput(els.defaultDuration);
+  initTimeInputMS(els.warnYellowSec);
+  initTimeInputMS(els.warnOrangeSec);
 
   // Input change listeners (debounced) - update both live and modal preview
   const inputEls = [

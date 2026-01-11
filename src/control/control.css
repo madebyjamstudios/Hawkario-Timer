@@ -71,6 +71,35 @@ input[type="color"] {
   padding: 6px 8px;
 }
 
+/* MM:SS time input (shorter) */
+.time-input-ms {
+  width: 65px;
+}
+
+/* Warning color dots */
+.warn-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.warn-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.warn-dot-yellow {
+  background: #eab308;
+  box-shadow: 0 0 4px rgba(234, 179, 8, 0.5);
+}
+
+.warn-dot-orange {
+  background: #E64A19;
+  box-shadow: 0 0 4px rgba(230, 74, 25, 0.5);
+}
+
 /* Buttons */
 button {
   background: #1f6feb;
