@@ -199,13 +199,28 @@ ipcMain.handle('app:version', () => {
   return app.getVersion();
 });
 
-// Build timestamp - update this when you make a new build
-const BUILD_DATE = new Date('2025-01-11T00:00:00Z');
-
-// Check for updates from GitHub (compares latest commit date)
+// Check for updates from GitHub (compares local vs remote commit date)
 ipcMain.handle('app:check-updates', async () => {
   const https = require('https');
+  const { exec } = require('child_process');
   const currentVersion = app.getVersion();
+  const appPath = __dirname;
+
+  // Get local commit date
+  const getLocalCommitDate = () => new Promise((resolve) => {
+    exec('git log -1 --format=%cI', { cwd: appPath }, (error, stdout) => {
+      if (error) {
+        resolve(null);
+      } else {
+        resolve(new Date(stdout.trim()));
+      }
+    });
+  });
+
+  const localCommitDate = await getLocalCommitDate();
+  if (!localCommitDate) {
+    return { error: 'Could not read local git history' };
+  }
 
   return new Promise((resolve) => {
     const options = {
@@ -221,14 +236,12 @@ ipcMain.handle('app:check-updates', async () => {
         try {
           const commit = JSON.parse(data);
           if (commit.commit && commit.commit.committer) {
-            const latestCommitDate = new Date(commit.commit.committer.date);
-            const updateAvailable = latestCommitDate > BUILD_DATE;
+            const remoteCommitDate = new Date(commit.commit.committer.date);
+            const updateAvailable = remoteCommitDate > localCommitDate;
 
             resolve({
               currentVersion,
               updateAvailable,
-              latestCommitDate: latestCommitDate.toLocaleDateString(),
-              buildDate: BUILD_DATE.toLocaleDateString(),
               downloadUrl: 'https://github.com/madebyjamstudios/ninja-timer'
             });
           } else {

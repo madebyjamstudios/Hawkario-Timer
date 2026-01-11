@@ -795,28 +795,82 @@ async function downloadUpdates() {
   const statusEl = document.getElementById('updateStatus');
   const downloadBtn = document.getElementById('downloadUpdates');
   const restartBtn = document.getElementById('restartApp');
+  const progressContainer = document.getElementById('downloadProgress');
+  const progressFill = document.getElementById('progressFill');
+  const progressText = document.getElementById('progressText');
+  const progressTime = document.getElementById('progressTime');
 
-  statusEl.textContent = 'Downloading...';
+  statusEl.textContent = '';
   statusEl.className = '';
-  downloadBtn.disabled = true;
+  downloadBtn.classList.add('hidden');
+  progressContainer.classList.remove('hidden');
+
+  // Progress animation
+  let progress = 0;
+  const startTime = Date.now();
+  const estimatedDuration = 5000; // Estimate 5 seconds for typical download
+
+  const updateProgress = (percent) => {
+    progress = Math.min(percent, 99);
+    progressFill.style.width = `${progress}%`;
+    progressText.textContent = `${Math.round(progress)}%`;
+
+    // Calculate time remaining
+    const elapsed = Date.now() - startTime;
+    if (progress > 5) {
+      const estimatedTotal = elapsed / (progress / 100);
+      const remaining = Math.max(0, estimatedTotal - elapsed);
+      const remainingSec = Math.ceil(remaining / 1000);
+      if (remainingSec > 0) {
+        progressTime.textContent = `${remainingSec}s left`;
+      } else {
+        progressTime.textContent = 'Almost done...';
+      }
+    }
+  };
+
+  // Animate progress while downloading
+  const progressInterval = setInterval(() => {
+    // Slowly animate up to 90% during download
+    if (progress < 90) {
+      const elapsed = Date.now() - startTime;
+      const targetProgress = Math.min(90, (elapsed / estimatedDuration) * 90);
+      updateProgress(targetProgress);
+    }
+  }, 100);
 
   try {
     const result = await window.ninja.downloadUpdates();
+    clearInterval(progressInterval);
 
     if (result.success) {
-      statusEl.innerHTML = `<span class="update-check">✓</span> Updates downloaded!`;
-      statusEl.className = 'update-success';
-      downloadBtn.classList.add('hidden');
-      restartBtn.classList.remove('hidden');
+      // Complete the progress bar
+      updateProgress(100);
+      progressFill.style.width = '100%';
+      progressText.textContent = '100%';
+      progressTime.textContent = 'Complete!';
+
+      // Short delay to show 100%, then show restart button
+      setTimeout(() => {
+        progressContainer.classList.add('hidden');
+        statusEl.innerHTML = `<span class="update-check">✓</span> Updates downloaded!`;
+        statusEl.className = 'update-success';
+        restartBtn.classList.remove('hidden');
+      }, 500);
     } else {
+      progressContainer.classList.add('hidden');
       statusEl.textContent = result.error || 'Download failed';
       statusEl.className = 'update-error';
+      downloadBtn.classList.remove('hidden');
       downloadBtn.disabled = false;
     }
   } catch (e) {
+    clearInterval(progressInterval);
     console.error('Failed to download updates:', e);
+    progressContainer.classList.add('hidden');
     statusEl.textContent = 'Download failed';
     statusEl.className = 'update-error';
+    downloadBtn.classList.remove('hidden');
     downloadBtn.disabled = false;
   }
 }
@@ -842,10 +896,14 @@ function openAppSettings() {
 
   els.appSettingsModal.classList.remove('hidden');
 
-  // Reset update buttons state
+  // Reset update buttons and progress bar state
   document.getElementById('checkUpdates').classList.remove('hidden');
   document.getElementById('downloadUpdates').classList.add('hidden');
   document.getElementById('restartApp').classList.add('hidden');
+  document.getElementById('downloadProgress').classList.add('hidden');
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('progressText').textContent = '0%';
+  document.getElementById('progressTime').textContent = '';
   document.getElementById('updateStatus').textContent = '';
   document.getElementById('updateStatus').className = '';
 
