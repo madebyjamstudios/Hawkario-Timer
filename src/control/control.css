@@ -54,10 +54,13 @@ input[type="range"] {
 }
 
 input[type="color"] {
-  width: 50px;
-  height: 28px;
-  padding: 2px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
   cursor: pointer;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
 }
 
 /* Unified time input (HH:MM:SS) */
