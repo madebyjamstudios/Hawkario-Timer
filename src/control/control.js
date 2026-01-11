@@ -862,8 +862,9 @@ function saveModal() {
   const presets = loadPresets();
 
   if (editingPresetIndex !== null) {
-    // Update existing preset
-    presets[editingPresetIndex] = { name, config };
+    // Update existing preset (preserve linkedToNext)
+    const linkedToNext = presets[editingPresetIndex].linkedToNext || false;
+    presets[editingPresetIndex] = { name, config, linkedToNext };
     showToast(`Updated "${name}"`, 'success');
 
     // If editing the active timer, update activeTimerConfig too
@@ -2246,26 +2247,20 @@ function setupEventListeners() {
 
   // Global keyboard shortcuts (same as output window)
   document.addEventListener('keydown', (e) => {
-    // Debug: Log all keydown events
-    console.log('Keydown:', e.key, 'Target:', e.target.tagName, 'ActiveElement:', document.activeElement?.tagName);
-
     // Ignore if user is typing in an input
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-      console.log('Ignored: input/textarea focus');
       return;
     }
     // Ignore if any modal is open
     if (!els.settingsModal.classList.contains('hidden') ||
         !els.appSettingsModal.classList.contains('hidden') ||
         !els.confirmDialog.classList.contains('hidden')) {
-      console.log('Ignored: modal open');
       return;
     }
 
     switch (e.key.toLowerCase()) {
       case ' ':
         // Space - toggle play/pause (always works, even if button has focus)
-        console.log('Space pressed! isRunning:', isRunning, 'startedAt:', timerState.startedAt);
         e.preventDefault();
         // Blur any focused button to prevent it from being clicked
         if (document.activeElement?.tagName === 'BUTTON') {
