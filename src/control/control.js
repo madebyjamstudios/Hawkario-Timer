@@ -478,7 +478,7 @@ function showToast(message, type = 'info') {
 const APP_SETTINGS_KEY = 'ninja:appSettings';
 
 const DEFAULT_APP_SETTINGS = {
-  todFormat: '24h',
+  todFormat: '12h',
   confirmDelete: true,
   defaults: {
     mode: 'countdown',
@@ -882,11 +882,11 @@ function updateModalPreview() {
   }
 
   if (mode === 'tod') {
-    displayText = formatTimeOfDay();
+    displayText = formatTimeOfDay(loadAppSettings().todFormat);
   } else {
     displayText = formatTime(isCountdown ? durationSec * 1000 : 0, format);
     if (showToD) {
-      displayText += '  |  ' + formatTimeOfDay();
+      displayText += '  |  ' + formatTimeOfDay(loadAppSettings().todFormat);
     }
   }
 
@@ -1114,8 +1114,9 @@ function renderLivePreview() {
   }
 
   // Handle Time of Day only mode
+  const todFormat = loadAppSettings().todFormat;
   if (mode === 'tod') {
-    displayText = formatTimeOfDay();
+    displayText = formatTimeOfDay(todFormat);
     els.livePreviewTimer.textContent = displayText;
     autoFitText(els.livePreviewTimer, els.livePreview, 0.9);
     els.livePreviewTimer.style.color = fontColor;
@@ -1213,7 +1214,7 @@ function renderLivePreview() {
   }
 
   if (showToD) {
-    displayText += '  |  ' + formatTimeOfDay();
+    displayText += '  |  ' + formatTimeOfDay(todFormat);
   }
 
   // Update display
@@ -2191,7 +2192,7 @@ function setupEventListeners() {
     let displayText = '00:00';
 
     if (mode === 'tod') {
-      displayText = formatTimeOfDay();
+      displayText = formatTimeOfDay(loadAppSettings().todFormat);
     } else if (mode !== 'hidden') {
       const isCountdown = mode === 'countdown' || mode === 'countdown-tod';
       if (!isRunning && timerState.pausedAcc === 0 && timerState.startedAt === null) {

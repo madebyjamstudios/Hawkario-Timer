@@ -103,18 +103,24 @@ export function hexToRgba(hex, opacity = 1) {
 
 /**
  * Format current time of day
- * Always shows full H:MM:SS format - format setting only affects countdown/countup
- * @returns {string} Formatted time string (always H:MM:SS)
+ * @param {string} format - '12h' or '24h' (default: '12h')
+ * @returns {string} Formatted time string
  */
-export function formatTimeOfDay() {
+export function formatTimeOfDay(format = '12h') {
   const now = new Date();
-  const h = now.getHours();
+  let h = now.getHours();
   const m = now.getMinutes();
   const s = now.getSeconds();
 
   const pad = n => String(n).padStart(2, '0');
 
-  // ToD always shows full time with hours
+  if (format === '12h') {
+    const period = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12; // Convert 0 to 12 for midnight
+    return `${h}:${pad(m)}:${pad(s)} ${period}`;
+  }
+
+  // 24-hour format
   return `${h}:${pad(m)}:${pad(s)}`;
 }
 
