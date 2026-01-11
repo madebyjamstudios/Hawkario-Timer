@@ -28,18 +28,21 @@ html, body {
   user-select: none;
   white-space: nowrap;
   max-width: 90vw;
+  max-height: 90vh;
   overflow: visible;
   /* Padding to prevent stroke from being clipped at edges */
   padding: 0.1em 0.15em;
   box-sizing: border-box;
+  text-align: center;
 }
 
 /* ToD line (smaller, below main timer, always white) */
 .tod-line {
-  font-size: 0.5em;
+  font-size: 0.3em;
   display: block;
-  margin-top: 0.2em;
+  margin-top: 0.15em;
   color: #ffffff !important;
+  text-align: center;
 }
 
 /* Overtime state - red color when timer has passed */

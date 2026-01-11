@@ -145,18 +145,26 @@ function handleDisplayUpdate(newState) {
 }
 
 /**
- * Auto-fit timer text to fill 90% of viewport width
+ * Auto-fit timer text to fill viewport (90% width, 85% height)
  */
 function autoFitTimer() {
   timerEl.style.fontSize = '100px';
   timerEl.style.transform = 'scale(1)';
 
   const containerWidth = window.innerWidth;
+  const containerHeight = window.innerHeight;
   const targetWidth = containerWidth * 0.9;
+  const targetHeight = containerHeight * 0.85;
   const naturalWidth = timerEl.scrollWidth;
+  const naturalHeight = timerEl.scrollHeight;
 
   if (naturalWidth > 0 && containerWidth > 0) {
-    const ratio = targetWidth / naturalWidth;
+    // Calculate ratios for both width and height constraints
+    const widthRatio = targetWidth / naturalWidth;
+    const heightRatio = targetHeight / naturalHeight;
+
+    // Use the smaller ratio to ensure it fits both constraints
+    const ratio = Math.min(widthRatio, heightRatio);
     const newFontSize = Math.max(10, 100 * ratio);
     timerEl.style.fontSize = newFontSize + 'px';
   }
