@@ -2549,6 +2549,37 @@ function setupEventListeners() {
   els.settingsExport.addEventListener('click', handleExport);
   els.settingsImport.addEventListener('click', () => els.importFile.click());
 
+  // Check for updates
+  document.getElementById('checkUpdates').addEventListener('click', async () => {
+    const statusEl = document.getElementById('updateStatus');
+    statusEl.textContent = 'Checking...';
+
+    try {
+      // Get current version from Electron
+      const currentVersion = await window.ninja.getVersion();
+
+      // Fetch latest release from GitHub API
+      const response = await fetch('https://api.github.com/repos/madebyjamstudios/ninja-timer/releases/latest');
+      const release = await response.json();
+
+      if (release.tag_name) {
+        const latestVersion = release.tag_name.replace('v', '');
+
+        // Compare versions (simple string comparison works for semver)
+        if (latestVersion !== currentVersion && latestVersion > currentVersion) {
+          statusEl.innerHTML = `Update available: v${latestVersion} <a href="${release.html_url}" target="_blank">Download</a>`;
+        } else {
+          statusEl.textContent = `You're up to date (v${currentVersion})`;
+        }
+      } else {
+        statusEl.textContent = `You're up to date (v${currentVersion})`;
+      }
+    } catch (e) {
+      console.error('Failed to check for updates:', e);
+      statusEl.textContent = 'Failed to check for updates';
+    }
+  });
+
   // Close app settings on backdrop click
   els.appSettingsModal.addEventListener('click', (e) => {
     if (e.target === els.appSettingsModal) {

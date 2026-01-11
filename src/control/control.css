@@ -1418,6 +1418,27 @@ h3 {
   margin: -8px 0 12px 0;
 }
 
+/* Update section */
+.update-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#updateStatus {
+  font-size: 13px;
+  color: #888;
+}
+
+#updateStatus a {
+  color: #4a9eff;
+  text-decoration: none;
+}
+
+#updateStatus a:hover {
+  text-decoration: underline;
+}
+
 .settings-row {
   display: flex;
   gap: 8px;
