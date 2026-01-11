@@ -1041,12 +1041,16 @@ function applyLivePreviewStyle() {
   els.livePreview.style.background = els.bgColor.value;
   els.livePreviewTimer.style.fontFamily = FIXED_STYLE.fontFamily;
   els.livePreviewTimer.style.fontWeight = FIXED_STYLE.fontWeight;
-  els.livePreviewTimer.style.color = els.fontColor.value;
-  els.livePreviewTimer.style.opacity = FIXED_STYLE.opacity;
-  els.livePreviewTimer.style.webkitTextStrokeWidth = (parseInt(els.strokeWidth.value, 10) || 0) + 'px';
-  els.livePreviewTimer.style.webkitTextStrokeColor = els.strokeColor.value;
-  els.livePreviewTimer.style.textShadow = getShadowCSS(shadowSize);
   els.livePreviewTimer.style.letterSpacing = FIXED_STYLE.letterSpacing + 'em';
+
+  // Skip styles controlled by FlashAnimator during flash
+  if (!flashAnimator?.isFlashing) {
+    els.livePreviewTimer.style.color = els.fontColor.value;
+    els.livePreviewTimer.style.opacity = FIXED_STYLE.opacity;
+    els.livePreviewTimer.style.webkitTextStrokeWidth = (parseInt(els.strokeWidth.value, 10) || 0) + 'px';
+    els.livePreviewTimer.style.webkitTextStrokeColor = els.strokeColor.value;
+    els.livePreviewTimer.style.textShadow = getShadowCSS(shadowSize);
+  }
 
   // Font size is handled by autoFitText in renderLivePreview
 }
@@ -1152,8 +1156,11 @@ function renderLivePreview() {
     displayText = formatTimeOfDay(todFormat);
     els.livePreviewTimer.textContent = displayText;
     autoFitText(els.livePreviewTimer, els.livePreview, 0.9);
-    els.livePreviewTimer.style.color = fontColor;
-    els.livePreviewTimer.style.opacity = FIXED_STYLE.opacity;
+    // Skip color changes during flash animation
+    if (!flashAnimator?.isFlashing) {
+      els.livePreviewTimer.style.color = fontColor;
+      els.livePreviewTimer.style.opacity = FIXED_STYLE.opacity;
+    }
     els.livePreview.classList.remove('warning');
     broadcastTimerState();
     broadcastDisplayState({
