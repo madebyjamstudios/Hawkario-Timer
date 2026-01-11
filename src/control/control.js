@@ -1969,7 +1969,7 @@ function setupEventListeners() {
   document.addEventListener('keydown', (e) => {
     if (els.appSettingsModal.classList.contains('hidden')) return;
 
-    if (e.key === 'Enter' && e.target.tagName !== 'SELECT') {
+    if (e.key === 'Enter') {
       e.preventDefault();
       saveAppSettingsFromForm();
     }
@@ -2018,7 +2018,7 @@ function setupEventListeners() {
   document.addEventListener('keydown', (e) => {
     if (els.settingsModal.classList.contains('hidden')) return;
 
-    if (e.key === 'Enter' && e.target.tagName !== 'SELECT') {
+    if (e.key === 'Enter') {
       e.preventDefault();
       saveModal();
     }
