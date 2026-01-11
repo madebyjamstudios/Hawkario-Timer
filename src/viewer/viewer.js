@@ -1,71 +1,30 @@
 /**
  * Ninja Timer - Viewer Window
  * Output display for the timer
+ * Uses shared renderer for StageTimer-style sync with control window
  */
 
 import { formatTime, formatTimeOfDay, hexToRgba } from '../shared/timer.js';
 import { playWarningSound, playEndSound, initAudio } from '../shared/sounds.js';
+import { FIXED_STYLE } from '../shared/timerState.js';
+import { computeDisplay, getShadowCSS, autoFitText, FlashAnimator } from '../shared/renderTimer.js';
 
 // DOM Elements
 const timerEl = document.getElementById('timer');
 const stageEl = document.querySelector('.stage');
 const fsHintEl = document.getElementById('fsHint');
 
-// Hardcoded style defaults (not user-configurable)
-const FIXED_STYLE = {
-  fontFamily: 'Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
-  fontWeight: '600',
-  opacity: 1,
-  align: 'center',
-  letterSpacing: 0.02
-};
+// Canonical timer state from control window
+let canonicalState = null;
+let lastSeq = -1;
 
-/**
- * Generate text shadow CSS from size value
- */
-function getShadowCSS(sizePx) {
-  if (sizePx === 0) return 'none';
-  const blur = sizePx;
-  const spread = Math.round(sizePx * 0.3);
-  return `0 ${spread}px ${blur}px rgba(0,0,0,0.5)`;
-}
-
-// Timer state
-const state = {
-  running: false,
-  mode: 'countdown',
-  durationSec: 0,
-  startedAt: null,
-  pausedAcc: 0,
-  format: 'MM:SS',
-  style: {
-    color: '#ffffff',
-    strokeWidth: 2,
-    strokeColor: '#000000',
-    shadowSize: 10,
-    bgColor: '#000000'
-  },
-  sound: {
-    endEnabled: false,
-    volume: 0.7
-  }
-};
-
-// Track if warning sound has been played this cycle
-let warningSoundPlayed = false;
-let endSoundPlayed = false;
-
-// Overtime state (when timer ends without linked next timer)
-let isOvertime = false;
-let overtimeStartedAt = null;
-
-// Flash animation state
-let isFlashing = false;
+// Flash animator instance
+let flashAnimator = null;
 
 // Blackout state
 let isBlackedOut = false;
 
-// Display state from control window (master source)
+// Display state from control window (legacy, for backwards compatibility)
 let displayState = {
   visible: true,
   text: '00:00',
@@ -78,16 +37,18 @@ let displayState = {
   remaining: '',
   style: null
 };
+
+// Blackout overlay element
 const blackoutEl = document.createElement('div');
 blackoutEl.className = 'blackout-overlay';
 blackoutEl.style.cssText = 'position:fixed;inset:0;background:#000;z-index:9999;opacity:0;pointer-events:none;transition:opacity 0.5s ease;';
 document.body.appendChild(blackoutEl);
 
 /**
- * Toggle blackout overlay with fade animation
+ * Set blackout state (ABSOLUTE, not toggle)
  */
-function toggleBlackout() {
-  isBlackedOut = !isBlackedOut;
+function setBlackout(isBlacked) {
+  isBlackedOut = isBlacked;
   if (isBlackedOut) {
     blackoutEl.style.pointerEvents = 'auto';
     blackoutEl.style.opacity = '1';
@@ -98,89 +59,10 @@ function toggleBlackout() {
 }
 
 /**
- * Flash the timer: glow → grey → repeat 3 times
- * Sequence: static → glow → grey → glow → grey → glow → grey → back to original
+ * Toggle blackout (legacy, for backwards compatibility)
  */
-function triggerFlash() {
-  const originalColor = timerEl.style.color;
-  const originalShadow = timerEl.style.textShadow;
-  const originalStroke = timerEl.style.webkitTextStrokeColor;
-  const originalStrokeWidth = timerEl.style.webkitTextStrokeWidth;
-  const originalBg = stageEl.style.background;
-
-  // Mark as flashing to prevent applyStyle from overriding
-  isFlashing = true;
-
-  // Timing
-  const glowDuration = 400;  // How long to show white glow
-  const greyDuration = 300;  // How long to show grey
-
-  let flashCount = 0;
-  const maxFlashes = 3;
-
-  const showGlow = () => {
-    // Scale glow based on viewport width (larger window = larger glow)
-    const vw = window.innerWidth / 100;
-    const glowScale = Math.max(4, vw * 1.2); // Aggressive scale factor
-    const strokeWidth = Math.max(2, glowScale * 0.4);
-
-    // Multiple blur layers - heavy inner glow with radiating outer
-    const blur1 = Math.round(glowScale * 1);    // Tight bright core
-    const blur2 = Math.round(glowScale * 2);    // Inner glow
-    const blur3 = Math.round(glowScale * 4);    // Medium spread
-    const blur4 = Math.round(glowScale * 8);    // Wide halo
-    const blur5 = Math.round(glowScale * 15);   // Large outer glow
-
-    // Brief background flash for visibility
-    stageEl.style.background = '#222';
-    document.body.style.background = '#222';
-
-    // Intense white glow - multiple solid layers for brightness
-    timerEl.style.color = '#ffffff';
-    timerEl.style.webkitTextStrokeColor = '#ffffff';
-    timerEl.style.webkitTextStrokeWidth = strokeWidth + 'px';
-    timerEl.style.textShadow = `
-      0 0 ${blur1}px #fff,
-      0 0 ${blur1}px #fff,
-      0 0 ${blur2}px #fff,
-      0 0 ${blur2}px rgba(255,255,255,0.9),
-      0 0 ${blur3}px rgba(255,255,255,0.8),
-      0 0 ${blur4}px rgba(255,255,255,0.6),
-      0 0 ${blur5}px rgba(255,255,255,0.3)
-    `.replace(/\s+/g, ' ').trim();
-
-    setTimeout(showGrey, glowDuration);
-  };
-
-  const showGrey = () => {
-    // Grey text - no glow, reset background
-    timerEl.style.color = '#666666';
-    timerEl.style.webkitTextStrokeColor = '#666666';
-    timerEl.style.webkitTextStrokeWidth = '0px';
-    timerEl.style.textShadow = 'none';
-    stageEl.style.background = originalBg;
-    document.body.style.background = originalBg;
-
-    flashCount++;
-
-    if (flashCount < maxFlashes) {
-      setTimeout(showGlow, greyDuration);
-    } else {
-      // Done flashing, restore original after brief grey display
-      setTimeout(() => {
-        timerEl.style.color = originalColor;
-        timerEl.style.textShadow = originalShadow;
-        timerEl.style.webkitTextStrokeColor = originalStroke;
-        timerEl.style.webkitTextStrokeWidth = originalStrokeWidth;
-        stageEl.style.background = originalBg;
-        document.body.style.background = originalBg;
-        isFlashing = false;
-      }, greyDuration);
-    }
-  };
-
-  // Start with glow
-  showGlow();
+function toggleBlackout() {
+  setBlackout(!isBlackedOut);
 }
 
 /**
@@ -189,14 +71,12 @@ function triggerFlash() {
 function applyStyle(style) {
   if (!style) return;
 
-  // Skip style changes during flash animation to prevent overwriting flash effect
-  if (isFlashing) return;
+  // Skip style changes during flash animation
+  if (flashAnimator?.isFlashing) return;
 
-  // Use hardcoded FIXED_STYLE values for non-configurable options
-  timerEl.style.fontFamily = style.fontFamily || FIXED_STYLE.fontFamily;
-  timerEl.style.fontWeight = style.fontWeight || FIXED_STYLE.fontWeight;
-  // Font size is auto-calculated by autoFitTimer()
-  timerEl.style.color = style.color || state.style.color;
+  timerEl.style.fontFamily = FIXED_STYLE.fontFamily;
+  timerEl.style.fontWeight = FIXED_STYLE.fontWeight;
+  timerEl.style.color = style.color || '#ffffff';
   timerEl.style.opacity = FIXED_STYLE.opacity;
 
   // Handle both broadcast format (textShadow) and state format (shadowSize)
@@ -204,53 +84,61 @@ function applyStyle(style) {
     timerEl.style.textShadow = style.textShadow;
   } else if (style.shadowSize !== undefined) {
     timerEl.style.textShadow = getShadowCSS(style.shadowSize);
-  } else {
-    timerEl.style.textShadow = getShadowCSS(state.style.shadowSize);
   }
 
-  timerEl.style.letterSpacing = (style.letterSpacing ?? FIXED_STYLE.letterSpacing) + 'em';
-  timerEl.style.webkitTextStrokeWidth = (style.strokeWidth ?? state.style.strokeWidth) + 'px';
-  timerEl.style.webkitTextStrokeColor = style.strokeColor || state.style.strokeColor;
-  timerEl.style.textAlign = style.textAlign || FIXED_STYLE.align;
+  timerEl.style.letterSpacing = FIXED_STYLE.letterSpacing + 'em';
+  timerEl.style.webkitTextStrokeWidth = (style.strokeWidth ?? 2) + 'px';
+  timerEl.style.webkitTextStrokeColor = style.strokeColor || '#000000';
+  timerEl.style.textAlign = FIXED_STYLE.align;
 
-  // Always centered (no alignment options anymore)
+  // Always centered
   stageEl.style.placeItems = 'center';
   timerEl.style.justifySelf = 'center';
-  timerEl.style.paddingLeft = '0';
-  timerEl.style.paddingRight = '0';
 
-  // Background - handle both formats (background from broadcast, bgColor from state)
-  const bg = style.background || style.bgColor || state.style.bgColor;
+  // Background
+  const bg = style.background || style.bgColor || '#000000';
   document.body.style.background = bg;
   stageEl.style.background = bg;
 }
 
 /**
- * Apply color state based on percentage remaining
- * Normal (white): > 20% remaining
- * Warning (yellow): 10-20% remaining
- * Danger (red): < 10% remaining
+ * Handle canonical timer state from control window (new StageTimer-style sync)
+ * This is the primary sync mechanism
  */
-function applyColorState(remainingSec, durationSec) {
-  // Skip color changes during flash animation
-  if (isFlashing) return;
+function handleTimerState(state) {
+  // Ignore old states (sequence number check)
+  if (state.seq <= lastSeq) return;
+  lastSeq = state.seq;
 
-  // Reset classes
-  timerEl.classList.remove('warning', 'danger');
+  canonicalState = state;
 
-  // Always use configured color (no warning states)
-  timerEl.style.color = state.style.color;
-  timerEl.style.opacity = FIXED_STYLE.opacity;
+  // Apply style
+  if (state.style) {
+    applyStyle(state.style);
+  }
+
+  // Handle blackout (ABSOLUTE state)
+  if (state.blackout !== isBlackedOut) {
+    setBlackout(state.blackout);
+  }
+
+  // Handle flash
+  if (state.flash?.active && !flashAnimator?.isFlashing) {
+    flashAnimator = new FlashAnimator(timerEl, stageEl, () => {
+      // Flash complete
+    });
+    flashAnimator.start();
+  }
 }
 
 /**
- * Handle display state updates from control window
- * This makes the output a pure mirror of the live preview
+ * Handle display state updates from control window (LEGACY)
+ * Kept for backwards compatibility during migration
  */
 function handleDisplayUpdate(newState) {
   displayState = { ...displayState, ...newState };
 
-  // Apply style if provided
+  // Apply style if provided (legacy format)
   if (newState.style) {
     applyStyle(newState.style);
   }
@@ -258,31 +146,49 @@ function handleDisplayUpdate(newState) {
 
 /**
  * Auto-fit timer text to fill 90% of viewport width
- * Dynamically adjusts font size so text always fills available space
  */
 function autoFitTimer() {
-  // Reset to measure natural size at a base font size
   timerEl.style.fontSize = '100px';
   timerEl.style.transform = 'scale(1)';
 
   const containerWidth = window.innerWidth;
-  const targetWidth = containerWidth * 0.9; // 5% margin each side
+  const targetWidth = containerWidth * 0.9;
   const naturalWidth = timerEl.scrollWidth;
 
   if (naturalWidth > 0 && containerWidth > 0) {
-    // Calculate font size to achieve target width
     const ratio = targetWidth / naturalWidth;
-    const newFontSize = Math.max(10, 100 * ratio); // Min 10px for readability
+    const newFontSize = Math.max(10, 100 * ratio);
     timerEl.style.fontSize = newFontSize + 'px';
   }
 }
 
 /**
- * Main render loop - now just applies display state from control
+ * Main render loop
+ * Uses canonical state if available, falls back to legacy displayState
  */
 function render() {
+  let visible = true;
+  let text = '00:00';
+  let color = '#ffffff';
+  let overtime = false;
+
+  if (canonicalState) {
+    // New: Use shared computeDisplay for identical rendering
+    const display = computeDisplay(canonicalState, Date.now());
+    visible = display.visible;
+    text = display.text;
+    overtime = display.overtime || canonicalState.overtime;
+    color = overtime ? '#E64A19' : (canonicalState.style?.color || '#ffffff');
+  } else {
+    // Legacy fallback
+    visible = displayState.visible;
+    text = displayState.text;
+    color = displayState.color;
+    overtime = displayState.overtime;
+  }
+
   // Handle visibility
-  if (!displayState.visible) {
+  if (!visible) {
     timerEl.style.visibility = 'hidden';
     requestAnimationFrame(render);
     return;
@@ -290,132 +196,48 @@ function render() {
     timerEl.style.visibility = 'visible';
   }
 
-  // Apply display text from control
-  timerEl.textContent = displayState.text;
+  // Apply display text
+  timerEl.textContent = text;
 
   // Auto-fit to viewport
   autoFitTimer();
 
   // Apply color state (skip during flash animation)
-  if (!isFlashing) {
-    timerEl.style.color = displayState.color;
-    timerEl.style.opacity = displayState.opacity;
+  if (!flashAnimator?.isFlashing) {
+    timerEl.style.color = color;
+    timerEl.style.opacity = FIXED_STYLE.opacity;
 
-    // Apply color state classes
-    timerEl.classList.remove('warning', 'danger', 'overtime');
-    if (displayState.colorState === 'warning') {
-      timerEl.classList.add('warning');
-    } else if (displayState.colorState === 'danger') {
-      timerEl.classList.add('danger');
-    } else if (displayState.colorState === 'overtime' || displayState.overtime) {
-      timerEl.classList.add('overtime');
-    }
+    // Apply overtime class
+    timerEl.classList.toggle('overtime', overtime);
   }
 
-  // Handle blackout from control
-  if (displayState.blackout !== isBlackedOut) {
-    isBlackedOut = displayState.blackout;
-    if (isBlackedOut) {
-      blackoutEl.style.pointerEvents = 'auto';
-      blackoutEl.style.opacity = '1';
-    } else {
-      blackoutEl.style.opacity = '0';
-      blackoutEl.style.pointerEvents = 'none';
-    }
+  // Handle blackout sync from legacy displayState (if canonical not available)
+  if (!canonicalState && displayState.blackout !== isBlackedOut) {
+    setBlackout(displayState.blackout);
   }
 
   requestAnimationFrame(render);
 }
 
 /**
- * Handle incoming timer updates from control window
+ * Handle incoming timer commands from control window (legacy)
  */
 function handleTimerUpdate(data) {
   const { command, config } = data;
 
-  // Apply configuration
-  if (config) {
-    state.mode = config.mode || state.mode;
-    state.durationSec = config.durationSec ?? state.durationSec;
-    state.format = config.format || state.format;
-
-    if (config.style) {
-      state.style = { ...state.style, ...config.style };
-      applyStyle(state.style);
-    }
-
-    if (config.sound) {
-      state.sound = { ...state.sound, ...config.sound };
+  // Handle flash command
+  if (command === 'flash') {
+    if (!flashAnimator?.isFlashing) {
+      flashAnimator = new FlashAnimator(timerEl, stageEl, () => {
+        // Flash complete
+      });
+      flashAnimator.start();
     }
   }
 
-  // Handle commands
-  switch (command) {
-    case 'start':
-      state.running = true;
-      state.startedAt = Date.now();
-      state.pausedAcc = 0;
-      warningSoundPlayed = false;
-      endSoundPlayed = false;
-      isOvertime = false;
-      overtimeStartedAt = null;
-      timerEl.classList.remove('ended', 'overtime');
-      break;
-
-    case 'pause':
-      if (state.running) {
-        state.running = false;
-        state.pausedAcc += Date.now() - state.startedAt;
-      }
-      break;
-
-    case 'resume':
-      // Resume from paused state without resetting
-      state.running = true;
-      state.startedAt = Date.now();
-      // Keep pausedAcc as is - it contains the elapsed time
-      break;
-
-    case 'reset':
-      state.running = false;
-      state.startedAt = null;
-      state.pausedAcc = 0;
-      warningSoundPlayed = false;
-      endSoundPlayed = false;
-      isOvertime = false;
-      overtimeStartedAt = null;
-      timerEl.classList.remove('ended', 'overtime', 'warning', 'danger');
-      // Reset to initial color state
-      applyColorState(state.durationSec, state.durationSec);
-      break;
-
-    case 'config':
-      // Config-only update, no command
-      break;
-
-    case 'flash':
-      // Flash the timer white a few times
-      triggerFlash();
-      break;
-
-    case 'sync':
-      // Sync full timer state from control window
-      if (config.timerState) {
-        state.startedAt = config.timerState.startedAt;
-        state.pausedAcc = config.timerState.pausedAcc || 0;
-        isOvertime = config.timerState.overtime || false;
-        overtimeStartedAt = config.timerState.overtimeStartedAt || null;
-        if (config.timerState.ended) {
-          timerEl.classList.add('ended');
-        }
-        if (isOvertime) {
-          timerEl.classList.add('overtime');
-        }
-      }
-      state.running = config.isRunning || false;
-      warningSoundPlayed = true; // Don't replay sounds on sync
-      endSoundPlayed = true;
-      break;
+  // Apply style if provided
+  if (config?.style) {
+    applyStyle(config.style);
   }
 }
 
@@ -424,30 +246,25 @@ function handleTimerUpdate(data) {
  */
 function setupKeyboardShortcuts() {
   document.addEventListener('keydown', (e) => {
-    // Ignore if user is typing in an input
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
       return;
     }
 
     switch (e.key.toLowerCase()) {
       case ' ':
-        // Space - toggle play/pause (send to control)
         e.preventDefault();
         window.ninja.sendKeyboardShortcut('toggle');
         break;
 
       case 'r':
-        // Reset
         window.ninja.sendKeyboardShortcut('reset');
         break;
 
       case 'b':
-        // Blackout toggle
         window.ninja.sendKeyboardShortcut('blackout');
         break;
 
       case 'escape':
-        // Toggle fullscreen
         e.preventDefault();
         if (document.fullscreenElement) {
           document.exitFullscreen().catch(() => {});
@@ -483,12 +300,10 @@ function setupFullscreenHint() {
     if (fsHintEl && !hasInteracted) {
       fsHintEl.classList.remove('hidden', 'fade-out');
       clearTimeout(hintTimeout);
-      // Start slow fade after 2 seconds visible
       hintTimeout = setTimeout(fadeOutHint, 2000);
     }
   };
 
-  // Hide immediately when entering fullscreen
   document.addEventListener('fullscreenchange', () => {
     if (document.fullscreenElement) {
       hideHintFast();
@@ -496,14 +311,12 @@ function setupFullscreenHint() {
     }
   });
 
-  // Show on mouse movement (only if not interacted yet)
   document.addEventListener('mousemove', () => {
     if (!hasInteracted) {
       showHint();
     }
   });
 
-  // Initial slow fade after 6 seconds
   setTimeout(fadeOutHint, 6000);
 }
 
@@ -526,15 +339,17 @@ function setupAudioInit() {
  */
 function init() {
   // Apply initial styles
-  applyStyle(state.style);
+  applyStyle({ color: '#ffffff', bgColor: '#000000', strokeWidth: 2, strokeColor: '#000000', shadowSize: 10 });
 
-  // Setup IPC listener for timer commands (sounds, flash, etc.)
+  // Setup canonical timer state listener (new StageTimer-style sync)
+  window.ninja.onTimerState(handleTimerState);
+
+  // Setup blackout state listener (ABSOLUTE state)
+  window.ninja.onBlackoutState(setBlackout);
+
+  // Setup legacy listeners for backwards compatibility
   window.ninja.onTimerUpdate(handleTimerUpdate);
-
-  // Setup display state listener (main sync from control window)
   window.ninja.onDisplayUpdate(handleDisplayUpdate);
-
-  // Setup blackout listener
   window.ninja.onBlackoutToggle(toggleBlackout);
 
   // Setup keyboard shortcuts
@@ -549,8 +364,11 @@ function init() {
   // Start render loop
   render();
 
-  // Signal to main process that viewer is fully initialized and ready
+  // Signal to main process that viewer is fully initialized
   window.ninja.signalViewerReady();
+
+  // Request current timer state from control window
+  window.ninja.requestTimerState();
 }
 
 // Start when DOM is ready

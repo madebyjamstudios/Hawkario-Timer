@@ -6,6 +6,8 @@
 import { parseHMS, secondsToHMS, formatTime, formatTimeOfDay, hexToRgba, debounce } from '../shared/timer.js';
 import { validateConfig, validatePresets, safeJSONParse, validateExportData } from '../shared/validation.js';
 import { STORAGE_KEYS } from '../shared/constants.js';
+import { createTimerState, FIXED_STYLE } from '../shared/timerState.js';
+import { computeDisplay, getShadowCSS, applyStyle as applySharedStyle, autoFitText, FlashAnimator } from '../shared/renderTimer.js';
 
 // DOM Elements
 const els = {
@@ -361,6 +363,12 @@ const timerState = {
 };
 let isBlackedOut = false;
 
+// State sequence number for sync
+let stateSeq = 0;
+
+// Flash animator instance (shared between preview)
+let flashAnimator = null;
+
 /**
  * Set the active timer config from a preset config
  * This is what the live preview and output display - separate from form fields
@@ -616,24 +624,7 @@ function setupConfirmDialog() {
   });
 }
 
-// Hardcoded style defaults (not user-configurable)
-const FIXED_STYLE = {
-  fontFamily: 'Inter, Segoe UI, Roboto, Helvetica, Arial, sans-serif',
-  fontWeight: '600',
-  opacity: 1,
-  align: 'center',
-  letterSpacing: 0.02
-};
-
-/**
- * Generate text shadow CSS from size value
- */
-function getShadowCSS(sizePx) {
-  if (sizePx === 0) return 'none';
-  const blur = sizePx;
-  const spread = Math.round(sizePx * 0.3);
-  return `0 ${spread}px ${blur}px rgba(0,0,0,0.5)`;
-}
+// FIXED_STYLE and getShadowCSS are now imported from shared/timerState.js and shared/renderTimer.js
 
 function getDefaultTimerConfig() {
   const settings = loadAppSettings();
@@ -1058,7 +1049,41 @@ function applyLivePreviewStyle() {
 }
 
 /**
- * Broadcast display state to output window
+ * Broadcast canonical timer state to output window
+ * Uses StageTimer-style sync: send raw timestamps, output computes display
+ */
+function broadcastTimerState() {
+  if (!outputWindowReady) return;
+
+  const todFormat = loadAppSettings().todFormat;
+
+  // Increment sequence number
+  stateSeq++;
+
+  // Send canonical state - output will compute display from this
+  window.ninja.sendTimerState({
+    seq: stateSeq,
+    mode: activeTimerConfig.mode,
+    durationMs: activeTimerConfig.durationSec * 1000,
+    format: activeTimerConfig.format,
+    startedAt: timerState.startedAt,
+    pausedAccMs: timerState.pausedAcc,
+    isRunning: isRunning,
+    ended: timerState.ended,
+    overtime: timerState.overtime,
+    overtimeStartedAt: timerState.overtimeStartedAt,
+    blackout: isBlackedOut,
+    flash: {
+      active: flashAnimator?.isFlashing || false,
+      startedAt: null
+    },
+    style: activeTimerConfig.style,
+    todFormat: todFormat
+  });
+}
+
+/**
+ * Broadcast display state to output window (LEGACY - kept for backwards compatibility)
  * This makes the output window a pure mirror of the live preview
  */
 function broadcastDisplayState(state) {
@@ -1110,6 +1135,7 @@ function renderLivePreview() {
   // Handle hidden mode
   if (mode === 'hidden') {
     els.livePreviewTimer.style.visibility = 'hidden';
+    broadcastTimerState();
     broadcastDisplayState({ visible: false });
     requestAnimationFrame(renderLivePreview);
     return;
@@ -1126,6 +1152,7 @@ function renderLivePreview() {
     els.livePreviewTimer.style.color = fontColor;
     els.livePreviewTimer.style.opacity = FIXED_STYLE.opacity;
     els.livePreview.classList.remove('warning');
+    broadcastTimerState();
     broadcastDisplayState({
       visible: true,
       text: displayText,
@@ -1269,7 +1296,10 @@ function renderLivePreview() {
     currentColor = '#E64A19';
   }
 
-  // Broadcast display state to output window
+  // Broadcast canonical timer state to output window (new StageTimer-style)
+  broadcastTimerState();
+
+  // Also broadcast display state for backwards compatibility
   broadcastDisplayState({
     visible: true,
     text: displayText,
@@ -1987,7 +2017,7 @@ function setupEventListeners() {
   // Initialize range displays
   updateRangeDisplays();
 
-  // Blackout button (toggle) with stripe animation
+  // Blackout button (absolute state, not toggle)
   els.blackoutBtn.addEventListener('click', () => {
     // Add transitioning stripes briefly
     els.blackoutBtn.classList.add('transitioning');
@@ -1995,59 +2025,31 @@ function setupEventListeners() {
       els.blackoutBtn.classList.remove('transitioning');
     }, 300);
 
-    window.ninja.toggleBlackout();
+    // Toggle local state and send ABSOLUTE state to output
+    isBlackedOut = !isBlackedOut;
+    els.blackoutBtn.classList.toggle('active', isBlackedOut);
+    window.ninja.setBlackout(isBlackedOut);
   });
 
-  // Flash button (synced with viewer): glow → grey → repeat 3 times
+  // Flash button - uses shared FlashAnimator for font-relative glow
   els.flashBtn.addEventListener('click', () => {
-    // Store original styles for live preview
-    const originalColor = els.livePreviewTimer.style.color || '';
-    const originalShadow = els.livePreviewTimer.style.textShadow || '';
-    const originalStroke = els.livePreviewTimer.style.webkitTextStrokeColor || '';
-    const originalStrokeWidth = els.livePreviewTimer.style.webkitTextStrokeWidth || '';
+    // Don't start new flash if already flashing
+    if (flashAnimator?.isFlashing) return;
 
-    // Timing (match viewer.js)
-    const glowDuration = 400;
-    const greyDuration = 300;
-
-    let flashCount = 0;
-    const maxFlashes = 3;
-
-    const showGlow = () => {
-      // White glow effect (compact but strong)
-      els.flashBtn.classList.add('flashing');
-      els.livePreviewTimer.style.color = '#ffffff';
-      els.livePreviewTimer.style.webkitTextStrokeColor = '#ffffff';
-      els.livePreviewTimer.style.webkitTextStrokeWidth = '1px';
-      els.livePreviewTimer.style.textShadow = '0 0 2px #fff, 0 0 4px #fff, 0 0 8px rgba(255,255,255,0.9)';
-
-      setTimeout(showGrey, glowDuration);
-    };
-
-    const showGrey = () => {
-      // Grey text - no glow
-      els.flashBtn.classList.remove('flashing');
-      els.livePreviewTimer.style.color = '#666666';
-      els.livePreviewTimer.style.webkitTextStrokeColor = '#666666';
-      els.livePreviewTimer.style.webkitTextStrokeWidth = '0px';
-      els.livePreviewTimer.style.textShadow = 'none';
-
-      flashCount++;
-
-      if (flashCount < maxFlashes) {
-        setTimeout(showGlow, greyDuration);
-      } else {
-        // Done flashing, restore original
-        setTimeout(() => {
-          els.livePreviewTimer.style.color = originalColor;
-          els.livePreviewTimer.style.textShadow = originalShadow;
-          els.livePreviewTimer.style.webkitTextStrokeColor = originalStroke;
-          els.livePreviewTimer.style.webkitTextStrokeWidth = originalStrokeWidth;
-        }, greyDuration);
+    // Create flash animator with shared code (font-relative glow)
+    flashAnimator = new FlashAnimator(
+      els.livePreviewTimer,
+      els.livePreview,
+      () => {
+        // On complete - update button state
+        els.flashBtn.classList.remove('flashing');
       }
-    };
+    );
 
-    showGlow();
+    els.flashBtn.classList.add('flashing');
+    flashAnimator.start();
+
+    // Also send flash command to output (output will use same FlashAnimator)
     window.ninja.sendTimerCommand('flash', activeTimerConfig);
   });
 
@@ -2255,6 +2257,10 @@ function setupEventListeners() {
       }
     }
 
+    // Send canonical state first
+    broadcastTimerState();
+
+    // Also send legacy display state for backwards compatibility
     broadcastDisplayState({
       visible: mode !== 'hidden',
       text: displayText,
@@ -2269,7 +2275,12 @@ function setupEventListeners() {
     outputWindowReady = false;
   });
 
-  // Blackout toggle listener
+  // Timer state request - output window asks for full state (on load/reload)
+  window.ninja.onTimerStateRequest(() => {
+    broadcastTimerState();
+  });
+
+  // Blackout toggle listener (legacy - kept for backwards compatibility)
   window.ninja.onBlackoutToggle(() => {
     isBlackedOut = !isBlackedOut;
     els.blackoutBtn.classList.toggle('active', isBlackedOut);

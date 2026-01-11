@@ -7,6 +7,40 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 // Expose a secure API to renderer processes
 contextBridge.exposeInMainWorld('ninja', {
+  // ============ Canonical Timer State (StageTimer-style sync) ============
+
+  // Broadcast canonical timer state to output (control -> main -> output)
+  sendTimerState: (state) => {
+    ipcRenderer.send('timer:state', state);
+  },
+
+  // Listen for canonical timer state updates (output window receives)
+  onTimerState: (callback) => {
+    ipcRenderer.on('timer:state', (_event, state) => callback(state));
+  },
+
+  // Request full timer state (output -> control, on load/reload)
+  requestTimerState: () => {
+    ipcRenderer.send('timer:request-state');
+  },
+
+  // Listen for state requests (control responds with full state)
+  onTimerStateRequest: (callback) => {
+    ipcRenderer.on('timer:request-state', () => callback());
+  },
+
+  // Set blackout state (ABSOLUTE, not toggle)
+  setBlackout: (isBlacked) => {
+    ipcRenderer.send('blackout:set', isBlacked);
+  },
+
+  // Listen for blackout state (ABSOLUTE state, not toggle)
+  onBlackoutState: (callback) => {
+    ipcRenderer.on('blackout:state', (_event, isBlacked) => callback(isBlacked));
+  },
+
+  // ============ Timer Commands ============
+
   // Timer commands (control -> main -> output)
   sendTimerCommand: (command, config) => {
     ipcRenderer.send('timer:command', { command, config });
@@ -90,11 +124,14 @@ contextBridge.exposeInMainWorld('ninja', {
 
   // Cleanup listeners (call when window closes)
   removeAllListeners: () => {
+    ipcRenderer.removeAllListeners('timer:state');
+    ipcRenderer.removeAllListeners('timer:request-state');
     ipcRenderer.removeAllListeners('timer:update');
     ipcRenderer.removeAllListeners('display:update');
     ipcRenderer.removeAllListeners('window:output-ready');
     ipcRenderer.removeAllListeners('window:output-closed');
     ipcRenderer.removeAllListeners('keyboard:shortcut');
     ipcRenderer.removeAllListeners('blackout:toggle');
+    ipcRenderer.removeAllListeners('blackout:state');
   }
 });

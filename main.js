@@ -101,6 +101,31 @@ function createOutputWindow() {
 
 // ============ IPC Handlers ============
 
+// ---- Canonical Timer State (StageTimer-style sync) ----
+
+// Timer state broadcast: control -> main -> output
+ipcMain.on('timer:state', (_event, state) => {
+  if (outputWindow && !outputWindow.isDestroyed()) {
+    outputWindow.webContents.send('timer:state', state);
+  }
+});
+
+// Timer state request: output -> main -> control
+ipcMain.on('timer:request-state', () => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('timer:request-state');
+  }
+});
+
+// Blackout set (ABSOLUTE state, not toggle): control -> main -> output
+ipcMain.on('blackout:set', (_event, isBlacked) => {
+  if (outputWindow && !outputWindow.isDestroyed()) {
+    outputWindow.webContents.send('blackout:state', isBlacked);
+  }
+});
+
+// ---- Timer Commands (legacy, for sounds/flash) ----
+
 // Timer commands: control -> main -> output
 ipcMain.on('timer:command', (_event, data) => {
   const { command, config } = data;
