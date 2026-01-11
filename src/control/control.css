@@ -173,10 +173,15 @@ button:disabled {
   position: relative;
   overflow: hidden;
   background: transparent;
+  /* Padding to prevent stroke from being clipped at edges */
+  padding: 4px 8px;
+  box-sizing: border-box;
 }
 
 .live-preview .timer-preview {
   white-space: nowrap;
+  overflow: visible;
+  padding: 0.1em 0.15em;
   /* Font size set dynamically in JS to match output scaling */
 }
 
@@ -1105,11 +1110,16 @@ footer small {
   display: grid;
   place-items: center;
   position: relative;
+  /* Padding to prevent stroke from being clipped at edges */
+  padding: 8px 12px;
+  box-sizing: border-box;
 }
 
 .modal-preview .timer-preview {
   font-size: 48px;
   white-space: nowrap;
+  overflow: visible;
+  padding: 0.1em 0.15em;
 }
 
 /* Toast notifications */

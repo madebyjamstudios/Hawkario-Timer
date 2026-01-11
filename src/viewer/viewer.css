@@ -27,8 +27,11 @@ html, body {
   font-variant-numeric: tabular-nums lining-nums;
   user-select: none;
   white-space: nowrap;
-  max-width: 95vw;
+  max-width: 90vw;
   overflow: visible;
+  /* Padding to prevent stroke from being clipped at edges */
+  padding: 0.1em 0.15em;
+  box-sizing: border-box;
 }
 
 /* Overtime state - red color when timer has passed */
