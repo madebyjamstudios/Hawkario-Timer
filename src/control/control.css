@@ -190,7 +190,7 @@ button:disabled {
   font-size: 0.3em;
   font-weight: 600;
   display: block;
-  margin-top: -0.05em;
+  margin-top: -0.35em;
   color: #ffffff !important;
   text-align: center;
 }
