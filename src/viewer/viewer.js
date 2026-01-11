@@ -119,28 +119,29 @@ function triggerFlash() {
 
   const showGlow = () => {
     // Scale glow based on viewport width (larger window = larger glow)
-    // Use aggressive scaling so glow radiates outward visibly on large screens
     const vw = window.innerWidth / 100;
-    const glowScale = Math.max(2, vw * 0.8); // Much larger scale factor
-    const strokeWidth = Math.max(1, glowScale * 0.3);
+    const glowScale = Math.max(4, vw * 1.2); // Aggressive scale factor
+    const strokeWidth = Math.max(2, glowScale * 0.4);
 
-    // Multiple blur layers for better diffusion - small to large
-    const blur1 = Math.round(glowScale * 0.5);   // Tight inner glow
-    const blur2 = Math.round(glowScale * 1.5);   // Medium spread
-    const blur3 = Math.round(glowScale * 3);     // Wide diffusion
-    const blur4 = Math.round(glowScale * 6);     // Outer halo
-    const blur5 = Math.round(glowScale * 10);    // Large radiating glow
+    // Multiple blur layers - heavy inner glow with radiating outer
+    const blur1 = Math.round(glowScale * 1);    // Tight bright core
+    const blur2 = Math.round(glowScale * 2);    // Inner glow
+    const blur3 = Math.round(glowScale * 4);    // Medium spread
+    const blur4 = Math.round(glowScale * 8);    // Wide halo
+    const blur5 = Math.round(glowScale * 15);   // Large outer glow
 
-    // White glow effect with multiple layers radiating outward
+    // Intense white glow - multiple solid layers for brightness
     timerEl.style.color = '#ffffff';
     timerEl.style.webkitTextStrokeColor = '#ffffff';
     timerEl.style.webkitTextStrokeWidth = strokeWidth + 'px';
     timerEl.style.textShadow = `
       0 0 ${blur1}px #fff,
+      0 0 ${blur1}px #fff,
       0 0 ${blur2}px #fff,
-      0 0 ${blur3}px rgba(255,255,255,0.95),
-      0 0 ${blur4}px rgba(255,255,255,0.7),
-      0 0 ${blur5}px rgba(255,255,255,0.4)
+      0 0 ${blur2}px rgba(255,255,255,0.9),
+      0 0 ${blur3}px rgba(255,255,255,0.8),
+      0 0 ${blur4}px rgba(255,255,255,0.6),
+      0 0 ${blur5}px rgba(255,255,255,0.3)
     `.replace(/\s+/g, ' ').trim();
 
     setTimeout(showGrey, glowDuration);
