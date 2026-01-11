@@ -236,10 +236,12 @@ export class FlashAnimator {
     this.maxFlashes = 3;
     this.glowDuration = 400;
     this.greyDuration = 300;
+    this.fadeOutDuration = 300;
     this.cycleDuration = this.glowDuration + this.greyDuration; // 700ms per cycle
-    // End after last glow (not grey): 2 full cycles + final glow = 1800ms
-    // Pattern: glow→grey→glow→grey→glow→restore
-    this.totalDuration = (this.maxFlashes - 1) * this.cycleDuration + this.glowDuration;
+    // Pattern: glow→grey→glow→grey→glow→fadeOut→restore
+    // 2 full cycles + final glow + fade out = 1800ms + 300ms = 2100ms
+    this.glowEndTime = (this.maxFlashes - 1) * this.cycleDuration + this.glowDuration;
+    this.totalDuration = this.glowEndTime + this.fadeOutDuration;
 
     this.isFlashing = false;
     this.startedAt = null;
@@ -271,6 +273,15 @@ export class FlashAnimator {
     // Animation complete?
     if (elapsed >= this.totalDuration) {
       this.restore();
+      return;
+    }
+
+    // Fade-out phase (after last glow)
+    if (elapsed >= this.glowEndTime) {
+      const fadeProgress = (elapsed - this.glowEndTime) / this.fadeOutDuration;
+      this.applyFadeOut(1 - fadeProgress); // 1 → 0
+      this.lastPhase = 'fadeOut';
+      this.rafId = requestAnimationFrame(() => this.tick());
       return;
     }
 
@@ -306,6 +317,37 @@ export class FlashAnimator {
     this.timerEl.style.webkitTextStrokeColor = '#666666';
     this.timerEl.style.webkitTextStrokeWidth = '0px';
     this.timerEl.style.textShadow = 'none';
+  }
+
+  applyFadeOut(intensity) {
+    // Intensity goes from 1 (full glow) to 0 (original)
+    const metrics = computeGlowMetrics(this.timerEl);
+
+    // Interpolate glow blur values
+    const { glowBlur1, glowBlur2, glowBlur3, glowBlur4, glowBlur5 } = metrics;
+    const b1 = glowBlur1 * intensity;
+    const b2 = glowBlur2 * intensity;
+    const b3 = glowBlur3 * intensity;
+    const b4 = glowBlur4 * intensity;
+    const b5 = glowBlur5 * intensity;
+
+    // Fade glow opacity
+    const glowCSS = intensity > 0.01 ? `
+      0 0 ${b1}px rgba(255,255,255,${intensity}),
+      0 0 ${b1}px rgba(255,255,255,${intensity}),
+      0 0 ${b2}px rgba(255,255,255,${intensity * 0.9}),
+      0 0 ${b2}px rgba(255,255,255,${intensity * 0.9}),
+      0 0 ${b3}px rgba(255,255,255,${intensity * 0.8}),
+      0 0 ${b4}px rgba(255,255,255,${intensity * 0.6}),
+      0 0 ${b5}px rgba(255,255,255,${intensity * 0.3})
+    `.replace(/\s+/g, ' ').trim() : 'none';
+
+    // Interpolate color from white (#fff) toward original
+    // For simplicity, just fade the glow and keep white until end
+    this.timerEl.style.color = '#ffffff';
+    this.timerEl.style.webkitTextStrokeColor = '#ffffff';
+    this.timerEl.style.webkitTextStrokeWidth = (metrics.strokeWidth * intensity) + 'px';
+    this.timerEl.style.textShadow = glowCSS;
   }
 
   restore() {
