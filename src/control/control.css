@@ -518,6 +518,26 @@ button:disabled {
   position: relative;
 }
 
+/* Row progress bar overlay */
+.preset-item .row-progress-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0%;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: calc(12px * var(--timer-scale, 1));
+  transition: width 0.1s linear;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Ensure preset content is above the progress overlay */
+.preset-item > *:not(.row-progress-bar) {
+  position: relative;
+  z-index: 1;
+}
+
 /* Drag placeholder wrapper - full size dashed outline */
 .drag-placeholder-wrapper {
   pointer-events: none;
@@ -609,6 +629,17 @@ button:disabled {
 .preset-item.selected:hover {
   background: linear-gradient(135deg, #1f6feb 0%, #1a5fd4 100%);
   box-shadow: 0 4px 12px rgba(31, 111, 235, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Playing timer (actively running) - orange, overrides selected blue */
+.preset-item.playing {
+  background: linear-gradient(135deg, #E64A19 0%, #BF360C 100%);
+  box-shadow: 0 2px 8px rgba(230, 74, 25, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.preset-item.playing:hover {
+  background: linear-gradient(135deg, #FF5722 0%, #E64A19 100%);
+  box-shadow: 0 4px 12px rgba(255, 87, 34, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .preset-name {
@@ -818,15 +849,20 @@ button:disabled {
   border-color: #3fb950;
 }
 
-/* Pause button - red */
+/* Pause button - grey by default, orange on hover */
 .icon-btn.pause-btn {
-  background: #E64A19;
-  border-color: #E64A19;
+  background: #444;
+  border-color: #555;
 }
 
 .icon-btn.pause-btn:hover {
   background: #E64A19;
   border-color: #FF5722;
+}
+
+.icon-btn.pause-btn:active {
+  background: #BF360C;
+  border-color: #E64A19;
 }
 
 /* Preset dropdown menu */

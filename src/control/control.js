@@ -787,6 +787,35 @@ function updateProgressBar(currentElapsedMs, currentTotalMs) {
   }
 }
 
+/**
+ * Update the progress bar inside a preset row
+ * @param {number} idx - The preset index
+ * @param {number} progressPercent - Progress percentage (0-100)
+ */
+function updateRowProgressBar(idx, progressPercent) {
+  const rows = els.presetList.querySelectorAll('.preset-item');
+  if (rows[idx]) {
+    const progressBar = rows[idx].querySelector('.row-progress-bar');
+    if (progressBar) {
+      progressBar.style.width = progressPercent + '%';
+    }
+  }
+}
+
+/**
+ * Update the playing class on preset rows without full re-render
+ */
+function updatePlayingRowState() {
+  const rows = els.presetList.querySelectorAll('.preset-item');
+  rows.forEach((row, idx) => {
+    const isSelected = activePresetIndex === idx;
+    const isPlaying = isSelected && isRunning;
+
+    row.classList.toggle('selected', isSelected);
+    row.classList.toggle('playing', isPlaying);
+  });
+}
+
 // ============ Modal Management ============
 
 function openModal(presetIndex = null) {
@@ -1168,6 +1197,18 @@ function renderLivePreview() {
       els.livePreviewTimer.style.opacity = FIXED_STYLE.opacity;
     }
     els.livePreview.classList.remove('warning');
+
+    // Update row progress bar for ToD mode (internal timer still runs)
+    if (activePresetIndex !== null) {
+      const totalMs = durationSec * 1000;
+      const currentElapsedMs = isRunning && timerState.startedAt
+        ? (Date.now() - timerState.startedAt + timerState.pausedAcc)
+        : timerState.pausedAcc;
+      const rowProgressPercent = totalMs > 0 ? Math.min(100, (currentElapsedMs / totalMs) * 100) : 0;
+      updateRowProgressBar(activePresetIndex, rowProgressPercent);
+    }
+    updatePlayingRowState();
+
     broadcastTimerState();
     broadcastDisplayState({
       visible: true,
@@ -1284,6 +1325,17 @@ function renderLivePreview() {
     els.elapsedTime.textContent = '00:00';
     els.remainingTime.textContent = '00:00';
   }
+
+  // Update row progress bar and playing state
+  if (activePresetIndex !== null) {
+    const totalMs = durationSec * 1000;
+    const currentElapsedMs = isRunning && timerState.startedAt
+      ? (Date.now() - timerState.startedAt + timerState.pausedAcc)
+      : timerState.pausedAcc;
+    const rowProgressPercent = totalMs > 0 ? Math.min(100, (currentElapsedMs / totalMs) * 100) : 0;
+    updateRowProgressBar(activePresetIndex, rowProgressPercent);
+  }
+  updatePlayingRowState();
 
   // Color states (skip during flash animation - let FlashAnimator control styles)
   if (!flashAnimator?.isFlashing) {
@@ -1443,6 +1495,10 @@ function sendCommand(command) {
       timerState.ended = false;
       timerState.overtime = false;
       timerState.overtimeStartedAt = null;
+      // Clear row progress bar
+      if (activePresetIndex !== null) {
+        updateRowProgressBar(activePresetIndex, 0);
+      }
       renderPresetList(); // Update button states
       break;
   }
@@ -1530,8 +1586,14 @@ function renderPresetList() {
   list.forEach((preset, idx) => {
     const row = document.createElement('div');
     const isSelected = activePresetIndex === idx;
-    row.className = isSelected ? 'preset-item selected' : 'preset-item';
+    const isPlaying = isSelected && isRunning;
+    row.className = 'preset-item' + (isPlaying ? ' selected playing' : (isSelected ? ' selected' : ''));
     row.dataset.index = idx;
+
+    // Progress bar overlay (first child, behind content)
+    const progressBar = document.createElement('div');
+    progressBar.className = 'row-progress-bar';
+    row.appendChild(progressBar);
 
     // Drag handle with number/hamburger icon
     const dragHandle = document.createElement('div');
@@ -2184,20 +2246,26 @@ function setupEventListeners() {
 
   // Global keyboard shortcuts (same as output window)
   document.addEventListener('keydown', (e) => {
+    // Debug: Log all keydown events
+    console.log('Keydown:', e.key, 'Target:', e.target.tagName, 'ActiveElement:', document.activeElement?.tagName);
+
     // Ignore if user is typing in an input
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+      console.log('Ignored: input/textarea focus');
       return;
     }
     // Ignore if any modal is open
     if (!els.settingsModal.classList.contains('hidden') ||
         !els.appSettingsModal.classList.contains('hidden') ||
         !els.confirmDialog.classList.contains('hidden')) {
+      console.log('Ignored: modal open');
       return;
     }
 
     switch (e.key.toLowerCase()) {
       case ' ':
         // Space - toggle play/pause (always works, even if button has focus)
+        console.log('Space pressed! isRunning:', isRunning, 'startedAt:', timerState.startedAt);
         e.preventDefault();
         // Blur any focused button to prevent it from being clicked
         if (document.activeElement?.tagName === 'BUTTON') {
