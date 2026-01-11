@@ -111,8 +111,8 @@ const els = {
   messageColor: document.getElementById('messageColor'),
   boldToggle: document.getElementById('boldToggle'),
   italicToggle: document.getElementById('italicToggle'),
-  sendMode: document.getElementById('sendMode'),
-  sendMessage: document.getElementById('sendMessage')
+  messageToggle: document.getElementById('messageToggle'),
+  messageToggleText: document.querySelector('.message-toggle-text')
 };
 
 // Helper functions for unified time input (HH:MM:SS)
@@ -1008,7 +1008,7 @@ function renderMessageList() {
   // Show active message bar if message is being displayed
   if (activeMessage) {
     const bar = document.createElement('div');
-    bar.className = 'active-message-bar' + (activeMessage.mode === 'timed' ? ' timed' : '');
+    bar.className = 'active-message-bar';
 
     const text = document.createElement('span');
     text.className = 'active-message-text';
@@ -1019,18 +1019,9 @@ function renderMessageList() {
 
     bar.appendChild(text);
 
-    if (activeMessage.mode === 'timed') {
-      const countdown = document.createElement('span');
-      countdown.className = 'message-countdown';
-      countdown.id = 'messageCountdown';
-      const remaining = Math.max(0, Math.ceil((activeMessage.sentAt + activeMessage.duration - Date.now()) / 1000));
-      countdown.textContent = remaining + 's';
-      bar.appendChild(countdown);
-    }
-
     const retractBtn = document.createElement('button');
     retractBtn.className = 'retract-btn';
-    retractBtn.textContent = 'Retract';
+    retractBtn.textContent = 'Hide';
     retractBtn.onclick = retractMessage;
     bar.appendChild(retractBtn);
 
@@ -1126,17 +1117,12 @@ function deleteMessage(idx) {
 }
 
 function sendMessageNow(msg) {
-  const mode = els.sendMode.value;
-  const duration = mode === 'timed' ? 9000 : 0;
-
   activeMessage = {
     text: msg.text,
     bold: msg.bold,
     italic: msg.italic,
     color: msg.color,
-    mode: mode,
-    sentAt: Date.now(),
-    duration: duration
+    sentAt: Date.now()
   };
 
   // Broadcast to viewer
@@ -1148,10 +1134,9 @@ function sendMessageNow(msg) {
     visible: true
   });
 
-  // Start countdown timer for timed messages
-  if (mode === 'timed') {
-    startMessageCountdown();
-  }
+  // Update toggle button state
+  els.messageToggle.classList.add('active');
+  els.messageToggleText.textContent = 'Hide';
 
   renderMessageList();
 }
@@ -1181,29 +1166,27 @@ function retractMessage() {
   // Clear from viewer
   window.ninja.sendMessage({ visible: false });
 
+  // Update toggle button state
+  els.messageToggle.classList.remove('active');
+  els.messageToggleText.textContent = 'Show';
+
   renderMessageList();
 }
 
-function startMessageCountdown() {
-  if (messageTimerId) clearInterval(messageTimerId);
+function toggleMessage() {
+  // Add transitioning animation
+  els.messageToggle.classList.add('transitioning');
+  setTimeout(() => {
+    els.messageToggle.classList.remove('transitioning');
+  }, 300);
 
-  messageTimerId = setInterval(() => {
-    if (!activeMessage || activeMessage.mode !== 'timed') {
-      clearInterval(messageTimerId);
-      messageTimerId = null;
-      return;
-    }
-
-    const remaining = Math.max(0, Math.ceil((activeMessage.sentAt + activeMessage.duration - Date.now()) / 1000));
-    const countdownEl = document.getElementById('messageCountdown');
-    if (countdownEl) {
-      countdownEl.textContent = remaining + 's';
-    }
-
-    if (remaining <= 0) {
-      retractMessage();
-    }
-  }, 100);
+  if (activeMessage) {
+    // Message is showing, hide it
+    retractMessage();
+  } else {
+    // No message showing, show the composed message
+    sendComposedMessage();
+  }
 }
 
 // ============ Custom Confirm Dialog ============
@@ -2967,11 +2950,11 @@ function setupEventListeners() {
   els.italicToggle.addEventListener('click', () => {
     els.italicToggle.classList.toggle('active');
   });
-  els.sendMessage.addEventListener('click', sendComposedMessage);
+  els.messageToggle.addEventListener('click', toggleMessage);
   els.messageText.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      sendComposedMessage();
+      toggleMessage();
     }
   });
 
