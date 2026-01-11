@@ -66,15 +66,23 @@ function toggleBlackout() {
   setBlackout(!isBlackedOut);
 }
 
+// Current message state
+let currentMessage = null;
+
 /**
  * Handle message updates from control window
  */
 function handleMessageUpdate(message) {
   if (!message || !message.visible) {
-    // Hide message
+    // Hide message and restore full layout
+    currentMessage = null;
     messageOverlayEl.classList.remove('visible', 'bold', 'italic');
+    stageEl.classList.remove('with-message');
     return;
   }
+
+  // Store message state
+  currentMessage = message;
 
   // Apply message content and styling
   messageOverlayEl.textContent = message.text || '';
@@ -82,6 +90,39 @@ function handleMessageUpdate(message) {
   messageOverlayEl.classList.toggle('bold', !!message.bold);
   messageOverlayEl.classList.toggle('italic', !!message.italic);
   messageOverlayEl.classList.add('visible');
+
+  // Enable split layout
+  stageEl.classList.add('with-message');
+
+  // Auto-fit the message
+  autoFitMessage();
+}
+
+/**
+ * Auto-fit message text to fill its container (90% width, 45% height)
+ */
+function autoFitMessage() {
+  if (!currentMessage) return;
+
+  messageOverlayEl.style.fontSize = '100px';
+
+  const containerWidth = window.innerWidth;
+  const containerHeight = window.innerHeight;
+  const targetWidth = containerWidth * 0.9;
+  const targetHeight = containerHeight * 0.45;
+  const naturalWidth = messageOverlayEl.scrollWidth;
+  const naturalHeight = messageOverlayEl.scrollHeight;
+
+  if (naturalWidth > 0 && naturalHeight > 0) {
+    // Calculate ratios for both width and height constraints
+    const widthRatio = targetWidth / naturalWidth;
+    const heightRatio = targetHeight / naturalHeight;
+
+    // Use the smaller ratio to ensure it fits both constraints
+    const ratio = Math.min(widthRatio, heightRatio);
+    const newFontSize = Math.max(10, 100 * ratio);
+    messageOverlayEl.style.fontSize = newFontSize + 'px';
+  }
 }
 
 /**
@@ -173,7 +214,8 @@ function autoFitTimer() {
   const containerWidth = window.innerWidth;
   const containerHeight = window.innerHeight;
   const targetWidth = containerWidth * 0.9;
-  const targetHeight = containerHeight * 0.85;
+  // Use 45% height when message is visible (50/50 split), otherwise 85%
+  const targetHeight = containerHeight * (currentMessage ? 0.45 : 0.85);
   const naturalWidth = timerEl.scrollWidth;
   const naturalHeight = timerEl.scrollHeight;
 
@@ -244,6 +286,7 @@ function render() {
 
   // Auto-fit to viewport
   autoFitTimer();
+  autoFitMessage();
 
   // Apply color state (skip during flash animation)
   if (!flashAnimator?.isFlashing) {

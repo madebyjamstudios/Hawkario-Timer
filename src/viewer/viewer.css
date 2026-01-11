@@ -102,29 +102,44 @@ html, body {
   /* Applied via JS when timer ends */
 }
 
+/* ============ Split Layout (Timer + Message) ============ */
+
+.stage.with-message {
+  grid-template-rows: 1fr 1fr;
+  place-items: center center;
+}
+
+.stage.with-message .timer {
+  align-self: end;
+  max-height: 45vh;
+}
+
 /* ============ Message Overlay ============ */
 
 .message-overlay {
-  position: fixed;
-  bottom: 12%;
-  left: 0;
-  right: 0;
+  display: none;
+  align-self: start;
+  justify-self: center;
   text-align: center;
-  font-size: 5vw;
   font-weight: 600;
   color: #ffffff;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 0, 0, 0.5);
-  z-index: 100;
   opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity 0.3s ease;
   pointer-events: none;
-  padding: 0 5%;
+  padding: 0.1em 0.15em;
+  box-sizing: border-box;
+  max-width: 90vw;
+  max-height: 45vh;
+  overflow: hidden;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 .message-overlay.visible {
+  display: block;
   opacity: 1;
-  transform: translateY(0);
 }
 
 .message-overlay.bold {
