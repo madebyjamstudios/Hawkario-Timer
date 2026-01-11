@@ -127,6 +127,34 @@ function setDurationInputs(totalSeconds) {
   const m = Math.floor((totalSeconds % 3600) / 60);
   const s = totalSeconds % 60;
   els.duration.value = formatTimeValue(h, m, s);
+  updateDurationDigitDisplay();
+}
+
+// Update duration digit value displays
+function updateDurationDigitDisplay() {
+  const { h, m, s } = parseTimeValue(els.duration.value);
+  const digitH1 = document.getElementById('digitH1');
+  const digitH2 = document.getElementById('digitH2');
+  const digitM1 = document.getElementById('digitM1');
+  const digitM2 = document.getElementById('digitM2');
+  const digitS1 = document.getElementById('digitS1');
+  const digitS2 = document.getElementById('digitS2');
+
+  if (digitH1) digitH1.textContent = Math.floor(h / 10);
+  if (digitH2) digitH2.textContent = h % 10;
+  if (digitM1) digitM1.textContent = Math.floor(m / 10);
+  if (digitM2) digitM2.textContent = m % 10;
+  if (digitS1) digitS1.textContent = Math.floor(s / 10);
+  if (digitS2) digitS2.textContent = s % 10;
+}
+
+// Show/hide hours group based on format selection
+function updateDurationControlsFormat() {
+  const format = els.format?.value;
+  const controls = document.getElementById('durationControls');
+  if (controls) {
+    controls.classList.toggle('format-mmss', format === 'MM:SS');
+  }
 }
 
 function getDefaultDurationSeconds() {
@@ -1050,6 +1078,8 @@ function openModal(presetIndex = null) {
   els.settingsModal.classList.remove('hidden');
   els.presetName.focus();
   els.presetName.select();
+  updateDurationDigitDisplay();
+  updateDurationControlsFormat();
   updateModalPreview();
 }
 
@@ -2324,32 +2354,46 @@ function handleImport(e) {
 
 function setupEventListeners() {
   // Initialize time inputs with section-based navigation
-  initTimeInput(els.duration);
   initTimeInput(els.defaultDuration);
   initTimeInputMS(els.warnYellowSec);
   initTimeInputMS(els.warnOrangeSec);
 
-  // Duration control buttons (up/down for HH:MM:SS)
-  document.querySelectorAll('.dur-btn').forEach(btn => {
+  // Duration control buttons - per-digit (h1, h2, m1, m2, s1, s2)
+  document.querySelectorAll('.digit-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const segment = btn.dataset.segment;
-      const isUp = btn.classList.contains('dur-up');
+      const digit = btn.dataset.digit;
+      const isUp = btn.classList.contains('digit-up');
       const { h, m, s } = parseTimeValue(els.duration.value);
 
-      let newH = h, newM = m, newS = s;
+      // Split into individual digits
+      let h1 = Math.floor(h / 10), h2 = h % 10;
+      let m1 = Math.floor(m / 10), m2 = m % 10;
+      let s1 = Math.floor(s / 10), s2 = s % 10;
 
-      if (segment === 'hours') {
-        newH = isUp ? Math.min(99, h + 1) : Math.max(0, h - 1);
-      } else if (segment === 'minutes') {
-        newM = isUp ? (m + 1) % 60 : (m - 1 + 60) % 60;
-      } else if (segment === 'seconds') {
-        newS = isUp ? (s + 1) % 60 : (s - 1 + 60) % 60;
+      // Increment/decrement the specific digit
+      const delta = isUp ? 1 : -1;
+      switch (digit) {
+        case 'h1': h1 = (h1 + delta + 10) % 10; break;
+        case 'h2': h2 = (h2 + delta + 10) % 10; break;
+        case 'm1': m1 = (m1 + delta + 6) % 6; break;  // 0-5 for tens of minutes
+        case 'm2': m2 = (m2 + delta + 10) % 10; break;
+        case 's1': s1 = (s1 + delta + 6) % 6; break;  // 0-5 for tens of seconds
+        case 's2': s2 = (s2 + delta + 10) % 10; break;
       }
 
+      // Rebuild duration values
+      const newH = h1 * 10 + h2;
+      const newM = m1 * 10 + m2;
+      const newS = s1 * 10 + s2;
+
       els.duration.value = formatTimeValue(newH, newM, newS);
+      updateDurationDigitDisplay();
       updateModalPreview();
     });
   });
+
+  // Format change - show/hide hours group
+  els.format.addEventListener('change', updateDurationControlsFormat);
 
   // Input change listeners (debounced) - update both live and modal preview
   const inputEls = [
