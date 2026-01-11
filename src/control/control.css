@@ -32,9 +32,8 @@ label {
 
 input[type="text"],
 input[type="number"],
-input[type="color"],
 select {
-  background: #0a0a0a;
+  background: #1a1a1a;
   color: #eee;
   border: 1px solid #333;
   border-radius: 6px;
@@ -1875,7 +1874,7 @@ button.danger:active {
 .message-input {
   width: 100%;
   padding: 10px 12px;
-  background: #0a0a0a;
+  background: #1a1a1a;
   border: 1px solid #333;
   border-radius: 8px;
   color: #fff;
