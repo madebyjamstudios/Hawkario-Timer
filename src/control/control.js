@@ -2184,19 +2184,25 @@ function setupEventListeners() {
 
   // Global keyboard shortcuts (same as output window)
   document.addEventListener('keydown', (e) => {
-    // Ignore if user is typing in an input or modal is open
+    // Ignore if user is typing in an input
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
       return;
     }
+    // Ignore if any modal is open
     if (!els.settingsModal.classList.contains('hidden') ||
-        !els.appSettingsModal.classList.contains('hidden')) {
+        !els.appSettingsModal.classList.contains('hidden') ||
+        !els.confirmDialog.classList.contains('hidden')) {
       return;
     }
 
     switch (e.key.toLowerCase()) {
       case ' ':
-        // Space - toggle play/pause
+        // Space - toggle play/pause (always works, even if button has focus)
         e.preventDefault();
+        // Blur any focused button to prevent it from being clicked
+        if (document.activeElement?.tagName === 'BUTTON') {
+          document.activeElement.blur();
+        }
         if (isRunning) {
           sendCommand('pause');
         } else if (timerState.startedAt !== null) {
