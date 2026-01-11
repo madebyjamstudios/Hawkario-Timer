@@ -789,7 +789,7 @@ function closeModal() {
 function saveModal() {
   saveUndoState(); // Save state before changes for undo
 
-  const name = els.presetName.value.trim() || 'Timer';
+  const name = (els.presetName.value.trim() || 'Timer').slice(0, 16);
   const config = getCurrentConfig();
   const presets = loadPresets();
 
@@ -1693,6 +1693,7 @@ function showQuickEditPopup(idx, preset, anchorEl) {
   input.type = 'text';
   input.value = preset.name;
   input.placeholder = 'Timer name';
+  input.maxLength = 16;
 
   inputRow.append(label, input);
 
@@ -1709,7 +1710,7 @@ function showQuickEditPopup(idx, preset, anchorEl) {
   saveBtn.textContent = 'Save';
   saveBtn.onclick = () => {
     saveUndoState(); // Save state before rename for undo
-    const newName = input.value.trim() || 'Timer';
+    const newName = (input.value.trim() || 'Timer').slice(0, 16);
     const presets = loadPresets();
     presets[idx].name = newName;
     savePresets(presets);
