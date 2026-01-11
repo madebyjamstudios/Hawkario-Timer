@@ -232,7 +232,6 @@ export class FlashAnimator {
     this.originalShadow = '';
     this.originalStroke = '';
     this.originalStrokeWidth = '';
-    this.originalBg = '';
 
     this.flashCount = 0;
     this.maxFlashes = 3;
@@ -251,7 +250,6 @@ export class FlashAnimator {
     this.originalShadow = this.timerEl.style.textShadow;
     this.originalStroke = this.timerEl.style.webkitTextStrokeColor;
     this.originalStrokeWidth = this.timerEl.style.webkitTextStrokeWidth;
-    this.originalBg = this.containerEl?.style.background || '';
 
     this.flashCount = 0;
     this.isFlashing = true;
@@ -263,13 +261,7 @@ export class FlashAnimator {
     const metrics = computeGlowMetrics(this.timerEl);
     const glowCSS = getFlashGlowCSS(metrics);
 
-    // Brief background flash
-    if (this.containerEl) {
-      this.containerEl.style.background = '#222';
-    }
-    document.body.style.background = '#222';
-
-    // Intense white glow
+    // Intense white glow on text only
     this.timerEl.style.color = '#ffffff';
     this.timerEl.style.webkitTextStrokeColor = '#ffffff';
     this.timerEl.style.webkitTextStrokeWidth = metrics.strokeWidth + 'px';
@@ -284,12 +276,6 @@ export class FlashAnimator {
     this.timerEl.style.webkitTextStrokeColor = '#666666';
     this.timerEl.style.webkitTextStrokeWidth = '0px';
     this.timerEl.style.textShadow = 'none';
-
-    // Restore background
-    if (this.containerEl) {
-      this.containerEl.style.background = this.originalBg;
-    }
-    document.body.style.background = this.originalBg;
 
     this.flashCount++;
 
@@ -306,11 +292,6 @@ export class FlashAnimator {
     this.timerEl.style.textShadow = this.originalShadow;
     this.timerEl.style.webkitTextStrokeColor = this.originalStroke;
     this.timerEl.style.webkitTextStrokeWidth = this.originalStrokeWidth;
-
-    if (this.containerEl) {
-      this.containerEl.style.background = this.originalBg;
-    }
-    document.body.style.background = this.originalBg;
 
     this.isFlashing = false;
 

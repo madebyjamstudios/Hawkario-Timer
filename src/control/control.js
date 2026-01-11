@@ -2037,9 +2037,10 @@ function setupEventListeners() {
     if (flashAnimator?.isFlashing) return;
 
     // Create flash animator with shared code (font-relative glow)
+    // Pass null for container so only the timer text flashes, not the whole control window
     flashAnimator = new FlashAnimator(
       els.livePreviewTimer,
-      els.livePreview,
+      null,
       () => {
         // On complete - update button state
         els.flashBtn.classList.remove('flashing');
