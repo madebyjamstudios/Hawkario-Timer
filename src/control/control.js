@@ -1039,7 +1039,7 @@ function restorePreviewWidth() {
 }
 
 /**
- * Auto-fit text element to fill container width
+ * Auto-fit text element to fill container (considers both width and height)
  * @param {HTMLElement} textEl - The text element to size
  * @param {HTMLElement} containerEl - The container to fit within
  * @param {number} targetPercent - Target width percentage (0.9 = 90%)
@@ -1052,12 +1052,18 @@ function autoFitText(textEl, containerEl, targetPercent = 0.9) {
   textEl.style.transform = 'scale(1)';
 
   const containerWidth = containerEl.offsetWidth;
+  const containerHeight = containerEl.offsetHeight;
   const targetWidth = containerWidth * targetPercent;
+  const targetHeight = containerHeight * 0.85; // Match viewer's 85% height
   const naturalWidth = textEl.scrollWidth;
+  const naturalHeight = textEl.scrollHeight;
 
   if (naturalWidth > 0 && containerWidth > 0) {
-    // Calculate font size to achieve target width
-    const ratio = targetWidth / naturalWidth;
+    // Calculate ratios for both width and height constraints
+    const widthRatio = targetWidth / naturalWidth;
+    const heightRatio = targetHeight / naturalHeight;
+    // Use the smaller ratio to ensure it fits both constraints
+    const ratio = Math.min(widthRatio, heightRatio);
     const newFontSize = Math.max(10, 100 * ratio); // Min 10px for readability
     textEl.style.fontSize = newFontSize + 'px';
   }

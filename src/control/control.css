@@ -1181,14 +1181,10 @@ footer small {
 }
 
 .modal-preview .timer-preview {
-  font-size: 48px;
   white-space: nowrap;
   overflow: visible;
   padding: 0.1em 0.15em;
-}
-
-.modal-preview .tod-line {
-  font-size: 13px;
+  /* Font size set dynamically by autoFitText */
 }
 
 /* Toast notifications */
