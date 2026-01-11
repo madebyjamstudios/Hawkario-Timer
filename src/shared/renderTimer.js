@@ -306,13 +306,17 @@ export class FlashAnimator {
   }
 
   restore() {
-    // Clear transition so future style changes are instant
-    this.timerEl.style.transition = '';
+    // Clear transition and force reflow so restore is instant (no animated shadow)
+    this.timerEl.style.transition = 'none';
+    void this.timerEl.offsetHeight; // Force reflow
 
     this.timerEl.style.color = this.originalColor;
     this.timerEl.style.textShadow = this.originalShadow;
     this.timerEl.style.webkitTextStrokeColor = this.originalStroke;
     this.timerEl.style.webkitTextStrokeWidth = this.originalStrokeWidth;
+
+    // Clear transition property completely
+    this.timerEl.style.transition = '';
 
     this.isFlashing = false;
     this.startedAt = null;
