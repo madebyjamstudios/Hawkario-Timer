@@ -60,7 +60,7 @@ export const DEFAULT_CONFIG = {
   },
   sound: {
     warnEnabled: false,
-    endEnabled: true,
+    endEnabled: false,
     volume: 0.7
   }
 };
