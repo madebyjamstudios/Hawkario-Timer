@@ -931,8 +931,9 @@ function updateModalPreview() {
 
   els.modalPreviewTimer.innerHTML = displayText;
 
-  // Auto-fit text to fill 90% of container
-  autoFitText(els.modalPreviewTimer, els.modalPreview, 0.9);
+  // Auto-fit text - timer-only modes get more space (0.95), ToD+timer uses 0.9
+  const fitPercent = showToD ? 0.9 : 0.95;
+  autoFitText(els.modalPreviewTimer, els.modalPreview, fitPercent);
 }
 
 // ============ Collapsible Settings Sections ============
@@ -1008,7 +1009,7 @@ function doResize(e) {
   els.previewWrapper.style.width = newWidth + 'px';
 
   // Update preview text scaling in real-time
-  autoFitText(els.livePreviewTimer, els.livePreview, 0.9);
+  autoFitText(els.livePreviewTimer, els.livePreview, getAutoFitPercent());
 }
 
 function stopResize() {
@@ -1034,7 +1035,7 @@ function restorePreviewWidth() {
     }
   }
   // Apply scaling after restoring width
-  requestAnimationFrame(() => autoFitText(els.livePreviewTimer, els.livePreview, 0.9));
+  requestAnimationFrame(() => autoFitText(els.livePreviewTimer, els.livePreview, getAutoFitPercent()));
 }
 
 /**
@@ -1060,6 +1061,16 @@ function autoFitText(textEl, containerEl, targetPercent = 0.9) {
     const newFontSize = Math.max(10, 100 * ratio); // Min 10px for readability
     textEl.style.fontSize = newFontSize + 'px';
   }
+}
+
+/**
+ * Get auto-fit percent based on current mode
+ * Timer-only modes get more space (0.95), ToD+timer uses 0.9
+ */
+function getAutoFitPercent() {
+  const mode = activeTimerConfig?.mode || 'countdown';
+  const hasToD = mode === 'countdown-tod' || mode === 'countup-tod';
+  return hasToD ? 0.9 : 0.95;
 }
 
 // ============ Preview ============
@@ -1200,7 +1211,7 @@ function renderLivePreview() {
   if (mode === 'tod') {
     displayText = formatTimeOfDay(todFormat);
     els.livePreviewTimer.textContent = displayText;
-    autoFitText(els.livePreviewTimer, els.livePreview, 0.9);
+    autoFitText(els.livePreviewTimer, els.livePreview, 0.95);
     // Skip color changes during flash animation
     if (!flashAnimator?.isFlashing) {
       els.livePreviewTimer.style.color = fontColor;
@@ -1345,7 +1356,9 @@ function renderLivePreview() {
 
   // Update display (use innerHTML for ToD line breaks)
   els.livePreviewTimer.innerHTML = displayText;
-  autoFitText(els.livePreviewTimer, els.livePreview, 0.9);
+  // Timer-only modes get more space (0.95), ToD+timer uses 0.9
+  const fitPercent = showToD ? 0.9 : 0.95;
+  autoFitText(els.livePreviewTimer, els.livePreview, fitPercent);
 
   // Update progress bar
   if (isCountdown) {
