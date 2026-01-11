@@ -844,19 +844,23 @@ async function downloadUpdates() {
     clearInterval(progressInterval);
 
     if (result.success) {
-      // Complete the progress bar
-      updateProgress(100);
+      // Complete the progress bar with celebration
+      const progressBar = document.querySelector('.progress-bar');
       progressFill.style.width = '100%';
       progressText.textContent = '100%';
+      progressBar.classList.add('complete');
       progressTime.textContent = 'Complete!';
+      progressTime.classList.add('complete');
 
-      // Short delay to show 100%, then show restart button
+      // Longer delay to enjoy the completion animation
       setTimeout(() => {
         progressContainer.classList.add('hidden');
+        progressBar.classList.remove('complete');
+        progressTime.classList.remove('complete');
         statusEl.innerHTML = `<span class="update-check">✓</span> Updates downloaded!`;
         statusEl.className = 'update-success';
         restartBtn.classList.remove('hidden');
-      }, 500);
+      }, 1200);
     } else {
       progressContainer.classList.add('hidden');
       statusEl.textContent = result.error || 'Download failed';
@@ -904,6 +908,8 @@ function openAppSettings() {
   document.getElementById('progressFill').style.width = '0%';
   document.getElementById('progressText').textContent = '0%';
   document.getElementById('progressTime').textContent = '';
+  document.getElementById('progressTime').classList.remove('complete');
+  document.querySelector('.progress-bar').classList.remove('complete');
   document.getElementById('updateStatus').textContent = '';
   document.getElementById('updateStatus').className = '';
 

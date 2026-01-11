@@ -199,26 +199,25 @@ ipcMain.handle('app:version', () => {
   return app.getVersion();
 });
 
-// Check for updates from GitHub (compares local vs remote commit date)
+// Check for updates from GitHub (compares local vs remote commit SHA)
 ipcMain.handle('app:check-updates', async () => {
   const https = require('https');
   const { exec } = require('child_process');
-  const currentVersion = app.getVersion();
   const appPath = __dirname;
 
-  // Get local commit date
-  const getLocalCommitDate = () => new Promise((resolve) => {
-    exec('git log -1 --format=%cI', { cwd: appPath }, (error, stdout) => {
+  // Get local commit SHA
+  const getLocalCommitSha = () => new Promise((resolve) => {
+    exec('git rev-parse HEAD', { cwd: appPath }, (error, stdout) => {
       if (error) {
         resolve(null);
       } else {
-        resolve(new Date(stdout.trim()));
+        resolve(stdout.trim());
       }
     });
   });
 
-  const localCommitDate = await getLocalCommitDate();
-  if (!localCommitDate) {
+  const localSha = await getLocalCommitSha();
+  if (!localSha) {
     return { error: 'Could not read local git history' };
   }
 
@@ -235,17 +234,18 @@ ipcMain.handle('app:check-updates', async () => {
       res.on('end', () => {
         try {
           const commit = JSON.parse(data);
-          if (commit.commit && commit.commit.committer) {
-            const remoteCommitDate = new Date(commit.commit.committer.date);
-            const updateAvailable = remoteCommitDate > localCommitDate;
+          if (commit.sha) {
+            const remoteSha = commit.sha;
+            const updateAvailable = localSha !== remoteSha;
 
             resolve({
-              currentVersion,
               updateAvailable,
+              localSha: localSha.substring(0, 7),
+              remoteSha: remoteSha.substring(0, 7),
               downloadUrl: 'https://github.com/madebyjamstudios/ninja-timer'
             });
           } else {
-            resolve({ currentVersion, updateAvailable: false });
+            resolve({ updateAvailable: false });
           }
         } catch (e) {
           resolve({ error: 'Failed to parse response' });
