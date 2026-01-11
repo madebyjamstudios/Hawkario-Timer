@@ -2954,7 +2954,7 @@ function setupEventListeners() {
   els.messageText.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      toggleMessage();
+      saveCurrentMessage();
     }
   });
 
