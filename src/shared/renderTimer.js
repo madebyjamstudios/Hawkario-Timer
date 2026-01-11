@@ -236,12 +236,9 @@ export class FlashAnimator {
     this.maxFlashes = 3;
     this.glowDuration = 400;
     this.greyDuration = 300;
-    this.fadeOutDuration = 300;
     this.cycleDuration = this.glowDuration + this.greyDuration; // 700ms per cycle
-    // Pattern: glow→grey→glow→grey→glow→fadeOut→restore
-    // 2 full cycles + final glow + fade out = 1800ms + 300ms = 2100ms
-    this.glowEndTime = (this.maxFlashes - 1) * this.cycleDuration + this.glowDuration;
-    this.totalDuration = this.glowEndTime + this.fadeOutDuration;
+    // Pattern: glow→grey→glow→grey→glow→restore (hard cut at end)
+    this.totalDuration = (this.maxFlashes - 1) * this.cycleDuration + this.glowDuration;
 
     this.isFlashing = false;
     this.startedAt = null;
@@ -273,16 +270,6 @@ export class FlashAnimator {
     // Animation complete?
     if (elapsed >= this.totalDuration) {
       this.restore();
-      return;
-    }
-
-    // Fade-out phase (after last glow) - trigger once, CSS handles the rest
-    if (elapsed >= this.glowEndTime) {
-      if (this.lastPhase !== 'fadeOut') {
-        this.startFadeOut();
-        this.lastPhase = 'fadeOut';
-      }
-      this.rafId = requestAnimationFrame(() => this.tick());
       return;
     }
 
@@ -320,22 +307,7 @@ export class FlashAnimator {
     this.timerEl.style.textShadow = 'none';
   }
 
-  startFadeOut() {
-    // Use CSS transition for smooth fade - browser handles interpolation
-    const duration = this.fadeOutDuration + 'ms';
-    this.timerEl.style.transition = `color ${duration} ease-out, text-shadow ${duration} ease-out, -webkit-text-stroke-color ${duration} ease-out, -webkit-text-stroke-width ${duration} ease-out`;
-
-    // Set to original values - CSS will animate the transition
-    this.timerEl.style.color = this.originalColor;
-    this.timerEl.style.textShadow = this.originalShadow;
-    this.timerEl.style.webkitTextStrokeColor = this.originalStroke;
-    this.timerEl.style.webkitTextStrokeWidth = this.originalStrokeWidth;
-  }
-
   restore() {
-    // Clear transition so future style changes are instant
-    this.timerEl.style.transition = '';
-
     this.timerEl.style.color = this.originalColor;
     this.timerEl.style.textShadow = this.originalShadow;
     this.timerEl.style.webkitTextStrokeColor = this.originalStroke;
@@ -355,8 +327,6 @@ export class FlashAnimator {
       cancelAnimationFrame(this.rafId);
       this.rafId = null;
     }
-    // Clear transition in case we're mid-fade
-    this.timerEl.style.transition = '';
     if (this.isFlashing) {
       this.restore();
     }
