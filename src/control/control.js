@@ -4,7 +4,7 @@
  */
 
 import { parseHMS, secondsToHMS, formatTime, formatTimeOfDay, hexToRgba, debounce } from '../shared/timer.js';
-import { validateConfig, validatePresets, safeJSONParse } from '../shared/validation.js';
+import { validateConfig, validatePresets, safeJSONParse, validateExportData } from '../shared/validation.js';
 import { STORAGE_KEYS } from '../shared/constants.js';
 
 // DOM Elements
@@ -1836,27 +1836,37 @@ function createDefaultPreset() {
   }
 }
 
-function handleExportPresets() {
+function handleExport() {
   const presets = loadPresets();
+  const appSettings = loadAppSettings();
+
   if (presets.length === 0) {
     showToast('No presets to export', 'error');
     return;
   }
 
-  const blob = new Blob([JSON.stringify(presets, null, 2)], {
+  // Create v2 export format with app settings and presets
+  const exportData = {
+    version: 2,
+    exportedAt: new Date().toISOString(),
+    appSettings: appSettings,
+    presets: presets
+  };
+
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], {
     type: 'application/json'
   });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'ninja-presets.json';
+  a.download = 'ninja-timer-backup.json';
   a.click();
 
   setTimeout(() => URL.revokeObjectURL(url), 5000);
-  showToast(`Exported ${presets.length} preset(s)`);
+  showToast(`Exported ${presets.length} preset(s) + settings`);
 }
 
-function handleImportPresets(e) {
+function handleImport(e) {
   const file = e.target.files[0];
   if (!file) return;
 
@@ -1868,19 +1878,55 @@ function handleImportPresets(e) {
 
   const reader = new FileReader();
   reader.onload = () => {
-    const imported = safeJSONParse(reader.result, validatePresets);
-
-    if (!imported || imported.length === 0) {
-      showToast('Invalid presets file', 'error');
+    // Parse JSON first
+    let rawData;
+    try {
+      rawData = JSON.parse(reader.result);
+    } catch {
+      showToast('Invalid JSON file', 'error');
       return;
     }
 
-    // Merge with existing
-    const existing = loadPresets();
-    const merged = [...existing, ...imported];
-    savePresets(merged);
+    // Validate and detect version
+    const importData = validateExportData(rawData);
+
+    if (!importData) {
+      showToast('Invalid backup file format', 'error');
+      return;
+    }
+
+    // Import presets (merge with existing)
+    let presetsImported = 0;
+    if (importData.presets && importData.presets.length > 0) {
+      const existing = loadPresets();
+      const merged = [...existing, ...importData.presets];
+      savePresets(merged);
+      presetsImported = importData.presets.length;
+    }
+
+    // Import app settings (v2 only)
+    let settingsImported = false;
+    if (importData.version === 2 && importData.appSettings) {
+      saveAppSettings(importData.appSettings);
+      // Apply window settings immediately
+      window.ninja.setAlwaysOnTop('output', importData.appSettings.outputOnTop);
+      window.ninja.setAlwaysOnTop('control', importData.appSettings.controlOnTop);
+      settingsImported = true;
+    }
+
+    // Show appropriate toast
+    if (presetsImported > 0 && settingsImported) {
+      showToast(`Imported ${presetsImported} preset(s) + settings`, 'success');
+    } else if (presetsImported > 0) {
+      showToast(`Imported ${presetsImported} preset(s)`, 'success');
+    } else if (settingsImported) {
+      showToast('Imported settings', 'success');
+    } else {
+      showToast('Nothing to import', 'error');
+      return;
+    }
+
     renderPresetList();
-    showToast(`Imported ${imported.length} preset(s)`, 'success');
   };
 
   reader.onerror = () => {
@@ -2019,7 +2065,7 @@ function setupEventListeners() {
   els.appSettingsBtn.addEventListener('click', openAppSettings);
   els.appSettingsClose.addEventListener('click', closeAppSettings);
   els.appSettingsSave.addEventListener('click', saveAppSettingsFromForm);
-  els.settingsExport.addEventListener('click', handleExportPresets);
+  els.settingsExport.addEventListener('click', handleExport);
   els.settingsImport.addEventListener('click', () => els.importFile.click());
 
   // Close app settings on backdrop click
@@ -2044,7 +2090,7 @@ function setupEventListeners() {
   });
 
   // Preset controls
-  els.importFile.addEventListener('change', handleImportPresets);
+  els.importFile.addEventListener('change', handleImport);
   els.addTimer.addEventListener('click', () => {
     // Auto-create timer with defaults from app settings
     const presets = loadPresets();

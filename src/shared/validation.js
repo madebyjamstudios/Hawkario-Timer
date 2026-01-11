@@ -48,6 +48,37 @@ export function validateFormat(format) {
 }
 
 /**
+ * Migrate v1 style fields to v2 format
+ * Handles deprecated fields from old Hawkario exports
+ */
+function migrateV1Style(style) {
+  if (!style || typeof style !== 'object') return style;
+
+  const migrated = { ...style };
+
+  // Convert old textShadow to shadowSize if present
+  if (style.textShadow && !style.shadowSize) {
+    // Try to parse blur value from textShadow like "0 2px 10px rgba(...)"
+    const match = style.textShadow.match(/(\d+)px\s+rgba/);
+    migrated.shadowSize = match ? parseInt(match[1], 10) : 10;
+  }
+
+  // Remove deprecated fields (they'll be ignored by validateStyle anyway)
+  // but this makes the migration explicit
+  delete migrated.fontFamily;
+  delete migrated.fontWeight;
+  delete migrated.fontSizeVw;
+  delete migrated.opacity;
+  delete migrated.align;
+  delete migrated.letterSpacing;
+  delete migrated.bgMode;
+  delete migrated.bgOpacity;
+  delete migrated.textShadow;
+
+  return migrated;
+}
+
+/**
  * Validate style object
  */
 export function validateStyle(style) {
@@ -55,12 +86,15 @@ export function validateStyle(style) {
     return getDefaultStyle();
   }
 
+  // Migrate v1 fields first
+  const migrated = migrateV1Style(style);
+
   return {
-    color: validateHexColor(style.color, '#ffffff'),
-    strokeWidth: validateNumber(style.strokeWidth, 2, 0, 20),
-    strokeColor: validateHexColor(style.strokeColor, '#000000'),
-    shadowSize: validateNumber(style.shadowSize, 10, 0, 50),
-    bgColor: validateHexColor(style.bgColor, '#000000')
+    color: validateHexColor(migrated.color, '#ffffff'),
+    strokeWidth: validateNumber(migrated.strokeWidth, 2, 0, 20),
+    strokeColor: validateHexColor(migrated.strokeColor, '#000000'),
+    shadowSize: validateNumber(migrated.shadowSize, 10, 0, 50),
+    bgColor: validateHexColor(migrated.bgColor, '#000000')
   };
 }
 
@@ -206,4 +240,95 @@ export function safeJSONParse(str, validator = null) {
   } catch {
     return null;
   }
+}
+
+/**
+ * Detect export format version
+ * @param {any} data - Parsed JSON data
+ * @returns {number} Version number (1 for legacy array, 2 for new format, 0 for invalid)
+ */
+export function detectExportVersion(data) {
+  if (!data) return 0;
+
+  // v2 format: object with version field
+  if (typeof data === 'object' && !Array.isArray(data) && data.version === 2) {
+    return 2;
+  }
+
+  // v1 format: array of presets (legacy)
+  if (Array.isArray(data)) {
+    return 1;
+  }
+
+  // Unknown format
+  return 0;
+}
+
+/**
+ * Validate app settings for import
+ */
+export function validateAppSettings(settings) {
+  if (!settings || typeof settings !== 'object') {
+    return null;
+  }
+
+  return {
+    todFormat: ['12h', '24h'].includes(settings.todFormat) ? settings.todFormat : '12h',
+    confirmDelete: Boolean(settings.confirmDelete),
+    outputOnTop: Boolean(settings.outputOnTop),
+    controlOnTop: Boolean(settings.controlOnTop),
+    defaults: validateDefaultSettings(settings.defaults)
+  };
+}
+
+/**
+ * Validate default timer settings
+ */
+function validateDefaultSettings(defaults) {
+  if (!defaults || typeof defaults !== 'object') {
+    return {
+      mode: 'countdown',
+      durationSec: 600,
+      format: 'MM:SS',
+      soundEnabled: false
+    };
+  }
+
+  return {
+    mode: validateMode(defaults.mode),
+    durationSec: validateDuration(defaults.durationSec),
+    format: validateFormat(defaults.format),
+    soundEnabled: Boolean(defaults.soundEnabled)
+  };
+}
+
+/**
+ * Validate v2 export data (with app settings and presets)
+ */
+export function validateExportData(data) {
+  if (!data || typeof data !== 'object') {
+    return null;
+  }
+
+  const version = detectExportVersion(data);
+
+  if (version === 1) {
+    // Legacy array format - just presets
+    return {
+      version: 1,
+      appSettings: null,
+      presets: validatePresets(data)
+    };
+  }
+
+  if (version === 2) {
+    // New format with app settings
+    return {
+      version: 2,
+      appSettings: data.appSettings ? validateAppSettings(data.appSettings) : null,
+      presets: data.presets ? validatePresets(data.presets) : []
+    };
+  }
+
+  return null;
 }
