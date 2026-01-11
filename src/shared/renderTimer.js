@@ -122,14 +122,12 @@ export function computeGlowMetrics(timerEl) {
 
   return {
     fontSize,
-    // Flash glow scales with font size
-    glowBlur1: fontSize * 0.02,    // Tight bright core
-    glowBlur2: fontSize * 0.04,    // Inner glow
-    glowBlur3: fontSize * 0.08,    // Medium spread
-    glowBlur4: fontSize * 0.15,    // Wide halo
-    glowBlur5: fontSize * 0.25,    // Large outer glow
-    glowSpread: fontSize * 0.01,
-    strokeWidth: Math.max(1, fontSize * 0.01)
+    // Flash glow scales with font size - tighter to text
+    glowBlur1: fontSize * 0.01,    // Tight bright core
+    glowBlur2: fontSize * 0.02,    // Inner glow
+    glowBlur3: fontSize * 0.04,    // Medium spread
+    glowBlur4: fontSize * 0.06,    // Outer glow
+    strokeWidth: Math.max(1, fontSize * 0.008)
   };
 }
 
@@ -140,16 +138,13 @@ export function computeGlowMetrics(timerEl) {
  * @returns {string} CSS text-shadow value
  */
 export function getFlashGlowCSS(metrics) {
-  const { glowBlur1, glowBlur2, glowBlur3, glowBlur4, glowBlur5 } = metrics;
+  const { glowBlur1, glowBlur2, glowBlur3, glowBlur4 } = metrics;
 
   return `
     0 0 ${glowBlur1}px #fff,
-    0 0 ${glowBlur1}px #fff,
-    0 0 ${glowBlur2}px #fff,
     0 0 ${glowBlur2}px rgba(255,255,255,0.9),
-    0 0 ${glowBlur3}px rgba(255,255,255,0.8),
-    0 0 ${glowBlur4}px rgba(255,255,255,0.6),
-    0 0 ${glowBlur5}px rgba(255,255,255,0.3)
+    0 0 ${glowBlur3}px rgba(255,255,255,0.6),
+    0 0 ${glowBlur4}px rgba(255,255,255,0.3)
   `.replace(/\s+/g, ' ').trim();
 }
 
