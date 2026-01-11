@@ -178,9 +178,9 @@ export function applyStyle(timerEl, containerEl, style, isFlashing = false) {
   timerEl.style.color = style.color || '#ffffff';
   timerEl.style.opacity = FIXED_STYLE.opacity;
   timerEl.style.letterSpacing = FIXED_STYLE.letterSpacing + 'em';
-  timerEl.style.webkitTextStrokeWidth = (style.strokeWidth ?? 2) + 'px';
+  timerEl.style.webkitTextStrokeWidth = (style.strokeWidth ?? 0) + 'px';
   timerEl.style.webkitTextStrokeColor = style.strokeColor || '#000000';
-  timerEl.style.textShadow = getShadowCSS(style.shadowSize ?? 10);
+  timerEl.style.textShadow = getShadowCSS(style.shadowSize ?? 0);
   timerEl.style.textAlign = FIXED_STYLE.align;
 
   // Background

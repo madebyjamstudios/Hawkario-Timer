@@ -60,7 +60,7 @@ function migrateV1Style(style) {
   if (style.textShadow && !style.shadowSize) {
     // Try to parse blur value from textShadow like "0 2px 10px rgba(...)"
     const match = style.textShadow.match(/(\d+)px\s+rgba/);
-    migrated.shadowSize = match ? parseInt(match[1], 10) : 10;
+    migrated.shadowSize = match ? parseInt(match[1], 10) : 0;
   }
 
   // Remove deprecated fields (they'll be ignored by validateStyle anyway)
@@ -175,9 +175,9 @@ function validateBgMode(value) {
 function getDefaultStyle() {
   return {
     color: '#ffffff',
-    strokeWidth: 2,
+    strokeWidth: 0,
     strokeColor: '#000000',
-    shadowSize: 10,
+    shadowSize: 0,
     bgColor: '#000000'
   };
 }

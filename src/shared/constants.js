@@ -40,7 +40,7 @@ export const DEFAULT_CONFIG = {
     fontSizeVw: 10,
     color: '#ffffff',
     opacity: 1,
-    strokeWidth: 2,
+    strokeWidth: 0,
     strokeColor: '#000000',
     textShadow: '0 2px 10px rgba(0,0,0,0.5)',
     align: 'center',

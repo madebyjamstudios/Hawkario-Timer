@@ -346,9 +346,9 @@ let activeTimerConfig = {
   format: 'MM:SS',
   style: {
     color: '#ffffff',
-    strokeWidth: 2,
+    strokeWidth: 0,
     strokeColor: '#000000',
-    shadowSize: 10,
+    shadowSize: 0,
     bgColor: '#000000'
   }
 };
@@ -383,9 +383,9 @@ function setActiveTimerConfig(config) {
     format: config.format || 'MM:SS',
     style: {
       color: config.style?.color || '#ffffff',
-      strokeWidth: config.style?.strokeWidth ?? 2,
+      strokeWidth: config.style?.strokeWidth ?? 0,
       strokeColor: config.style?.strokeColor || '#000000',
-      shadowSize: config.style?.shadowSize ?? 10,
+      shadowSize: config.style?.shadowSize ?? 0,
       bgColor: config.style?.bgColor || '#000000'
     }
   };
@@ -639,9 +639,9 @@ function getDefaultTimerConfig() {
     format: d.format,
     style: {
       color: '#ffffff',
-      strokeWidth: 2,
+      strokeWidth: 0,
       strokeColor: '#000000',
-      shadowSize: 10,
+      shadowSize: 0,
       bgColor: '#000000'
     },
     sound: {
@@ -1358,9 +1358,9 @@ function applyConfig(config) {
 
   if (config.style) {
     els.fontColor.value = config.style.color || '#ffffff';
-    els.strokeWidth.value = config.style.strokeWidth ?? 2;
+    els.strokeWidth.value = config.style.strokeWidth ?? 0;
     els.strokeColor.value = config.style.strokeColor || '#000000';
-    els.shadowSize.value = config.style.shadowSize ?? 10;
+    els.shadowSize.value = config.style.shadowSize ?? 0;
     els.bgColor.value = config.style.bgColor || '#000000';
     // Update range value displays
     updateRangeDisplays();

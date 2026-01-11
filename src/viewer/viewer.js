@@ -87,7 +87,7 @@ function applyStyle(style) {
   }
 
   timerEl.style.letterSpacing = FIXED_STYLE.letterSpacing + 'em';
-  timerEl.style.webkitTextStrokeWidth = (style.strokeWidth ?? 2) + 'px';
+  timerEl.style.webkitTextStrokeWidth = (style.strokeWidth ?? 0) + 'px';
   timerEl.style.webkitTextStrokeColor = style.strokeColor || '#000000';
   timerEl.style.textAlign = FIXED_STYLE.align;
 
@@ -339,7 +339,7 @@ function setupAudioInit() {
  */
 function init() {
   // Apply initial styles
-  applyStyle({ color: '#ffffff', bgColor: '#000000', strokeWidth: 2, strokeColor: '#000000', shadowSize: 10 });
+  applyStyle({ color: '#ffffff', bgColor: '#000000', strokeWidth: 0, strokeColor: '#000000', shadowSize: 0 });
 
   // Setup canonical timer state listener (new StageTimer-style sync)
   window.ninja.onTimerState(handleTimerState);
