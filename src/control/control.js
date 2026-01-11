@@ -369,6 +369,9 @@ let stateSeq = 0;
 // Flash animator instance (shared between preview)
 let flashAnimator = null;
 
+// Flash state for synced broadcast
+let flashState = { active: false, startedAt: null };
+
 /**
  * Set the active timer config from a preset config
  * This is what the live preview and output display - separate from form fields
@@ -1074,8 +1077,8 @@ function broadcastTimerState() {
     overtimeStartedAt: timerState.overtimeStartedAt,
     blackout: isBlackedOut,
     flash: {
-      active: flashAnimator?.isFlashing || false,
-      startedAt: null
+      active: flashState.active,
+      startedAt: flashState.startedAt
     },
     style: activeTimerConfig.style,
     todFormat: todFormat
@@ -2036,22 +2039,31 @@ function setupEventListeners() {
     // Don't start new flash if already flashing
     if (flashAnimator?.isFlashing) return;
 
+    // Create timestamp for sync - both windows use the same startedAt
+    const flashStartedAt = Date.now();
+
     // Create flash animator with shared code (font-relative glow)
     // Pass null for container so only the timer text flashes, not the whole control window
     flashAnimator = new FlashAnimator(
       els.livePreviewTimer,
       null,
       () => {
-        // On complete - update button state
+        // On complete - update button state and clear flash state
         els.flashBtn.classList.remove('flashing');
+        flashState.active = false;
+        flashState.startedAt = null;
       }
     );
 
-    els.flashBtn.classList.add('flashing');
-    flashAnimator.start();
+    // Store flash state for broadcast
+    flashState.active = true;
+    flashState.startedAt = flashStartedAt;
 
-    // Also send flash command to output (output will use same FlashAnimator)
-    window.ninja.sendTimerCommand('flash', activeTimerConfig);
+    els.flashBtn.classList.add('flashing');
+    flashAnimator.start(flashStartedAt);
+
+    // Broadcast state immediately so output starts with same timestamp
+    broadcastTimerState();
   });
 
   // Output button - opens window if not open, toggles fullscreen if already open

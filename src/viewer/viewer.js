@@ -122,12 +122,12 @@ function handleTimerState(state) {
     setBlackout(state.blackout);
   }
 
-  // Handle flash
+  // Handle flash - use startedAt from state for sync
   if (state.flash?.active && !flashAnimator?.isFlashing) {
     flashAnimator = new FlashAnimator(timerEl, stageEl, () => {
       // Flash complete
     });
-    flashAnimator.start();
+    flashAnimator.start(state.flash.startedAt);
   }
 }
 

@@ -219,8 +219,8 @@ export function autoFitText(timerEl, containerEl, targetRatio = 0.9) {
 }
 
 /**
- * Flash animation state machine
- * Both preview and output use this for identical flash behavior
+ * Flash animation - timestamp-driven for sync across windows
+ * Both preview and output use the same startedAt to stay in phase
  */
 export class FlashAnimator {
   constructor(timerEl, containerEl, onComplete) {
@@ -233,16 +233,19 @@ export class FlashAnimator {
     this.originalStroke = '';
     this.originalStrokeWidth = '';
 
-    this.flashCount = 0;
     this.maxFlashes = 3;
     this.glowDuration = 400;
     this.greyDuration = 300;
+    this.cycleDuration = this.glowDuration + this.greyDuration; // 700ms per cycle
+    this.totalDuration = this.maxFlashes * this.cycleDuration;  // 2100ms total
 
     this.isFlashing = false;
-    this.timeoutId = null;
+    this.startedAt = null;
+    this.rafId = null;
+    this.lastPhase = null;
   }
 
-  start() {
+  start(startedAt = Date.now()) {
     if (this.isFlashing) return;
 
     // Store original styles
@@ -251,40 +254,56 @@ export class FlashAnimator {
     this.originalStroke = this.timerEl.style.webkitTextStrokeColor;
     this.originalStrokeWidth = this.timerEl.style.webkitTextStrokeWidth;
 
-    this.flashCount = 0;
+    this.startedAt = startedAt;
     this.isFlashing = true;
-    this.showGlow();
+    this.lastPhase = null;
+    this.tick();
   }
 
-  showGlow() {
-    // Compute glow relative to font size
+  tick() {
+    if (!this.isFlashing) return;
+
+    const now = Date.now();
+    const elapsed = now - this.startedAt;
+
+    // Animation complete?
+    if (elapsed >= this.totalDuration) {
+      this.restore();
+      return;
+    }
+
+    // Compute current phase from timestamp
+    const cyclePosition = elapsed % this.cycleDuration;
+    const phase = cyclePosition < this.glowDuration ? 'glow' : 'grey';
+
+    // Only update DOM if phase changed (performance)
+    if (phase !== this.lastPhase) {
+      if (phase === 'glow') {
+        this.applyGlow();
+      } else {
+        this.applyGrey();
+      }
+      this.lastPhase = phase;
+    }
+
+    this.rafId = requestAnimationFrame(() => this.tick());
+  }
+
+  applyGlow() {
     const metrics = computeGlowMetrics(this.timerEl);
     const glowCSS = getFlashGlowCSS(metrics);
 
-    // Intense white glow on text only
     this.timerEl.style.color = '#ffffff';
     this.timerEl.style.webkitTextStrokeColor = '#ffffff';
     this.timerEl.style.webkitTextStrokeWidth = metrics.strokeWidth + 'px';
     this.timerEl.style.textShadow = glowCSS;
-
-    this.timeoutId = setTimeout(() => this.showGrey(), this.glowDuration);
   }
 
-  showGrey() {
-    // Grey text - no glow
+  applyGrey() {
     this.timerEl.style.color = '#666666';
     this.timerEl.style.webkitTextStrokeColor = '#666666';
     this.timerEl.style.webkitTextStrokeWidth = '0px';
     this.timerEl.style.textShadow = 'none';
-
-    this.flashCount++;
-
-    if (this.flashCount < this.maxFlashes) {
-      this.timeoutId = setTimeout(() => this.showGlow(), this.greyDuration);
-    } else {
-      // Done flashing, restore original after brief grey
-      this.timeoutId = setTimeout(() => this.restore(), this.greyDuration);
-    }
   }
 
   restore() {
@@ -294,6 +313,8 @@ export class FlashAnimator {
     this.timerEl.style.webkitTextStrokeWidth = this.originalStrokeWidth;
 
     this.isFlashing = false;
+    this.startedAt = null;
+    this.lastPhase = null;
 
     if (this.onComplete) {
       this.onComplete();
@@ -301,9 +322,9 @@ export class FlashAnimator {
   }
 
   stop() {
-    if (this.timeoutId) {
-      clearTimeout(this.timeoutId);
-      this.timeoutId = null;
+    if (this.rafId) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
     }
     if (this.isFlashing) {
       this.restore();
