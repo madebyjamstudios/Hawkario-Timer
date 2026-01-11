@@ -79,6 +79,7 @@ const els = {
   defaultMode: document.getElementById('defaultMode'),
   defaultDuration: document.getElementById('defaultDuration'),
   defaultFormat: document.getElementById('defaultFormat'),
+  defaultSound: document.getElementById('defaultSound'),
   outputOnTop: document.getElementById('outputOnTop'),
   controlOnTop: document.getElementById('controlOnTop'),
 
@@ -481,6 +482,7 @@ async function openAppSettings() {
   els.defaultMode.value = settings.defaults.mode;
   setDefaultDurationInputs(settings.defaults.durationSec);
   els.defaultFormat.value = settings.defaults.format;
+  els.defaultSound.value = settings.defaults.soundEnabled ? 'on' : 'off';
 
   // Fetch window stay on top settings from main process
   const windowSettings = await window.hawkario.getAlwaysOnTop();
@@ -501,7 +503,8 @@ function saveAppSettingsFromForm() {
     defaults: {
       mode: els.defaultMode.value,
       durationSec: getDefaultDurationSeconds(),
-      format: els.defaultFormat.value
+      format: els.defaultFormat.value,
+      soundEnabled: els.defaultSound.value === 'on'
     }
   };
 
@@ -609,7 +612,7 @@ function getDefaultTimerConfig() {
       bgColor: '#000000'
     },
     sound: {
-      endEnabled: false,
+      endEnabled: d.soundEnabled || false,
       volume: 0.7
     }
   };
