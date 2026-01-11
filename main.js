@@ -199,6 +199,45 @@ ipcMain.handle('app:version', () => {
   return app.getVersion();
 });
 
+// Check for updates from GitHub
+ipcMain.handle('app:check-updates', async () => {
+  const https = require('https');
+  const currentVersion = app.getVersion();
+
+  return new Promise((resolve) => {
+    const options = {
+      hostname: 'api.github.com',
+      path: '/repos/madebyjamstudios/ninja-timer/releases/latest',
+      headers: { 'User-Agent': 'Ninja-Timer-App' }
+    };
+
+    https.get(options, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          const release = JSON.parse(data);
+          if (release.tag_name) {
+            const latestVersion = release.tag_name.replace('v', '');
+            resolve({
+              currentVersion,
+              latestVersion,
+              updateAvailable: latestVersion !== currentVersion && latestVersion > currentVersion,
+              downloadUrl: release.html_url
+            });
+          } else {
+            resolve({ currentVersion, latestVersion: currentVersion, updateAvailable: false });
+          }
+        } catch (e) {
+          resolve({ error: 'Failed to parse response' });
+        }
+      });
+    }).on('error', () => {
+      resolve({ error: 'Failed to connect to GitHub' });
+    });
+  });
+});
+
 // Stay on top settings
 ipcMain.on('window:set-always-on-top', (_event, { window, value }) => {
   if (window === 'output') {

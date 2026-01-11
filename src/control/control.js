@@ -2555,24 +2555,14 @@ function setupEventListeners() {
     statusEl.textContent = 'Checking...';
 
     try {
-      // Get current version from Electron
-      const currentVersion = await window.ninja.getVersion();
+      const result = await window.ninja.checkForUpdates();
 
-      // Fetch latest release from GitHub API
-      const response = await fetch('https://api.github.com/repos/madebyjamstudios/ninja-timer/releases/latest');
-      const release = await response.json();
-
-      if (release.tag_name) {
-        const latestVersion = release.tag_name.replace('v', '');
-
-        // Compare versions (simple string comparison works for semver)
-        if (latestVersion !== currentVersion && latestVersion > currentVersion) {
-          statusEl.innerHTML = `Update available: v${latestVersion} <a href="${release.html_url}" target="_blank">Download</a>`;
-        } else {
-          statusEl.textContent = `You're up to date (v${currentVersion})`;
-        }
+      if (result.error) {
+        statusEl.textContent = result.error;
+      } else if (result.updateAvailable) {
+        statusEl.innerHTML = `Update available: v${result.latestVersion} <a href="${result.downloadUrl}" target="_blank">Download</a>`;
       } else {
-        statusEl.textContent = `You're up to date (v${currentVersion})`;
+        statusEl.textContent = `You're up to date (v${result.currentVersion})`;
       }
     } catch (e) {
       console.error('Failed to check for updates:', e);
