@@ -563,7 +563,6 @@ button:disabled {
 .warning-zones {
   position: absolute;
   inset: 0;
-  border-radius: 4px;
   overflow: hidden;
   pointer-events: none;
 }
@@ -602,13 +601,9 @@ button:disabled {
   pointer-events: none;
 }
 
-/* Markers at edges should not extend outside */
+/* Start marker should not extend outside */
 .segment-marker[style*="left: 0%"] {
   transform: translateX(0);
-}
-
-.segment-marker[style*="left: 100%"] {
-  transform: translateX(-100%);
 }
 
 /* Always-visible segment time labels */
@@ -624,15 +619,9 @@ button:disabled {
   font-variant-numeric: tabular-nums;
 }
 
-/* Edge label positioning */
+/* Start label positioning */
 .segment-marker[style*="left: 0%"]::after {
   left: 0;
-  transform: translateX(0);
-}
-
-.segment-marker[style*="left: 100%"]::after {
-  left: auto;
-  right: 0;
   transform: translateX(0);
 }
 
@@ -653,7 +642,6 @@ button:disabled {
   background: rgba(255, 255, 255, 0.08);
   width: 0%;
   transition: width 0.1s linear;
-  border-radius: 4px;
   position: absolute;
   top: 0;
   left: 0;

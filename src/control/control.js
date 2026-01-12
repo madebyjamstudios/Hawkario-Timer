@@ -1926,8 +1926,8 @@ function renderSmartSegmentsForDuration(durationSec) {
 
   if (durationSec <= 0) return;
 
-  // Create markers at key positions (0%, 25%, 50%, 75%, 100%)
-  const positions = [0, 25, 50, 75, 100];
+  // Create markers at key positions (0%, 25%, 50%, 75%)
+  const positions = [0, 25, 50, 75];
 
   for (const percent of positions) {
     const timeSec = (percent / 100) * durationSec;
