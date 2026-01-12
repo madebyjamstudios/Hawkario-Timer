@@ -4,7 +4,8 @@
 
 // Local storage keys
 export const STORAGE_KEYS = {
-  PRESETS: 'ninja-presets-v1',
+  PROFILES: 'ninja-profiles-v1',
+  PRESETS: 'ninja-presets-v1',  // Legacy, kept for migration
   SETTINGS: 'ninja-settings-v1'
 };
 

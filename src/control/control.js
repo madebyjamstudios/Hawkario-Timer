@@ -615,6 +615,10 @@ let activeMessage = null; // { text, bold, italic, color, mode, sentAt, duration
 let messageTimerId = null;
 const MESSAGES_KEY = 'ninja-messages-v1';
 
+// Profile state
+let profiles = [];
+let activeProfileId = null;
+
 /**
  * Set the active timer config from a preset config
  * This is what the live preview and output display - separate from form fields
@@ -3153,39 +3157,136 @@ function sendCommand(command) {
   window.ninja.sendTimerCommand(command, activeTimerConfig);
 }
 
-// ============ Presets ============
+// ============ Profiles ============
 
-function loadPresets() {
+/**
+ * Generate a unique ID for profiles
+ */
+function generateProfileId() {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+}
+
+/**
+ * Load profiles from localStorage, with migration from old presets format
+ */
+function loadProfiles() {
   try {
+    // Try to load profiles from new key
+    const profilesData = localStorage.getItem(STORAGE_KEYS.PROFILES);
+    if (profilesData) {
+      const parsed = JSON.parse(profilesData);
+      profiles = parsed.profiles || [];
+      activeProfileId = parsed.activeProfileId || profiles[0]?.id || null;
+      return;
+    }
+
+    // Migration: check for old presets and wrap in default profile
+    let legacyPresets = [];
+
     // Check for presets in current key
     let data = localStorage.getItem(STORAGE_KEYS.PRESETS);
 
-    // Migration: check for old key from first version
+    // Also check for very old key from first version
     if (!data) {
       const oldKey = 'hawktimer-pro-presets-v1';
       const oldData = localStorage.getItem(oldKey);
       if (oldData) {
-        // Migrate old presets to new key
-        localStorage.setItem(STORAGE_KEYS.PRESETS, oldData);
-        localStorage.removeItem(oldKey); // Clean up old key
         data = oldData;
-        showToast('Migrated presets from previous version', 'success');
+        localStorage.removeItem(oldKey); // Clean up old key
       }
     }
 
-    return data ? validatePresets(JSON.parse(data)) : [];
-  } catch {
-    return [];
+    if (data) {
+      legacyPresets = validatePresets(JSON.parse(data));
+    }
+
+    // Create default profile with legacy presets (or empty if none)
+    profiles = [{
+      id: 'default',
+      name: 'Default',
+      createdAt: new Date().toISOString(),
+      presets: legacyPresets
+    }];
+    activeProfileId = 'default';
+
+    // Save to new format
+    saveProfiles();
+
+    if (legacyPresets.length > 0) {
+      showToast('Migrated timers to new profile system', 'success');
+    }
+  } catch (e) {
+    console.error('Failed to load profiles:', e);
+    // Create empty default profile on error
+    profiles = [{
+      id: 'default',
+      name: 'Default',
+      createdAt: new Date().toISOString(),
+      presets: []
+    }];
+    activeProfileId = 'default';
   }
 }
 
-function savePresets(list) {
+/**
+ * Save profiles to localStorage
+ */
+function saveProfiles() {
   try {
-    localStorage.setItem(STORAGE_KEYS.PRESETS, JSON.stringify(list));
+    const data = {
+      version: 1,
+      activeProfileId,
+      profiles
+    };
+    localStorage.setItem(STORAGE_KEYS.PROFILES, JSON.stringify(data));
   } catch (e) {
-    showToast('Failed to save presets', 'error');
-    console.error('Failed to save presets:', e);
+    showToast('Failed to save profiles', 'error');
+    console.error('Failed to save profiles:', e);
   }
+}
+
+/**
+ * Get the currently active profile
+ */
+function getActiveProfile() {
+  return profiles.find(p => p.id === activeProfileId) || profiles[0];
+}
+
+/**
+ * Get presets from the active profile
+ */
+function getActivePresets() {
+  const profile = getActiveProfile();
+  return profile ? profile.presets : [];
+}
+
+/**
+ * Save presets to the active profile
+ */
+function saveActivePresets(presets) {
+  const profile = getActiveProfile();
+  if (profile) {
+    profile.presets = presets;
+    saveProfiles();
+  }
+}
+
+// ============ Presets ============
+
+/**
+ * Load presets from active profile
+ * (Wrapper for backward compatibility)
+ */
+function loadPresets() {
+  return getActivePresets();
+}
+
+/**
+ * Save presets to active profile
+ * (Wrapper for backward compatibility)
+ */
+function savePresets(list) {
+  saveActivePresets(list);
 }
 
 /**
@@ -4678,6 +4779,9 @@ function calculateMessageTargetSlot(clientY) {
 // ============ Initialization ============
 
 function init() {
+  // Load profiles (with migration from legacy presets)
+  loadProfiles();
+
   // Setup collapsible sections in modal
   setupCollapsibleSections();
 
