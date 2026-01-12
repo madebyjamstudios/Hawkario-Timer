@@ -1123,15 +1123,6 @@ function renderMessageList() {
   updateTabBadges();
 }
 
-// Debounce helper for text input auto-save
-function debounce(fn, delay) {
-  let timeoutId;
-  return (...args) => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => fn(...args), delay);
-  };
-}
-
 function setupMessageItemEvents(row, messageId, textInput, boldBtn, italicBtn, colorInput, visibilityBtn, deleteBtn, dragHandle, idx) {
   // Debounced save for text input
   const debouncedSave = debounce(() => {
