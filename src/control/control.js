@@ -1745,6 +1745,7 @@ async function deleteMessage(messageId) {
     if (result.dontAskAgain) {
       settings.confirmDelete = false;
       saveAppSettings(settings);
+      populateAppSettingsForm();
     }
   }
 
@@ -4184,13 +4185,20 @@ async function deleteProfile(id) {
   // Confirm deletion
   const appSettings = loadAppSettings();
   if (appSettings.confirmDelete) {
-    const confirmed = await showConfirm({
-      title: 'Delete Profile',
-      message: `Delete "${profile.name}" and all its timers?`,
-      showDontAsk: true,
-      dontAskKey: 'confirmDelete'
+    const result = await showConfirmDialog({
+      title: 'Delete Profile?',
+      message: `Delete "${profile.name}" and all its timers? This action cannot be undone.`,
+      showDontAsk: true
     });
-    if (!confirmed) return;
+
+    if (!result.confirmed) return;
+
+    if (result.dontAskAgain) {
+      const updatedSettings = loadAppSettings();
+      updatedSettings.confirmDelete = false;
+      saveAppSettings(updatedSettings);
+      populateAppSettingsForm();
+    }
   }
 
   // Find the index of the profile to delete
