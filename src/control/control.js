@@ -4397,6 +4397,12 @@ function setupMessageDragListeners() {
   document.addEventListener('mouseup', () => {
     if (!messageDragState.isDragging) return;
 
+    // Clear auto-scroll interval
+    if (messageDragState.autoScrollInterval) {
+      clearInterval(messageDragState.autoScrollInterval);
+      messageDragState.autoScrollInterval = null;
+    }
+
     if (!messageDragState.dragActivated) {
       resetMessageDragState();
       return;
