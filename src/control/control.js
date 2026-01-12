@@ -3734,27 +3734,103 @@ function promptRenameProfile() {
 }
 
 /**
- * Duplicate a profile
+ * Duplicate a profile - shows popup to name the copy
  */
 function duplicateProfile(id) {
   const profile = profiles.find(p => p.id === id);
   if (!profile) return;
 
-  // Create a deep copy of the profile with a new color
-  const newProfile = {
-    id: generateProfileId(),
-    name: profile.name + ' (Copy)',
-    color: PROFILE_COLORS[profiles.length % PROFILE_COLORS.length],
-    createdAt: new Date().toISOString(),
-    presets: JSON.parse(JSON.stringify(profile.presets))
+  // Remove any existing popup
+  const existing = document.querySelector('.profile-duplicate-popup');
+  if (existing) existing.remove();
+
+  const popup = document.createElement('div');
+  popup.className = 'quick-edit-popup profile-duplicate-popup';
+
+  const inputRow = document.createElement('div');
+  inputRow.className = 'quick-edit-input-row';
+
+  const label = document.createElement('label');
+  label.textContent = 'New name:';
+  label.className = 'quick-edit-label';
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = profile.name + ' (Copy)';
+  input.placeholder = 'Profile name';
+
+  inputRow.append(label, input);
+
+  const buttons = document.createElement('div');
+  buttons.className = 'quick-edit-buttons';
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'cancel-btn';
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.onclick = () => popup.remove();
+
+  const createBtn = document.createElement('button');
+  createBtn.className = 'save-btn';
+  createBtn.textContent = 'Duplicate';
+  createBtn.onclick = () => {
+    const newName = input.value.trim();
+    if (!newName) {
+      showToast('Profile name cannot be empty', 'error');
+      return;
+    }
+
+    // Create the new profile
+    const newProfile = {
+      id: generateProfileId(),
+      name: newName,
+      color: PROFILE_COLORS[profiles.length % PROFILE_COLORS.length],
+      createdAt: new Date().toISOString(),
+      presets: JSON.parse(JSON.stringify(profile.presets))
+    };
+
+    profiles.push(newProfile);
+    saveProfiles();
+
+    popup.remove();
+
+    // Switch to the new profile
+    switchProfile(newProfile.id);
+    showToast('Profile duplicated', 'success');
   };
 
-  profiles.push(newProfile);
-  saveProfiles();
+  // Handle Enter key to create
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      createBtn.click();
+    } else if (e.key === 'Escape') {
+      popup.remove();
+    }
+  });
 
-  // Switch to the new profile
-  switchProfile(newProfile.id);
-  showToast('Profile duplicated', 'success');
+  buttons.append(cancelBtn, createBtn);
+  popup.append(inputRow, buttons);
+
+  // Position popup near the profile button
+  const rect = els.profileBtn.getBoundingClientRect();
+  popup.style.top = `${rect.bottom + 6}px`;
+  popup.style.right = `${window.innerWidth - rect.right}px`;
+  popup.style.left = 'auto';
+
+  document.body.appendChild(popup);
+
+  // Focus and select the input
+  input.focus();
+  input.select();
+
+  // Close on click outside
+  const closeHandler = (e) => {
+    if (!popup.contains(e.target)) {
+      popup.remove();
+      document.removeEventListener('click', closeHandler);
+    }
+  };
+  setTimeout(() => document.addEventListener('click', closeHandler), 0);
 }
 
 /**
