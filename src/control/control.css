@@ -640,6 +640,16 @@ button:disabled {
   border-color: #1f6feb;
 }
 
+/* Profile color dot - shows profile color in button and dropdown */
+.profile-color-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #6366f1;
+  flex-shrink: 0;
+  box-shadow: 0 0 4px currentColor;
+}
+
 .profile-icon {
   flex-shrink: 0;
   opacity: 0.7;
@@ -717,11 +727,17 @@ button:disabled {
   width: 14px;
   height: 14px;
   opacity: 0;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .profile-item.current .check-icon {
   opacity: 1;
   color: #1f6feb;
+}
+
+.profile-item .profile-color-dot {
+  margin-right: 4px;
 }
 
 .profile-item .profile-item-name {

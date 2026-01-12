@@ -31,6 +31,18 @@ import {
   cleanupAll
 } from '../shared/safeUtils.js';
 
+// Profile color palette
+const PROFILE_COLORS = [
+  '#6366f1', // indigo
+  '#22c55e', // green
+  '#f59e0b', // amber
+  '#ef4444', // red
+  '#ec4899', // pink
+  '#8b5cf6', // violet
+  '#06b6d4', // cyan
+  '#f97316'  // orange
+];
+
 // DOM Elements
 const els = {
   // Timer settings (in modal)
@@ -80,6 +92,7 @@ const els = {
   // Profile dropdown
   profileBtn: document.getElementById('profileBtn'),
   profileName: document.getElementById('profileName'),
+  profileColorDot: document.getElementById('profileColorDot'),
 
   // Presets
   presetName: document.getElementById('presetName'),
@@ -3289,6 +3302,18 @@ function loadProfiles() {
       const parsed = JSON.parse(profilesData);
       profiles = parsed.profiles || [];
       activeProfileId = parsed.activeProfileId || profiles[0]?.id || null;
+
+      // Migrate: assign colors to profiles that don't have them
+      let needsSave = false;
+      profiles.forEach((profile, idx) => {
+        if (!profile.color) {
+          profile.color = PROFILE_COLORS[idx % PROFILE_COLORS.length];
+          needsSave = true;
+        }
+      });
+      if (needsSave) {
+        saveProfiles();
+      }
       return;
     }
 
@@ -3316,6 +3341,7 @@ function loadProfiles() {
     profiles = [{
       id: 'default',
       name: 'Default',
+      color: PROFILE_COLORS[0],
       createdAt: new Date().toISOString(),
       presets: legacyPresets
     }];
@@ -3333,6 +3359,7 @@ function loadProfiles() {
     profiles = [{
       id: 'default',
       name: 'Default',
+      color: PROFILE_COLORS[0],
       createdAt: new Date().toISOString(),
       presets: []
     }];
@@ -3392,6 +3419,11 @@ function updateProfileButton() {
     els.profileName.textContent = profile.name;
     els.profileName.title = profile.name; // Full name on hover
   }
+  // Update color dot
+  if (profile && els.profileColorDot) {
+    els.profileColorDot.style.background = profile.color || PROFILE_COLORS[0];
+    els.profileColorDot.style.boxShadow = `0 0 6px ${profile.color || PROFILE_COLORS[0]}`;
+  }
 }
 
 // Current profile dropdown element (for cleanup)
@@ -3431,14 +3463,16 @@ function showProfileDropdown() {
   const listSection = document.createElement('div');
   listSection.className = 'profile-dropdown-section';
 
-  profiles.forEach(profile => {
+  profiles.forEach((profile, idx) => {
     const item = document.createElement('div');
     item.className = 'profile-item' + (profile.id === activeProfileId ? ' current' : '');
+    const color = profile.color || PROFILE_COLORS[idx % PROFILE_COLORS.length];
     item.innerHTML = `
+      <span class="profile-color-dot" style="background: ${color}; box-shadow: 0 0 6px ${color};"></span>
+      <span class="profile-item-name">${escapeHtml(profile.name)}</span>
       <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
         <polyline points="20 6 9 17 4 12"/>
       </svg>
-      <span class="profile-item-name">${escapeHtml(profile.name)}</span>
     `;
     item.addEventListener('click', () => {
       switchProfile(profile.id);
@@ -3704,10 +3738,11 @@ function duplicateProfile(id) {
   const profile = profiles.find(p => p.id === id);
   if (!profile) return;
 
-  // Create a deep copy of the profile
+  // Create a deep copy of the profile with a new color
   const newProfile = {
     id: generateProfileId(),
     name: profile.name + ' (Copy)',
+    color: PROFILE_COLORS[profiles.length % PROFILE_COLORS.length],
     createdAt: new Date().toISOString(),
     presets: JSON.parse(JSON.stringify(profile.presets))
   };
@@ -3803,6 +3838,7 @@ function createNewProfile() {
   const newProfile = {
     id: generateProfileId(),
     name: name,
+    color: PROFILE_COLORS[profiles.length % PROFILE_COLORS.length],
     createdAt: new Date().toISOString(),
     presets: [{
       name: 'Timer 1',
