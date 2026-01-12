@@ -149,6 +149,35 @@ export function getFlashGlowCSS(metrics) {
 }
 
 /**
+ * Get CSS text-shadow for stroke outline effect
+ * Uses 8 shadows at cardinal/diagonal directions to create a solid outline
+ * This avoids the intersection artifacts of -webkit-text-stroke
+ *
+ * @param {number} width - Stroke width in pixels
+ * @param {string} color - Stroke color in hex format
+ * @returns {string} CSS text-shadow value for outline
+ */
+export function getStrokeShadowCSS(width, color = '#000000') {
+  if (width === 0) return '';
+
+  // Create shadows at 8 directions for a solid outline
+  const shadows = [];
+  const offsets = [
+    [0, -1], [1, -1], [1, 0], [1, 1],
+    [0, 1], [-1, 1], [-1, 0], [-1, -1]
+  ];
+
+  // Layer multiple passes for thicker strokes
+  for (let i = 1; i <= width; i++) {
+    for (const [dx, dy] of offsets) {
+      shadows.push(`${dx * i}px ${dy * i}px 0 ${color}`);
+    }
+  }
+
+  return shadows.join(', ');
+}
+
+/**
  * Generate standard shadow CSS from size and color
  * Used for the regular timer shadow (not flash)
  *
@@ -168,6 +197,28 @@ export function getShadowCSS(sizePx, color = '#000000') {
 }
 
 /**
+ * Get combined text-shadow for stroke and glow effects
+ *
+ * @param {number} strokeWidth - Stroke width in pixels
+ * @param {string} strokeColor - Stroke color in hex
+ * @param {number} shadowSize - Glow shadow size in pixels
+ * @param {string} shadowColor - Glow shadow color in hex
+ * @returns {string} Combined CSS text-shadow value
+ */
+export function getCombinedShadowCSS(strokeWidth, strokeColor, shadowSize, shadowColor) {
+  const strokeShadow = getStrokeShadowCSS(strokeWidth, strokeColor);
+  const glowShadow = getShadowCSS(shadowSize, shadowColor);
+
+  if (strokeShadow && glowShadow && glowShadow !== 'none') {
+    return `${strokeShadow}, ${glowShadow}`;
+  } else if (strokeShadow) {
+    return strokeShadow;
+  } else {
+    return glowShadow;
+  }
+}
+
+/**
  * Apply style to timer element
  *
  * @param {HTMLElement} timerEl - The timer text element
@@ -183,9 +234,14 @@ export function applyStyle(timerEl, containerEl, style, isFlashing = false) {
   timerEl.style.color = style.color || '#ffffff';
   timerEl.style.opacity = FIXED_STYLE.opacity;
   timerEl.style.letterSpacing = FIXED_STYLE.letterSpacing + 'em';
-  timerEl.style.webkitTextStrokeWidth = (style.strokeWidth ?? 0) + 'px';
-  timerEl.style.webkitTextStrokeColor = style.strokeColor || '#000000';
-  timerEl.style.textShadow = getShadowCSS(style.shadowSize ?? 0, style.shadowColor);
+  // Use shadow-based stroke instead of -webkit-text-stroke to avoid intersection artifacts
+  timerEl.style.webkitTextStrokeWidth = '0px';
+  timerEl.style.textShadow = getCombinedShadowCSS(
+    style.strokeWidth ?? 0,
+    style.strokeColor || '#000000',
+    style.shadowSize ?? 0,
+    style.shadowColor
+  );
   timerEl.style.textAlign = FIXED_STYLE.align;
 
   // Background
@@ -252,11 +308,9 @@ export class FlashAnimator {
     // Store original styles
     this.originalColor = this.timerEl.style.color;
     this.originalShadow = this.timerEl.style.textShadow;
-    this.originalStroke = this.timerEl.style.webkitTextStrokeColor;
-    this.originalStrokeWidth = this.timerEl.style.webkitTextStrokeWidth;
 
     // Add smooth transition for phase changes
-    this.timerEl.style.transition = 'color 100ms ease, text-shadow 100ms ease, -webkit-text-stroke-color 100ms ease';
+    this.timerEl.style.transition = 'color 100ms ease, text-shadow 100ms ease';
 
     this.startedAt = startedAt;
     this.isFlashing = true;
@@ -298,26 +352,20 @@ export class FlashAnimator {
     const glowCSS = getFlashGlowCSS(metrics);
 
     this.timerEl.style.color = '#ffffff';
-    this.timerEl.style.webkitTextStrokeColor = '#ffffff';
-    this.timerEl.style.webkitTextStrokeWidth = metrics.strokeWidth + 'px';
     this.timerEl.style.textShadow = glowCSS;
   }
 
   applyGrey() {
     this.timerEl.style.color = '#666666';
-    this.timerEl.style.webkitTextStrokeColor = '#666666';
-    this.timerEl.style.webkitTextStrokeWidth = '0px';
     this.timerEl.style.textShadow = 'none';
   }
 
   restore() {
     // Add quick fade transition for color (grey -> original)
-    this.timerEl.style.transition = 'color 200ms ease-out, -webkit-text-stroke-color 200ms ease-out';
+    this.timerEl.style.transition = 'color 200ms ease-out';
 
     // Restore color with fade
     this.timerEl.style.color = this.originalColor;
-    this.timerEl.style.webkitTextStrokeColor = this.originalStroke;
-    this.timerEl.style.webkitTextStrokeWidth = this.originalStrokeWidth;
 
     // Restore shadow instantly (no transition - looks weird animated)
     this.timerEl.style.textShadow = this.originalShadow;

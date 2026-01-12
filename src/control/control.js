@@ -7,7 +7,7 @@ import { parseHMS, secondsToHMS, formatTime, formatTimePlain, formatTimeOfDay, h
 import { validateConfig, validatePresets, safeJSONParse, validateExportData } from '../shared/validation.js';
 import { STORAGE_KEYS } from '../shared/constants.js';
 import { createTimerState, FIXED_STYLE } from '../shared/timerState.js';
-import { computeDisplay, getShadowCSS, FlashAnimator } from '../shared/renderTimer.js';
+import { computeDisplay, getShadowCSS, getCombinedShadowCSS, FlashAnimator } from '../shared/renderTimer.js';
 
 // DOM Elements
 const els = {
@@ -1682,9 +1682,14 @@ function updateModalPreview() {
   els.modalPreviewTimer.style.fontWeight = FIXED_STYLE.fontWeight;
   els.modalPreviewTimer.style.color = els.fontColor.value;
   els.modalPreviewTimer.style.opacity = FIXED_STYLE.opacity;
-  els.modalPreviewTimer.style.webkitTextStrokeWidth = (parseInt(els.strokeWidth.value, 10) || 0) + 'px';
-  els.modalPreviewTimer.style.webkitTextStrokeColor = els.strokeColor.value;
-  els.modalPreviewTimer.style.textShadow = getShadowCSS(shadowSize, shadowColor);
+  // Use shadow-based stroke instead of -webkit-text-stroke to avoid intersection artifacts
+  els.modalPreviewTimer.style.webkitTextStrokeWidth = '0px';
+  els.modalPreviewTimer.style.textShadow = getCombinedShadowCSS(
+    parseInt(els.strokeWidth.value, 10) || 0,
+    els.strokeColor.value,
+    shadowSize,
+    shadowColor
+  );
   els.modalPreviewTimer.style.letterSpacing = FIXED_STYLE.letterSpacing + 'em';
 
   // Update displayed time based on mode
@@ -1932,9 +1937,14 @@ function applyLivePreviewStyle() {
   if (!flashAnimator?.isFlashing) {
     els.livePreviewTimer.style.color = els.fontColor.value;
     els.livePreviewTimer.style.opacity = FIXED_STYLE.opacity;
-    els.livePreviewTimer.style.webkitTextStrokeWidth = (parseInt(els.strokeWidth.value, 10) || 0) + 'px';
-    els.livePreviewTimer.style.webkitTextStrokeColor = els.strokeColor.value;
-    els.livePreviewTimer.style.textShadow = getShadowCSS(shadowSize, shadowColor);
+    // Use shadow-based stroke instead of -webkit-text-stroke to avoid intersection artifacts
+    els.livePreviewTimer.style.webkitTextStrokeWidth = '0px';
+    els.livePreviewTimer.style.textShadow = getCombinedShadowCSS(
+      parseInt(els.strokeWidth.value, 10) || 0,
+      els.strokeColor.value,
+      shadowSize,
+      shadowColor
+    );
   }
 
   // Font size is handled by autoFitText in renderLivePreview

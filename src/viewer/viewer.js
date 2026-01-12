@@ -7,7 +7,7 @@
 import { formatTime, formatTimeOfDay, hexToRgba } from '../shared/timer.js';
 import { playWarningSound, playEndSound, initAudio } from '../shared/sounds.js';
 import { FIXED_STYLE } from '../shared/timerState.js';
-import { computeDisplay, getShadowCSS, autoFitText, FlashAnimator } from '../shared/renderTimer.js';
+import { computeDisplay, getShadowCSS, getCombinedShadowCSS, autoFitText, FlashAnimator } from '../shared/renderTimer.js';
 
 // DOM Elements
 const timerEl = document.getElementById('timer');
@@ -141,15 +141,20 @@ function applyStyle(style) {
   timerEl.style.opacity = FIXED_STYLE.opacity;
 
   // Handle both broadcast format (textShadow) and state format (shadowSize)
+  // Use shadow-based stroke instead of -webkit-text-stroke to avoid intersection artifacts
+  timerEl.style.webkitTextStrokeWidth = '0px';
   if (style.textShadow) {
     timerEl.style.textShadow = style.textShadow;
-  } else if (style.shadowSize !== undefined) {
-    timerEl.style.textShadow = getShadowCSS(style.shadowSize, style.shadowColor);
+  } else {
+    timerEl.style.textShadow = getCombinedShadowCSS(
+      style.strokeWidth ?? 0,
+      style.strokeColor || '#000000',
+      style.shadowSize ?? 0,
+      style.shadowColor
+    );
   }
 
   timerEl.style.letterSpacing = FIXED_STYLE.letterSpacing + 'em';
-  timerEl.style.webkitTextStrokeWidth = (style.strokeWidth ?? 0) + 'px';
-  timerEl.style.webkitTextStrokeColor = style.strokeColor || '#000000';
   timerEl.style.textAlign = FIXED_STYLE.align;
 
   // Always centered
