@@ -312,19 +312,21 @@ button:disabled {
 /* Layout helpers */
 .kv {
   display: grid;
-  grid-template-columns: 110px 1fr;
-  gap: 6px;
+  grid-template-columns: 130px 1fr;
+  gap: 12px;
   align-items: center;
   margin: 6px 0;
+  padding-left: 16px;
 }
 
 /* Inline controls (e.g., slider + value + color picker) */
 .kv-inline {
   display: grid;
-  grid-template-columns: 110px 1fr;
-  gap: 6px;
+  grid-template-columns: 130px 1fr;
+  gap: 12px;
   align-items: center;
   margin: 6px 0;
+  padding-left: 16px;
 }
 
 .inline-controls {
