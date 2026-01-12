@@ -3444,7 +3444,8 @@ let profileDragState = {
   items: [],        // All profile item elements
   listSection: null, // Reference to list section for has-drag class
   slotHeight: 0,    // Height of each profile item
-  baseY: 0,         // Y position of first item
+  baseY: 0,         // Y position of first item at drag start
+  initialScrollTop: 0, // Scroll position at drag start
   startX: 0,
   startY: 0
 };
@@ -3678,6 +3679,7 @@ function showProfileDropdown() {
       profileDragState.items = allItems;
       profileDragState.slotHeight = itemRect.height;
       profileDragState.baseY = firstRect.top;
+      profileDragState.initialScrollTop = listSection.scrollTop;
 
       profileDragState.draggedEl.classList.add('dragging');
       listSection.classList.add('has-drag');
@@ -3686,17 +3688,17 @@ function showProfileDropdown() {
       allItems.forEach(el => el.style.transition = 'transform 0.15s ease');
     }
 
-    const { fromIndex, items, slotHeight } = profileDragState;
+    const { fromIndex, items, slotHeight, baseY, listSection, initialScrollTop } = profileDragState;
+    if (!items.length) return;
 
-    // Get fresh baseY from first item on each move (accounts for scrolling)
-    const firstItem = items[0];
-    if (!firstItem) return;
-    const baseY = firstItem.getBoundingClientRect().top;
+    // Account for any scroll that happened since drag started
+    const scrollDelta = listSection ? (listSection.scrollTop - initialScrollTop) : 0;
+    const adjustedBaseY = baseY - scrollDelta;
 
     // Calculate which slot the mouse is over
     // Use smaller offset (30% instead of 50%) for more responsive dragging in both directions
     const mouseY = e.clientY;
-    let newSlot = Math.floor((mouseY - baseY + slotHeight * 0.3) / slotHeight);
+    let newSlot = Math.floor((mouseY - adjustedBaseY + slotHeight * 0.3) / slotHeight);
     newSlot = Math.max(0, Math.min(items.length - 1, newSlot));
 
     if (newSlot !== profileDragState.currentSlot) {
@@ -3740,6 +3742,7 @@ function showProfileDropdown() {
       profileDragState.draggedEl = null;
       profileDragState.items = [];
       profileDragState.listSection = null;
+      profileDragState.initialScrollTop = 0;
       document.removeEventListener('mousemove', handleProfileDragMove);
       document.removeEventListener('mouseup', handleProfileDragEnd);
       return;
@@ -3773,6 +3776,7 @@ function showProfileDropdown() {
     profileDragState.draggedEl = null;
     profileDragState.items = [];
     profileDragState.listSection = null;
+    profileDragState.initialScrollTop = 0;
 
     document.removeEventListener('mousemove', handleProfileDragMove);
     document.removeEventListener('mouseup', handleProfileDragEnd);
