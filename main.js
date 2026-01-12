@@ -85,10 +85,10 @@ function createOutputWindow() {
     }
   });
 
-  outputWindow.loadFile('src/viewer/viewer.html');
+  outputWindow.loadFile('src/output/output.html');
 
   // Note: We no longer use did-finish-load to signal readiness.
-  // The viewer will signal when it's fully initialized via 'viewer:ready'
+  // The output window will signal when it's fully initialized via 'output:ready'
 
   outputWindow.on('closed', () => {
     outputWindow = null;
@@ -148,8 +148,8 @@ ipcMain.on('display:state', (_event, state) => {
   }
 });
 
-// Viewer signals it's fully initialized and ready to receive state
-ipcMain.on('viewer:ready', () => {
+// Output window signals it's fully initialized and ready to receive state
+ipcMain.on('output:ready', () => {
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.webContents.send('window:output-ready');
   }
@@ -402,14 +402,14 @@ ipcMain.on('app:restart', () => {
 
 // ============ Message Broadcasting ============
 
-// Message send: control -> main -> viewer
+// Message send: control -> main -> output
 ipcMain.on('message:send', (_event, message) => {
   if (outputWindow && !outputWindow.isDestroyed()) {
     outputWindow.webContents.send('message:update', message);
   }
 });
 
-// Message state request: viewer -> main -> control
+// Message state request: output -> main -> control
 ipcMain.on('message:request-state', () => {
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.webContents.send('message:request-state');

@@ -83,9 +83,9 @@ contextBridge.exposeInMainWorld('ninja', {
     ipcRenderer.on('window:output-closed', () => callback());
   },
 
-  // Signal that viewer is fully initialized and ready to receive state
-  signalViewerReady: () => {
-    ipcRenderer.send('viewer:ready');
+  // Signal that output window is fully initialized and ready to receive state
+  signalOutputReady: () => {
+    ipcRenderer.send('output:ready');
   },
 
   // Keyboard shortcuts from output window
@@ -131,17 +131,17 @@ contextBridge.exposeInMainWorld('ninja', {
 
   // ============ Message Broadcasting ============
 
-  // Send message to viewer (control -> main -> viewer)
+  // Send message to output (control -> main -> output)
   sendMessage: (message) => {
     ipcRenderer.send('message:send', message);
   },
 
-  // Listen for message updates (viewer receives)
+  // Listen for message updates (output receives)
   onMessageUpdate: (callback) => {
     ipcRenderer.on('message:update', (_event, message) => callback(message));
   },
 
-  // Request current message state (viewer -> control, on load/reload)
+  // Request current message state (output -> control, on load/reload)
   requestMessageState: () => {
     ipcRenderer.send('message:request-state');
   },

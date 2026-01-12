@@ -49,7 +49,7 @@ select:focus {
 }
 
 input[type="range"] {
-  width: 100%;
+  width: 120px;
 }
 
 input[type="color"] {
