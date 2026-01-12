@@ -1083,13 +1083,7 @@ function renderMessageList() {
     dragHandle.className = 'message-drag-handle';
     dragHandle.innerHTML = `
       <span class="message-number">${idx + 1}</span>
-      <span class="message-drag-icon">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          <circle cx="9" cy="6" r="2"/><circle cx="15" cy="6" r="2"/>
-          <circle cx="9" cy="12" r="2"/><circle cx="15" cy="12" r="2"/>
-          <circle cx="9" cy="18" r="2"/><circle cx="15" cy="18" r="2"/>
-        </svg>
-      </span>
+      <span class="message-drag-icon">${ICONS.drag}</span>
     `;
 
     const deleteBtn = document.createElement('button');
