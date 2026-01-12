@@ -677,13 +677,21 @@ button:disabled {
 }
 
 .profile-dropdown-section {
-  padding: 4px 0;
+  padding: 0;
+}
+
+.profile-dropdown-section > :first-child {
+  padding-top: 8px;
+}
+
+.profile-dropdown-section > :last-child {
+  padding-bottom: 8px;
 }
 
 .profile-dropdown-divider {
   height: 1px;
   background: #333;
-  margin: 4px 0;
+  margin: 0;
 }
 
 .profile-item {
