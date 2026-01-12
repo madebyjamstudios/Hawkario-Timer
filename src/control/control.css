@@ -243,19 +243,21 @@ button:disabled {
 
 .live-preview.with-message {
   grid-template-rows: 1fr 1fr;
-  place-items: center center;
+  /* Remove place-items - use explicit alignment per element */
 }
 
 .live-preview.with-message .timer-preview {
+  grid-row: 1;
   align-self: end;
+  justify-self: center;
   max-height: 45%;
-  /* DEBUG */ background: rgba(255,0,0,0.2);
 }
 
 .live-preview.with-message .message-preview {
+  grid-row: 2;
   display: block;
   align-self: start;
-  /* DEBUG */ background: rgba(0,255,0,0.2);
+  justify-self: center;
 }
 
 /* Vertically centered colon for time display */
