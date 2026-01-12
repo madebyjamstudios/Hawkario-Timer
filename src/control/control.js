@@ -987,7 +987,27 @@ function getActiveTab() {
 function loadMessages() {
   try {
     const data = localStorage.getItem(MESSAGES_KEY);
-    return data ? JSON.parse(data) : [];
+    let messages = data ? JSON.parse(data) : [];
+
+    // Migrate: add id and visible fields to any messages without them
+    let needsSave = false;
+    messages = messages.map(msg => {
+      if (!msg.id) {
+        needsSave = true;
+        return {
+          ...msg,
+          id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          visible: false
+        };
+      }
+      return msg;
+    });
+
+    if (needsSave) {
+      saveMessagesToStorage(messages);
+    }
+
+    return messages;
   } catch {
     return [];
   }

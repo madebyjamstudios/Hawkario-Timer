@@ -81,22 +81,6 @@
         <div class="message-list-container">
           <div id="messageList" class="message-list"></div>
         </div>
-        <div class="message-compose">
-          <div class="compose-input-row">
-            <input id="messageText" type="text" placeholder="Type a message..." class="message-input" />
-          </div>
-          <div class="compose-controls">
-            <div class="format-toggles">
-              <button id="boldToggle" class="format-btn" title="Bold"><strong>B</strong></button>
-              <button id="italicToggle" class="format-btn" title="Italic"><em>I</em></button>
-              <input id="messageColor" type="color" value="#ffffff" title="Text Color" class="color-picker" />
-            </div>
-            <button id="messageToggle" class="message-toggle-btn">
-              <span class="message-indicator"></span>
-              <span class="message-toggle-text">Show</span>
-            </button>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -107,12 +91,14 @@
           <circle cx="12" cy="12" r="10"/>
           <polyline points="12 6 12 12 16 14"/>
         </svg>
+        <span class="tab-badge" id="timersBadge"></span>
       </button>
       <button id="addTimer" class="add-timer-btn">+ Add Timer</button>
       <button id="messagesTabBtn" class="tab-icon-btn" data-tab="messages" title="Messages">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
         </svg>
+        <span class="tab-badge" id="messagesBadge"></span>
       </button>
     </div>
 

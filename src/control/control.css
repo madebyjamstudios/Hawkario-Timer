@@ -1758,6 +1758,7 @@ button.danger:active {
 }
 
 .tab-icon-btn {
+  position: relative;
   width: 40px;
   height: 40px;
   padding: 0;
@@ -1770,6 +1771,28 @@ button.danger:active {
   color: #666;
   cursor: pointer;
   transition: all 0.15s ease;
+}
+
+.tab-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  background: #E64A19;
+  border-radius: 7px;
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.tab-badge:empty {
+  display: none;
 }
 
 .tab-icon-btn:hover {
@@ -1829,31 +1852,177 @@ button.danger:active {
 
 .message-item {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 10px;
   padding: 12px 16px;
+  padding-left: 8px;
   background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%);
-  border-radius: 10px;
+  border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   transition: all 0.15s ease;
+  position: relative;
 }
 
 .message-item:hover {
   background: linear-gradient(135deg, #4a4a4a 0%, #3a3a3a 100%);
 }
 
-.message-preview {
+/* Active (showing on viewer) message - green highlight */
+.message-item.showing {
+  background: linear-gradient(135deg, #1a4d1a 0%, #143d14 100%);
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.message-drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  cursor: grab;
+  position: relative;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.message-drag-handle:active {
+  cursor: grabbing;
+}
+
+.message-number {
+  position: absolute;
+  top: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 9px;
+  font-weight: 700;
+  color: #888;
+}
+
+.message-drag-icon {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.message-drag-icon::before,
+.message-drag-icon::after,
+.message-drag-icon span {
+  content: '';
+  display: block;
+  width: 12px;
+  height: 2px;
+  background: #555;
+  border-radius: 1px;
+}
+
+.message-content {
   flex: 1;
-  font-size: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.message-text-input {
+  width: 100%;
+  padding: 8px 10px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 6px;
   color: #fff;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.message-text-input:focus {
+  border-color: #1f6feb;
+  outline: none;
+}
+
+.message-format-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .message-actions {
   display: flex;
+  flex-direction: column;
   gap: 6px;
+  justify-content: center;
+}
+
+/* Visibility toggle button - green when showing */
+.message-visibility-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: #333;
+  border: 2px solid #555;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.message-visibility-btn:hover {
+  background: #444;
+  border-color: #666;
+}
+
+.message-visibility-btn.active {
+  background: #1a3a1a;
+  border-color: #22c55e;
+}
+
+.message-visibility-btn.active .visibility-indicator {
+  background: #22c55e;
+  box-shadow: 0 0 8px #22c55e, 0 0 16px #22c55e;
+  border-color: #22c55e;
+}
+
+.visibility-indicator {
+  width: 8px;
+  height: 8px;
+  background: #444;
+  border-radius: 50%;
+  border: 1px solid #666;
+  transition: all 0.5s ease;
+}
+
+.message-delete-btn {
+  width: 32px;
+  height: 32px;
+}
+
+.message-delete-btn:hover {
+  background: rgba(230, 74, 25, 0.2);
+  border-color: #E64A19;
+}
+
+.message-delete-btn:hover svg {
+  stroke: #E64A19;
+}
+
+/* Message drag states */
+.message-item.drag-placeholder {
+  opacity: 0.5;
+  border: 2px dashed #555;
+}
+
+.message-item.drag-ghost {
+  opacity: 0.9;
+  transform: scale(1.02);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.message-item.drag-transforming {
+  transition: transform 0.15s ease;
 }
 
 /* ============ Message Compose Area ============ */
