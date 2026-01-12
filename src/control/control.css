@@ -529,7 +529,7 @@ button:disabled {
 .timer-progress-container {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   padding: 4px 0;
   width: 100%;
   user-select: none;
@@ -541,11 +541,10 @@ button:disabled {
 }
 
 .progress-time {
-  color: #fff;
-  font-size: 11px;
+  color: #aaa;
+  font-size: 12px;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
-  min-width: 38px;
-  text-align: left;
   flex-shrink: 0;
 }
 
@@ -567,6 +566,7 @@ button:disabled {
   border-radius: 4px;
   overflow: hidden;
   pointer-events: none;
+  background: rgba(255, 255, 255, 0.03);
 }
 
 /* Warning zone container */
