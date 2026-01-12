@@ -45,13 +45,13 @@ html, body {
   transform: translateY(-0.08em);
 }
 
-/* ToD line (smaller, below main timer, always white) */
+/* ToD line (smaller, below main timer) */
 .tod-line {
   font-size: 0.3em;
   font-weight: 600;
   display: block;
   margin-top: -0.55em;
-  color: #ffffff !important;
+  /* Inherits color from parent timer to flash in sync */
   text-align: center;
 }
 
