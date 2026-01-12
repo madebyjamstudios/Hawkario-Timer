@@ -40,7 +40,9 @@ const PROFILE_COLORS = [
   '#ec4899', // pink
   '#8b5cf6', // violet
   '#06b6d4', // cyan
-  '#f97316'  // orange
+  '#f97316', // orange
+  '#3b82f6', // blue
+  '#10b981'  // emerald
 ];
 
 // DOM Elements
@@ -3467,6 +3469,67 @@ function hideProfileDropdown() {
   els.profileBtn?.classList.remove('active');
 }
 
+// Current color picker element
+let profileColorPicker = null;
+
+/**
+ * Show color picker for a profile
+ */
+function showProfileColorPicker(profileId, anchorEl) {
+  // Close any existing color picker
+  hideProfileColorPicker();
+
+  const profile = profiles.find(p => p.id === profileId);
+  if (!profile) return;
+
+  const rect = anchorEl.getBoundingClientRect();
+
+  // Create color picker popup
+  profileColorPicker = document.createElement('div');
+  profileColorPicker.className = 'profile-color-picker';
+  profileColorPicker.style.top = (rect.bottom + 6) + 'px';
+  profileColorPicker.style.left = (rect.left - 40) + 'px';
+
+  // Create color swatches (5x2 grid for 10 colors)
+  PROFILE_COLORS.forEach(color => {
+    const swatch = document.createElement('div');
+    swatch.className = 'color-swatch' + (profile.color === color ? ' selected' : '');
+    swatch.style.background = color;
+    swatch.style.boxShadow = `0 0 6px ${color}`;
+
+    swatch.addEventListener('click', (e) => {
+      e.stopPropagation();
+      // Update profile color
+      profile.color = color;
+      saveProfiles();
+      updateProfileButton();
+      hideProfileColorPicker();
+      // Refresh dropdown to show new color
+      hideProfileDropdown();
+      showProfileDropdown();
+    });
+
+    profileColorPicker.appendChild(swatch);
+  });
+
+  document.body.appendChild(profileColorPicker);
+
+  // Close on click outside
+  setTimeout(() => {
+    document.addEventListener('click', hideProfileColorPicker, { once: true });
+  }, 0);
+}
+
+/**
+ * Hide the color picker
+ */
+function hideProfileColorPicker() {
+  if (profileColorPicker) {
+    profileColorPicker.remove();
+    profileColorPicker = null;
+  }
+}
+
 /**
  * Show the profile dropdown menu
  */
@@ -3513,6 +3576,13 @@ function showProfileDropdown() {
     if (profile.id === highlightProfileId) {
       itemToHighlight = item;
     }
+
+    // Color dot click handler - show color picker
+    const colorDot = item.querySelector('.profile-color-dot');
+    colorDot.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showProfileColorPicker(profile.id, colorDot);
+    });
 
     // Click to switch profile (but not if drag is active)
     item.addEventListener('click', (e) => {
