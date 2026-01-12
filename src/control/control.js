@@ -3429,6 +3429,9 @@ function updateProfileButton() {
 // Current profile dropdown element (for cleanup)
 let profileDropdown = null;
 
+// Profile to highlight when dropdown opens (for new profile animation)
+let highlightProfileId = null;
+
 // Profile drag state (transform-based like timers)
 let profileDragState = {
   isDragging: false,
@@ -3487,10 +3490,13 @@ function showProfileDropdown() {
   const listSection = document.createElement('div');
   listSection.className = 'profile-dropdown-section profile-list-section';
 
+  let itemToHighlight = null;
+
   profiles.forEach((profile, idx) => {
     const item = document.createElement('div');
     item.className = 'profile-item' + (profile.id === activeProfileId ? ' current' : '');
     item.dataset.index = idx;
+    item.dataset.profileId = profile.id;
     const color = profile.color || PROFILE_COLORS[idx % PROFILE_COLORS.length];
     const shortcutHint = idx < 9 ? `<span class="profile-shortcut">${idx + 1}</span>` : '';
     item.innerHTML = `
@@ -3502,6 +3508,11 @@ function showProfileDropdown() {
         <polyline points="20 6 9 17 4 12"/>
       </svg>
     `;
+
+    // Track item for highlight animation
+    if (profile.id === highlightProfileId) {
+      itemToHighlight = item;
+    }
 
     // Click to switch profile (but not if drag is active)
     item.addEventListener('click', (e) => {
@@ -3745,6 +3756,21 @@ function showProfileDropdown() {
   // Add to DOM
   document.body.appendChild(profileDropdown);
   els.profileBtn.classList.add('active');
+
+  // Highlight animation for new profile
+  if (itemToHighlight && highlightProfileId) {
+    // Scroll to the new profile
+    requestAnimationFrame(() => {
+      itemToHighlight.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      // Add highlight animation class
+      itemToHighlight.classList.add('profile-highlight');
+      // Remove after animation completes
+      setTimeout(() => {
+        itemToHighlight.classList.remove('profile-highlight');
+      }, 600);
+    });
+    highlightProfileId = null; // Clear after use
+  }
 
   // Close on click outside (but not while dragging)
   // Store and add close handler
@@ -4113,6 +4139,11 @@ function createNewProfile() {
 
   // Switch to the new profile
   switchProfile(newProfile.id);
+
+  // Set highlight ID and reopen dropdown to show animation
+  highlightProfileId = newProfile.id;
+  showProfileDropdown();
+
   showToast('Profile created', 'success');
 }
 
