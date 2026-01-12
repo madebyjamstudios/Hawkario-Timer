@@ -4123,20 +4123,23 @@ function createDefaultMessage() {
 }
 
 function handleExport() {
-  const presets = loadPresets();
   const appSettings = loadAppSettings();
 
-  if (presets.length === 0) {
-    showToast('No presets to export', 'error');
+  // Count total presets across all profiles
+  const totalPresets = profiles.reduce((sum, p) => sum + p.presets.length, 0);
+
+  if (profiles.length === 0 || totalPresets === 0) {
+    showToast('No data to export', 'error');
     return;
   }
 
-  // Create v2 export format with app settings and presets
+  // Create v3 export format with profiles
   const exportData = {
-    version: 2,
+    version: 3,
     exportedAt: new Date().toISOString(),
     appSettings: appSettings,
-    presets: presets
+    profiles: profiles,
+    activeProfileId: activeProfileId
   };
 
   const blob = new Blob([JSON.stringify(exportData, null, 2)], {
@@ -4149,7 +4152,7 @@ function handleExport() {
   a.click();
 
   setTimeout(() => URL.revokeObjectURL(url), 5000);
-  showToast(`Exported ${presets.length} preset(s) + settings`);
+  showToast(`Exported ${profiles.length} profile(s) with ${totalPresets} timer(s)`);
 }
 
 function handleImport(e) {
@@ -4181,18 +4184,45 @@ function handleImport(e) {
       return;
     }
 
-    // Import presets (merge with existing)
+    let profilesImported = 0;
     let presetsImported = 0;
-    if (importData.presets && importData.presets.length > 0) {
+    let settingsImported = false;
+
+    // Handle v3 format (profiles)
+    if (importData.version === 3 && importData.profiles) {
+      // Merge imported profiles with existing
+      importData.profiles.forEach(importedProfile => {
+        // Check if profile with same name exists
+        const existingIdx = profiles.findIndex(p => p.name === importedProfile.name);
+        if (existingIdx >= 0) {
+          // Merge presets into existing profile
+          const existing = profiles[existingIdx];
+          existing.presets = [...existing.presets, ...importedProfile.presets];
+          presetsImported += importedProfile.presets.length;
+        } else {
+          // Add as new profile with new ID to avoid conflicts
+          const newProfile = {
+            ...importedProfile,
+            id: generateProfileId(),
+            createdAt: new Date().toISOString()
+          };
+          profiles.push(newProfile);
+          profilesImported++;
+          presetsImported += importedProfile.presets.length;
+        }
+      });
+      saveProfiles();
+    }
+    // Handle v2 format (presets only) - add to current profile
+    else if (importData.presets && importData.presets.length > 0) {
       const existing = loadPresets();
       const merged = [...existing, ...importData.presets];
       savePresets(merged);
       presetsImported = importData.presets.length;
     }
 
-    // Import app settings (v2 only)
-    let settingsImported = false;
-    if (importData.version === 2 && importData.appSettings) {
+    // Import app settings (v2 and v3)
+    if ((importData.version === 2 || importData.version === 3) && importData.appSettings) {
       saveAppSettings(importData.appSettings);
       // Apply window settings immediately
       window.ninja.setAlwaysOnTop('output', importData.appSettings.outputOnTop);
@@ -4201,10 +4231,12 @@ function handleImport(e) {
     }
 
     // Show appropriate toast
-    if (presetsImported > 0 && settingsImported) {
-      showToast(`Imported ${presetsImported} preset(s) + settings`, 'success');
+    if (profilesImported > 0) {
+      showToast(`Imported ${profilesImported} profile(s) with ${presetsImported} timer(s)`, 'success');
+    } else if (presetsImported > 0 && settingsImported) {
+      showToast(`Imported ${presetsImported} timer(s) + settings`, 'success');
     } else if (presetsImported > 0) {
-      showToast(`Imported ${presetsImported} preset(s)`, 'success');
+      showToast(`Imported ${presetsImported} timer(s)`, 'success');
     } else if (settingsImported) {
       showToast('Imported settings', 'success');
     } else {
@@ -4212,6 +4244,7 @@ function handleImport(e) {
       return;
     }
 
+    updateProfileButton();
     renderPresetList();
   };
 

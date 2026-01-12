@@ -234,10 +234,15 @@ export function safeJSONParse(str, validator = null) {
 /**
  * Detect export format version
  * @param {any} data - Parsed JSON data
- * @returns {number} Version number (1 for legacy array, 2 for new format, 0 for invalid)
+ * @returns {number} Version number (1 for legacy array, 2 for presets+settings, 3 for profiles, 0 for invalid)
  */
 export function detectExportVersion(data) {
   if (!data) return 0;
+
+  // v3 format: object with profiles array
+  if (typeof data === 'object' && !Array.isArray(data) && data.version === 3) {
+    return 3;
+  }
 
   // v2 format: object with version field
   if (typeof data === 'object' && !Array.isArray(data) && data.version === 2) {
@@ -302,7 +307,21 @@ function validateDefaultSettings(defaults) {
 }
 
 /**
- * Validate v2 export data (with app settings and presets)
+ * Validate a single profile for import
+ */
+function validateProfile(profile) {
+  if (!profile || typeof profile !== 'object') return null;
+
+  return {
+    id: profile.id || '',
+    name: typeof profile.name === 'string' ? profile.name.trim() : 'Untitled',
+    createdAt: profile.createdAt || new Date().toISOString(),
+    presets: validatePresets(profile.presets || [])
+  };
+}
+
+/**
+ * Validate export data (supports v1, v2, v3 formats)
  */
 export function validateExportData(data) {
   if (!data || typeof data !== 'object') {
@@ -321,11 +340,25 @@ export function validateExportData(data) {
   }
 
   if (version === 2) {
-    // New format with app settings
+    // v2 format with app settings and presets
     return {
       version: 2,
       appSettings: data.appSettings ? validateAppSettings(data.appSettings) : null,
       presets: data.presets ? validatePresets(data.presets) : []
+    };
+  }
+
+  if (version === 3) {
+    // v3 format with profiles
+    const profiles = Array.isArray(data.profiles)
+      ? data.profiles.map(validateProfile).filter(p => p !== null)
+      : [];
+
+    return {
+      version: 3,
+      appSettings: data.appSettings ? validateAppSettings(data.appSettings) : null,
+      profiles: profiles,
+      activeProfileId: data.activeProfileId || null
     };
   }
 
