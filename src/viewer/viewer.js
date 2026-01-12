@@ -191,8 +191,8 @@ function autoFitTimer() {
   const containerWidth = window.innerWidth;
   const containerHeight = window.innerHeight;
   const targetWidth = containerWidth * 0.9;
-  // Use 45% height when message is visible (50/50 split), otherwise 85%
-  const targetHeight = containerHeight * (currentMessage ? 0.45 : 0.85);
+  // Use 55% height when message is visible (60/40 split), otherwise 85%
+  const targetHeight = containerHeight * (currentMessage ? 0.55 : 0.85);
   const naturalWidth = timerEl.scrollWidth;
   const naturalHeight = timerEl.scrollHeight;
 
