@@ -3893,7 +3893,7 @@ function showProfileDropdown() {
       // Remove after animation completes
       setTimeout(() => {
         itemToHighlight.classList.remove('profile-highlight');
-      }, 600);
+      }, 800);
     });
     highlightProfileId = null; // Clear after use
   }
