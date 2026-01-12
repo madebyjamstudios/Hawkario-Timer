@@ -106,13 +106,7 @@ const els = {
   messagesTab: document.getElementById('messagesTab'),
 
   // Message elements
-  messageList: document.getElementById('messageList'),
-  messageText: document.getElementById('messageText'),
-  messageColor: document.getElementById('messageColor'),
-  boldToggle: document.getElementById('boldToggle'),
-  italicToggle: document.getElementById('italicToggle'),
-  messageToggle: document.getElementById('messageToggle'),
-  messageToggleText: document.querySelector('.message-toggle-text')
+  messageList: document.getElementById('messageList')
 };
 
 // Helper functions for unified time input (HH:MM:SS)
@@ -716,6 +710,26 @@ const dragState = {
   originalBaseY: 0       // Original Y position of first slot (before any transforms)
 };
 
+// Message drag state (simpler than timers - no link zones)
+const messageDragState = {
+  isDragging: false,
+  dragActivated: false,
+  fromIndex: null,
+  currentSlot: null,
+  draggedRow: null,
+  ghostEl: null,
+  placeholderEl: null,
+  grabOffsetX: 0,
+  grabOffsetY: 0,
+  startX: 0,
+  startY: 0,
+  originalHeight: 0,
+  originalWidth: 0,
+  visibleItems: [],
+  slotHeight: 0,
+  originalBaseY: 0
+};
+
 // SVG Icons
 const ICONS = {
   flash: '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
@@ -1021,191 +1035,270 @@ function saveMessagesToStorage(list) {
   }
 }
 
+function updateTabBadges() {
+  const timerCount = loadPresets().length;
+  const messageCount = loadMessages().length;
+
+  const timersBadge = document.getElementById('timersBadge');
+  const messagesBadge = document.getElementById('messagesBadge');
+
+  if (timersBadge) timersBadge.textContent = timerCount > 0 ? timerCount : '';
+  if (messagesBadge) messagesBadge.textContent = messageCount > 0 ? messageCount : '';
+}
+
 function renderMessageList() {
-  const list = loadMessages();
+  const messages = loadMessages();
   els.messageList.innerHTML = '';
 
-  // Show active message bar if message is being displayed
-  if (activeMessage) {
-    const bar = document.createElement('div');
-    bar.className = 'active-message-bar';
-
-    const text = document.createElement('span');
-    text.className = 'active-message-text';
-    text.textContent = activeMessage.text;
-    if (activeMessage.bold) text.style.fontWeight = 'bold';
-    if (activeMessage.italic) text.style.fontStyle = 'italic';
-    text.style.color = activeMessage.color;
-
-    bar.appendChild(text);
-
-    const retractBtn = document.createElement('button');
-    retractBtn.className = 'retract-btn';
-    retractBtn.textContent = 'Hide';
-    retractBtn.onclick = retractMessage;
-    bar.appendChild(retractBtn);
-
-    els.messageList.appendChild(bar);
-  }
-
-  if (list.length === 0 && !activeMessage) {
-    return; // No placeholder text - just show empty list
-  }
-
-  list.forEach((msg, idx) => {
+  messages.forEach((msg, idx) => {
     const row = document.createElement('div');
-    row.className = 'message-item';
+    row.className = 'message-item' + (msg.visible ? ' showing' : '');
+    row.dataset.id = msg.id;
 
-    const preview = document.createElement('span');
-    preview.className = 'message-preview';
-    preview.textContent = msg.text;
-    if (msg.bold) preview.style.fontWeight = 'bold';
-    if (msg.italic) preview.style.fontStyle = 'italic';
-    preview.style.color = msg.color || '#ffffff';
+    // Drag handle
+    const dragHandle = document.createElement('div');
+    dragHandle.className = 'message-drag-handle';
+    dragHandle.innerHTML = `
+      <span class="message-number">${idx + 1}</span>
+      <span class="message-drag-icon"><span></span></span>
+    `;
 
+    // Content area
+    const content = document.createElement('div');
+    content.className = 'message-content';
+
+    const textInput = document.createElement('input');
+    textInput.type = 'text';
+    textInput.className = 'message-text-input';
+    textInput.placeholder = 'Type message...';
+    textInput.value = msg.text || '';
+    textInput.style.color = msg.color || '#ffffff';
+    if (msg.bold) textInput.style.fontWeight = 'bold';
+    if (msg.italic) textInput.style.fontStyle = 'italic';
+
+    const formatRow = document.createElement('div');
+    formatRow.className = 'message-format-row';
+
+    const boldBtn = document.createElement('button');
+    boldBtn.className = 'format-btn bold-btn' + (msg.bold ? ' active' : '');
+    boldBtn.title = 'Bold';
+    boldBtn.innerHTML = '<strong>B</strong>';
+
+    const italicBtn = document.createElement('button');
+    italicBtn.className = 'format-btn italic-btn' + (msg.italic ? ' active' : '');
+    italicBtn.title = 'Italic';
+    italicBtn.innerHTML = '<em>I</em>';
+
+    const colorInput = document.createElement('input');
+    colorInput.type = 'color';
+    colorInput.className = 'message-color-input';
+    colorInput.value = msg.color || '#ffffff';
+    colorInput.title = 'Text Color';
+
+    formatRow.append(boldBtn, italicBtn, colorInput);
+    content.append(textInput, formatRow);
+
+    // Actions
     const actions = document.createElement('div');
     actions.className = 'message-actions';
 
-    // Load to compose area
-    const loadBtn = document.createElement('button');
-    loadBtn.className = 'icon-btn';
-    loadBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>';
-    loadBtn.title = 'Load to compose';
-    loadBtn.onclick = (e) => {
-      e.stopPropagation();
-      loadMessageToCompose(msg);
-    };
+    const visibilityBtn = document.createElement('button');
+    visibilityBtn.className = 'message-visibility-btn' + (msg.visible ? ' active' : '');
+    visibilityBtn.title = msg.visible ? 'Hide from viewer' : 'Show on viewer';
+    visibilityBtn.innerHTML = '<span class="visibility-indicator"></span>';
 
-    // Quick send
-    const sendBtn = document.createElement('button');
-    sendBtn.className = 'icon-btn play-btn';
-    sendBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
-    sendBtn.title = 'Send now';
-    sendBtn.onclick = (e) => {
-      e.stopPropagation();
-      sendMessageNow(msg);
-    };
-
-    // Delete
     const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'icon-btn';
-    deleteBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+    deleteBtn.className = 'icon-btn message-delete-btn';
     deleteBtn.title = 'Delete';
-    deleteBtn.onclick = (e) => {
-      e.stopPropagation();
-      deleteMessage(idx);
-    };
+    deleteBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
 
-    actions.append(loadBtn, sendBtn, deleteBtn);
-    row.append(preview, actions);
+    actions.append(visibilityBtn, deleteBtn);
+    row.append(dragHandle, content, actions);
     els.messageList.appendChild(row);
+
+    // Setup events for this message item
+    setupMessageItemEvents(row, msg.id, textInput, boldBtn, italicBtn, colorInput, visibilityBtn, deleteBtn, dragHandle, idx);
+  });
+
+  updateTabBadges();
+}
+
+// Debounce helper for text input auto-save
+function debounce(fn, delay) {
+  let timeoutId;
+  return (...args) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn(...args), delay);
+  };
+}
+
+function setupMessageItemEvents(row, messageId, textInput, boldBtn, italicBtn, colorInput, visibilityBtn, deleteBtn, dragHandle, idx) {
+  // Debounced save for text input
+  const debouncedSave = debounce(() => {
+    updateMessageField(messageId, 'text', textInput.value);
+  }, 300);
+
+  textInput.addEventListener('input', debouncedSave);
+
+  colorInput.addEventListener('input', () => {
+    updateMessageField(messageId, 'color', colorInput.value);
+    textInput.style.color = colorInput.value;
+  });
+
+  boldBtn.addEventListener('click', () => {
+    boldBtn.classList.toggle('active');
+    const isBold = boldBtn.classList.contains('active');
+    updateMessageField(messageId, 'bold', isBold);
+    textInput.style.fontWeight = isBold ? 'bold' : 'normal';
+  });
+
+  italicBtn.addEventListener('click', () => {
+    italicBtn.classList.toggle('active');
+    const isItalic = italicBtn.classList.contains('active');
+    updateMessageField(messageId, 'italic', isItalic);
+    textInput.style.fontStyle = isItalic ? 'italic' : 'normal';
+  });
+
+  visibilityBtn.addEventListener('click', () => {
+    toggleMessageVisibility(messageId);
+  });
+
+  deleteBtn.addEventListener('click', () => {
+    deleteMessage(messageId);
+  });
+
+  // Drag handle events
+  dragHandle.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const rect = row.getBoundingClientRect();
+    messageDragState.grabOffsetX = e.clientX - rect.left;
+    messageDragState.grabOffsetY = e.clientY - rect.top;
+    messageDragState.startX = e.clientX;
+    messageDragState.startY = e.clientY;
+    messageDragState.originalHeight = rect.height;
+    messageDragState.originalWidth = rect.width;
+    messageDragState.isDragging = true;
+    messageDragState.dragActivated = false;
+    messageDragState.fromIndex = idx;
+    messageDragState.currentSlot = idx;
+    messageDragState.draggedRow = row;
   });
 }
 
-function loadMessageToCompose(msg) {
-  els.messageText.value = msg.text;
-  els.messageColor.value = msg.color || '#ffffff';
-  els.boldToggle.classList.toggle('active', !!msg.bold);
-  els.italicToggle.classList.toggle('active', !!msg.italic);
+function updateMessageField(messageId, field, value) {
+  const messages = loadMessages();
+  const msg = messages.find(m => m.id === messageId);
+  if (msg) {
+    msg[field] = value;
+    saveMessagesToStorage(messages);
+
+    // If this message is currently visible, update the viewer
+    if (msg.visible) {
+      window.ninja.sendMessage({
+        text: msg.text,
+        bold: msg.bold,
+        italic: msg.italic,
+        color: msg.color,
+        visible: true
+      });
+    }
+  }
 }
 
-function saveCurrentMessage() {
-  const text = els.messageText.value.trim();
-  if (!text) return;
-
-  const msg = {
-    text,
-    bold: els.boldToggle.classList.contains('active'),
-    italic: els.italicToggle.classList.contains('active'),
-    color: els.messageColor.value
-  };
-
+function toggleMessageVisibility(messageId) {
   const messages = loadMessages();
-  messages.push(msg);
+  const targetIndex = messages.findIndex(m => m.id === messageId);
+  if (targetIndex === -1) return;
+
+  const target = messages[targetIndex];
+  const wasVisible = target.visible;
+
+  // Hide all messages first (only one visible at a time)
+  messages.forEach(m => m.visible = false);
+
+  if (!wasVisible) {
+    // Show this message
+    target.visible = true;
+    activeMessage = target;
+
+    window.ninja.sendMessage({
+      text: target.text,
+      bold: target.bold,
+      italic: target.italic,
+      color: target.color,
+      visible: true
+    });
+  } else {
+    // Was visible, now hide
+    activeMessage = null;
+    window.ninja.sendMessage({ visible: false });
+  }
+
   saveMessagesToStorage(messages);
   renderMessageList();
-
-  // Clear compose area
-  els.messageText.value = '';
 }
 
-function deleteMessage(idx) {
+async function deleteMessage(messageId) {
   const messages = loadMessages();
+  const idx = messages.findIndex(m => m.id === messageId);
+  if (idx === -1) return;
+
+  const msg = messages[idx];
+  const settings = loadAppSettings();
+
+  if (settings.confirmDelete) {
+    const displayText = msg.text.substring(0, 30) + (msg.text.length > 30 ? '...' : '');
+    const result = await showConfirmDialog({
+      title: 'Delete Message?',
+      message: `Delete "${displayText || 'Empty message'}"?`,
+      showDontAsk: true
+    });
+
+    if (!result.confirmed) return;
+
+    if (result.dontAskAgain) {
+      settings.confirmDelete = false;
+      saveAppSettings(settings);
+    }
+  }
+
+  // If this message was visible, hide it first
+  if (msg.visible) {
+    activeMessage = null;
+    window.ninja.sendMessage({ visible: false });
+  }
+
   messages.splice(idx, 1);
   saveMessagesToStorage(messages);
   renderMessageList();
 }
 
-function sendMessageNow(msg) {
-  activeMessage = {
-    text: msg.text,
-    bold: msg.bold,
-    italic: msg.italic,
-    color: msg.color,
-    sentAt: Date.now()
+function addNewMessage() {
+  const newMsg = {
+    id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    text: '',
+    bold: false,
+    italic: false,
+    color: '#ffffff',
+    visible: false
   };
 
-  // Broadcast to viewer
-  window.ninja.sendMessage({
-    text: msg.text,
-    bold: msg.bold,
-    italic: msg.italic,
-    color: msg.color,
-    visible: true
-  });
-
-  // Update toggle button state
-  els.messageToggle.classList.add('active');
-  els.messageToggleText.textContent = 'Hide';
-
+  const messages = loadMessages();
+  messages.push(newMsg);
+  saveMessagesToStorage(messages);
   renderMessageList();
-}
 
-function sendComposedMessage() {
-  const text = els.messageText.value.trim();
-  if (!text) return;
-
-  const msg = {
-    text,
-    bold: els.boldToggle.classList.contains('active'),
-    italic: els.italicToggle.classList.contains('active'),
-    color: els.messageColor.value
-  };
-
-  sendMessageNow(msg);
-}
-
-function retractMessage() {
-  if (messageTimerId) {
-    clearInterval(messageTimerId);
-    messageTimerId = null;
-  }
-
-  activeMessage = null;
-
-  // Clear from viewer
-  window.ninja.sendMessage({ visible: false });
-
-  // Update toggle button state
-  els.messageToggle.classList.remove('active');
-  els.messageToggleText.textContent = 'Show';
-
-  renderMessageList();
-}
-
-function toggleMessage() {
-  // Add transitioning animation
-  els.messageToggle.classList.add('transitioning');
-  setTimeout(() => {
-    els.messageToggle.classList.remove('transitioning');
-  }, 300);
-
-  if (activeMessage) {
-    // Message is showing, hide it
-    retractMessage();
-  } else {
-    // No message showing, show the composed message
-    sendComposedMessage();
+  // Focus the new message's text input
+  const newRow = els.messageList.querySelector(`[data-id="${newMsg.id}"]`);
+  if (newRow) {
+    const input = newRow.querySelector('.message-text-input');
+    if (input) {
+      input.focus();
+      // Scroll to show the new message
+      newRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
   }
 }
 
@@ -2508,6 +2601,8 @@ function renderPresetList() {
       els.presetList.appendChild(linkZone);
     }
   });
+
+  updateTabBadges();
 }
 
 // Dropdown menu for preset actions
@@ -2963,21 +3058,6 @@ function setupEventListeners() {
   els.timersTabBtn.addEventListener('click', () => switchTab('timers'));
   els.messagesTabBtn.addEventListener('click', () => switchTab('messages'));
 
-  // Message controls
-  els.boldToggle.addEventListener('click', () => {
-    els.boldToggle.classList.toggle('active');
-  });
-  els.italicToggle.addEventListener('click', () => {
-    els.italicToggle.classList.toggle('active');
-  });
-  els.messageToggle.addEventListener('click', toggleMessage);
-  els.messageText.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      saveCurrentMessage();
-    }
-  });
-
   // Close app settings on backdrop click
   els.appSettingsModal.addEventListener('click', (e) => {
     if (e.target === els.appSettingsModal) {
@@ -3003,8 +3083,8 @@ function setupEventListeners() {
   els.importFile.addEventListener('change', handleImport);
   els.addTimer.addEventListener('click', () => {
     if (getActiveTab() === 'messages') {
-      // Save message
-      saveCurrentMessage();
+      // Add new message
+      addNewMessage();
     } else {
       // Auto-create timer with defaults from app settings
       const presets = loadPresets();
@@ -3019,6 +3099,7 @@ function setupEventListeners() {
       presets.push({ name, config: defaultConfig });
       savePresets(presets);
       renderPresetList();
+      updateTabBadges();
 
       // Auto-scroll to show the new timer
       requestAnimationFrame(() => {
@@ -3538,6 +3619,146 @@ function setupDragListeners() {
   });
 }
 
+/**
+ * Setup message drag listeners (simpler than timers - no link zones)
+ */
+function setupMessageDragListeners() {
+  document.addEventListener('mousemove', (e) => {
+    if (!messageDragState.isDragging) return;
+
+    // Check if we should activate drag (mouse moved > 5px)
+    if (!messageDragState.dragActivated) {
+      const dx = e.clientX - messageDragState.startX;
+      const dy = e.clientY - messageDragState.startY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance < 5) return;
+
+      // Activate drag
+      messageDragState.dragActivated = true;
+      const row = messageDragState.draggedRow;
+
+      const messages = Array.from(els.messageList.querySelectorAll('.message-item'));
+      messageDragState.visibleItems = messages;
+
+      const listStyle = window.getComputedStyle(els.messageList);
+      const gap = parseFloat(listStyle.gap) || 6;
+      messageDragState.slotHeight = row.getBoundingClientRect().height + gap;
+      messageDragState.originalBaseY = messages[0]?.getBoundingClientRect().top || 0;
+
+      // Create ghost
+      const ghost = row.cloneNode(true);
+      ghost.className = 'message-item drag-ghost';
+      ghost.style.position = 'fixed';
+      ghost.style.width = messageDragState.originalWidth + 'px';
+      ghost.style.left = (e.clientX - messageDragState.grabOffsetX) + 'px';
+      ghost.style.top = (e.clientY - messageDragState.grabOffsetY) + 'px';
+      ghost.style.pointerEvents = 'none';
+      ghost.style.zIndex = '1000';
+      document.body.appendChild(ghost);
+      messageDragState.ghostEl = ghost;
+
+      // Turn original row into placeholder
+      row.classList.add('drag-placeholder');
+      messageDragState.placeholderEl = row;
+
+      messages.forEach(m => m.classList.add('drag-transforming'));
+    }
+
+    if (!messageDragState.ghostEl) return;
+
+    messageDragState.ghostEl.style.left = (e.clientX - messageDragState.grabOffsetX) + 'px';
+    messageDragState.ghostEl.style.top = (e.clientY - messageDragState.grabOffsetY) + 'px';
+
+    const targetSlot = calculateMessageTargetSlot(e.clientY);
+    if (targetSlot !== messageDragState.currentSlot) {
+      messageDragState.currentSlot = targetSlot;
+      applyMessageDragTransforms(messageDragState.fromIndex, targetSlot);
+    }
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!messageDragState.isDragging) return;
+
+    if (!messageDragState.dragActivated) {
+      resetMessageDragState();
+      return;
+    }
+
+    if (messageDragState.ghostEl) {
+      messageDragState.ghostEl.remove();
+    }
+
+    messageDragState.visibleItems.forEach(m => {
+      m.style.transform = '';
+      m.classList.remove('drag-transforming');
+    });
+
+    if (messageDragState.placeholderEl) {
+      messageDragState.placeholderEl.classList.remove('drag-placeholder');
+    }
+
+    const fromIndex = messageDragState.fromIndex;
+    const toIndex = messageDragState.currentSlot;
+
+    if (fromIndex !== null && toIndex !== null && fromIndex !== toIndex) {
+      const messages = loadMessages();
+      const [moved] = messages.splice(fromIndex, 1);
+      messages.splice(toIndex, 0, moved);
+      saveMessagesToStorage(messages);
+    }
+
+    resetMessageDragState();
+    renderMessageList();
+  });
+}
+
+function resetMessageDragState() {
+  messageDragState.isDragging = false;
+  messageDragState.dragActivated = false;
+  messageDragState.fromIndex = null;
+  messageDragState.currentSlot = null;
+  messageDragState.draggedRow = null;
+  messageDragState.ghostEl = null;
+  messageDragState.placeholderEl = null;
+  messageDragState.visibleItems = [];
+}
+
+function applyMessageDragTransforms(fromIndex, toIndex) {
+  const slotHeight = messageDragState.slotHeight;
+
+  if (messageDragState.placeholderEl) {
+    const delta = (toIndex - fromIndex) * slotHeight;
+    messageDragState.placeholderEl.style.transform = `translateY(${delta}px)`;
+  }
+
+  messageDragState.visibleItems.forEach((item, i) => {
+    if (i === fromIndex) return;
+
+    let transform = '';
+    if (fromIndex < toIndex && i > fromIndex && i <= toIndex) {
+      transform = `translateY(-${slotHeight}px)`;
+    } else if (fromIndex > toIndex && i >= toIndex && i < fromIndex) {
+      transform = `translateY(${slotHeight}px)`;
+    }
+    item.style.transform = transform;
+  });
+}
+
+function calculateMessageTargetSlot(clientY) {
+  const items = messageDragState.visibleItems;
+  if (items.length === 0) return messageDragState.fromIndex;
+
+  const slotHeight = messageDragState.slotHeight;
+  const baseY = messageDragState.originalBaseY;
+
+  for (let i = 0; i < items.length; i++) {
+    const slotMid = baseY + i * slotHeight + slotHeight / 2;
+    if (clientY < slotMid) return i;
+  }
+  return items.length - 1;
+}
+
 // ============ Initialization ============
 
 function init() {
@@ -3553,6 +3774,7 @@ function init() {
 
   // Setup global drag listeners for ghost positioning
   setupDragListeners();
+  setupMessageDragListeners();
 
   // Apply saved window on-top settings
   const appSettings = loadAppSettings();
