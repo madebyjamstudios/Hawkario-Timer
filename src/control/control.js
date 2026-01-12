@@ -1706,16 +1706,31 @@ function updateRowProgressBar(idx, progressPercent) {
 }
 
 /**
- * Update the playing class on preset rows without full re-render
+ * Update the playing class and button states on preset rows without full re-render
  */
 function updatePlayingRowState() {
   const rows = els.presetList.querySelectorAll('.preset-item');
   rows.forEach((row, idx) => {
     const isSelected = activePresetIndex === idx;
     const isPlaying = isSelected && isRunning;
+    const isPaused = isSelected && !isRunning && timerState.startedAt !== null;
 
     row.classList.toggle('selected', isSelected);
     row.classList.toggle('playing', isPlaying);
+
+    // Update play/pause button icon and class
+    const playBtn = row.querySelector('.play-btn, .pause-btn');
+    if (playBtn) {
+      if (isPlaying) {
+        playBtn.className = 'icon-btn pause-btn';
+        playBtn.innerHTML = ICONS.pause;
+        playBtn.title = 'Pause';
+      } else {
+        playBtn.className = 'icon-btn play-btn';
+        playBtn.innerHTML = ICONS.play;
+        playBtn.title = isPaused ? 'Resume' : 'Load & Start';
+      }
+    }
   });
 }
 
@@ -3097,7 +3112,7 @@ function renderPresetList() {
         activePresetIndex = idx;
         sendCommand('start');
       }
-      renderPresetList(); // Re-render to update button states
+      updatePlayingRowState(); // Update button states without re-rendering
     };
 
     // More button (three dots)
@@ -3729,7 +3744,7 @@ function setupEventListeners() {
         } else {
           sendCommand('start');
         }
-        renderPresetList(); // Update button states
+        updatePlayingRowState(); // Update button states without re-rendering
         break;
 
       case 'r':

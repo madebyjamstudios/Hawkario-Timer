@@ -404,82 +404,95 @@ button:disabled {
   transition: all 0.3s ease;
 }
 
-/* Flash button sync animation - matches FlashAnimator timing (1700ms)
-   Pattern: dim(300ms) → glow(400ms) → dim(300ms) → glow(400ms) → dim(300ms) */
+/* Flash button sync animation - matches FlashAnimator timing (2100ms)
+   Pattern: dim(300ms) → glow(400ms) × 3 - ends on glow */
 @keyframes flash-button-pulse {
-  /* 0-300ms: Dim - 0% to 17.6% */
-  0%, 17.6% {
+  /* 0-300ms: Dim - 0% to 14.3% */
+  0%, 14.3% {
     background: #2a2a2a;
     border-color: #444;
     box-shadow: none;
   }
-  /* 300-700ms: Glow 1 - 17.6% to 41.2% */
-  17.65% {
+  /* 300-700ms: Glow 1 - 14.3% to 33.3% */
+  14.35% {
     background: #4a4a1a;
     border-color: #ffeb3b;
     box-shadow: 0 0 15px rgba(255, 235, 59, 0.5);
   }
-  41.2% {
+  33.3% {
     background: #4a4a1a;
     border-color: #ffeb3b;
     box-shadow: 0 0 15px rgba(255, 235, 59, 0.5);
   }
-  /* 700-1000ms: Dim - 41.2% to 58.8% */
-  41.25% {
+  /* 700-1000ms: Dim - 33.3% to 47.6% */
+  33.35% {
     background: #2a2a2a;
     border-color: #444;
     box-shadow: none;
   }
-  58.8% {
+  47.6% {
     background: #2a2a2a;
     border-color: #444;
     box-shadow: none;
   }
-  /* 1000-1400ms: Glow 2 - 58.8% to 82.4% */
-  58.85% {
+  /* 1000-1400ms: Glow 2 - 47.6% to 66.7% */
+  47.65% {
     background: #4a4a1a;
     border-color: #ffeb3b;
     box-shadow: 0 0 15px rgba(255, 235, 59, 0.5);
   }
-  82.4% {
+  66.7% {
     background: #4a4a1a;
     border-color: #ffeb3b;
     box-shadow: 0 0 15px rgba(255, 235, 59, 0.5);
   }
-  /* 1400-1700ms: Dim - 82.4% to 100% */
-  82.45%, 100% {
+  /* 1400-1700ms: Dim - 66.7% to 81% */
+  66.75% {
     background: #2a2a2a;
     border-color: #444;
     box-shadow: none;
+  }
+  81% {
+    background: #2a2a2a;
+    border-color: #444;
+    box-shadow: none;
+  }
+  /* 1700-2100ms: Glow 3 - 81% to 100% (ends on yellow) */
+  81.05%, 100% {
+    background: #4a4a1a;
+    border-color: #ffeb3b;
+    box-shadow: 0 0 15px rgba(255, 235, 59, 0.5);
   }
 }
 
 @keyframes flash-icon-pulse {
-  0%, 17.6% { stroke: #666; fill: none; filter: none; }
-  17.65%, 41.2% { stroke: #ffeb3b; fill: #ffeb3b; filter: drop-shadow(0 0 6px #ffeb3b); }
-  41.25%, 58.8% { stroke: #666; fill: none; filter: none; }
-  58.85%, 82.4% { stroke: #ffeb3b; fill: #ffeb3b; filter: drop-shadow(0 0 6px #ffeb3b); }
-  82.45%, 100% { stroke: #666; fill: none; filter: none; }
+  0%, 14.3% { stroke: #666; fill: none; filter: none; }
+  14.35%, 33.3% { stroke: #ffeb3b; fill: #ffeb3b; filter: drop-shadow(0 0 6px #ffeb3b); }
+  33.35%, 47.6% { stroke: #666; fill: none; filter: none; }
+  47.65%, 66.7% { stroke: #ffeb3b; fill: #ffeb3b; filter: drop-shadow(0 0 6px #ffeb3b); }
+  66.75%, 81% { stroke: #666; fill: none; filter: none; }
+  81.05%, 100% { stroke: #ffeb3b; fill: #ffeb3b; filter: drop-shadow(0 0 6px #ffeb3b); }
 }
 
 @keyframes flash-text-pulse {
-  0%, 17.6% { color: #888; text-shadow: none; }
-  17.65%, 41.2% { color: #ffeb3b; text-shadow: 0 0 8px #ffeb3b; }
-  41.25%, 58.8% { color: #888; text-shadow: none; }
-  58.85%, 82.4% { color: #ffeb3b; text-shadow: 0 0 8px #ffeb3b; }
-  82.45%, 100% { color: #888; text-shadow: none; }
+  0%, 14.3% { color: #888; text-shadow: none; }
+  14.35%, 33.3% { color: #ffeb3b; text-shadow: 0 0 8px #ffeb3b; }
+  33.35%, 47.6% { color: #888; text-shadow: none; }
+  47.65%, 66.7% { color: #ffeb3b; text-shadow: 0 0 8px #ffeb3b; }
+  66.75%, 81% { color: #888; text-shadow: none; }
+  81.05%, 100% { color: #ffeb3b; text-shadow: 0 0 8px #ffeb3b; }
 }
 
 .flash-btn.flashing {
-  animation: flash-button-pulse 1700ms linear forwards;
+  animation: flash-button-pulse 2100ms linear forwards;
 }
 
 .flash-btn.flashing .flash-icon {
-  animation: flash-icon-pulse 1700ms linear forwards;
+  animation: flash-icon-pulse 2100ms linear forwards;
 }
 
 .flash-btn.flashing .flash-text {
-  animation: flash-text-pulse 1700ms linear forwards;
+  animation: flash-text-pulse 2100ms linear forwards;
 }
 
 /* Blackout button */
