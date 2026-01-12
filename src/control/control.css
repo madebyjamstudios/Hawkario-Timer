@@ -271,6 +271,7 @@ button:disabled {
   align-self: start;  /* TOP-aligned in row 2 */
   justify-self: center;
   text-align: center;
+  padding-top: 20px;  /* Breathing room below middle line */
 }
 
 /* Message formatting classes (shared with output) */
