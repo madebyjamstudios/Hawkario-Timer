@@ -633,6 +633,8 @@ button:disabled {
   position: relative;
   cursor: pointer;
   margin-bottom: 16px;
+  margin-left: 28px;   /* Room for 0% marker label */
+  margin-right: 28px;  /* Symmetry */
 }
 
 /* Inner clip area - clips fill and warning zones to rounded corners */
