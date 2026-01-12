@@ -2359,6 +2359,7 @@ button.danger:active {
 }
 
 .visibility-indicator {
+  position: relative;
   width: 8px;
   height: 8px;
   background: #444;
