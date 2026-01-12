@@ -781,13 +781,15 @@ button:disabled {
 }
 
 .profile-item .profile-color-dot {
-  margin-right: 4px;
+  width: 12px;
+  height: 12px;
+  margin-right: 6px;
   cursor: pointer;
   transition: transform 0.15s ease;
 }
 
 .profile-item .profile-color-dot:hover {
-  transform: scale(1.3);
+  transform: scale(1.2);
 }
 
 /* Profile color picker */
