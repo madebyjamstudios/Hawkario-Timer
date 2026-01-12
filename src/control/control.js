@@ -954,21 +954,20 @@ function showUpdateBadge(result) {
 
   // Update the status text in the settings modal
   const statusEl = document.getElementById('updateStatus');
+  const downloadBtn = document.getElementById('downloadUpdates');
+  const checkBtn = document.getElementById('checkUpdates');
+
   if (statusEl && result) {
     if (result.downloadUrl) {
       statusEl.innerHTML = `Update available! <span class="version-info">(${result.localSha} → ${result.remoteSha})</span>`;
+      downloadBtn?.classList.remove('hidden');
     } else {
       statusEl.innerHTML = `Update available! <span class="version-info">(${result.localSha} → ${result.remoteSha})</span><br><span class="no-release">No release found - visit GitHub to download</span>`;
     }
     statusEl.className = 'update-available';
 
-    // Show download button if URL available
-    const downloadBtn = document.getElementById('downloadUpdates');
-    const checkBtn = document.getElementById('checkUpdates');
-    if (result.downloadUrl && downloadBtn) {
-      downloadBtn.classList.remove('hidden');
-      checkBtn?.classList.add('hidden');
-    }
+    // Always hide check button when update is detected
+    checkBtn?.classList.add('hidden');
   }
 }
 
