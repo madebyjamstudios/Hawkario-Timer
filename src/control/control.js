@@ -59,7 +59,7 @@ const els = {
   presetList: document.getElementById('presetList'),
   presetListContainer: document.querySelector('.preset-list-container'),
   timerProgressContainer: document.getElementById('timerProgressContainer'),
-  elapsedTime: document.getElementById('elapsedTime'),
+  timerModeIndicator: document.getElementById('timerModeIndicator'),
   remainingTime: document.getElementById('remainingTime'),
   progressFill: document.getElementById('progressFill'),
   progressSegments: document.getElementById('progressSegments'),
@@ -68,7 +68,6 @@ const els = {
   seekLine: document.getElementById('seekLine'),
   seekTooltip: document.getElementById('seekTooltip'),
   warningZones: document.getElementById('warningZones'),
-  currentTimeDisplay: document.getElementById('currentTimeDisplay'),
   importFile: document.getElementById('importFile'),
   addTimer: document.getElementById('addTimer'),
 
@@ -1579,9 +1578,6 @@ let lastWarnYellowSec = null;
 let lastWarnOrangeSec = null;
 let lastDurationSec = null;
 
-// Last clock update time (throttle to once per second)
-let lastClockUpdate = 0;
-
 /**
  * Update the progress bar with elapsed/remaining time
  * Shows segments for linked timers and positions indicator accordingly
@@ -1593,7 +1589,6 @@ function updateProgressBar(currentElapsedMs, currentTotalMs) {
   if (activePresetIndex === null || (!isRunning && timerState.startedAt === null)) {
     els.progressFill.style.width = '0%';
     els.progressIndicator.style.left = '0%';
-    els.elapsedTime.textContent = '00:00';
     els.remainingTime.textContent = '00:00';
     cachedTotalMs = 0;
     // Clear segments and warning zones
@@ -1618,7 +1613,6 @@ function updateProgressBar(currentElapsedMs, currentTotalMs) {
 
     els.progressFill.style.width = progressPercent + '%';
     els.progressIndicator.style.left = progressPercent + '%';
-    els.elapsedTime.textContent = formatTimePlain(currentElapsedMs, 'MM:SS');
     els.remainingTime.textContent = formatTimePlain(remainingMs, 'MM:SS');
 
     // Clear linked timer segment dividers for single timer, but keep smart segments
@@ -1658,7 +1652,6 @@ function updateProgressBar(currentElapsedMs, currentTotalMs) {
 
   els.progressFill.style.width = progressPercent + '%';
   els.progressIndicator.style.left = progressPercent + '%';
-  els.elapsedTime.textContent = formatTimePlain(cumulativeElapsedMs, 'MM:SS');
   els.remainingTime.textContent = formatTimePlain(totalRemainingMs, 'MM:SS');
 
   // Render segment dividers for linked timers (only if count changed)
@@ -1959,19 +1952,28 @@ function renderSmartSegments() {
 }
 
 /**
- * Update the current clock time display
+ * Update the timer mode indicator (C/D, C/U, TOD)
  */
-function updateCurrentTimeDisplay() {
-  if (!els.currentTimeDisplay) return;
+function updateModeIndicator() {
+  if (!els.timerModeIndicator) return;
 
-  const now = new Date();
-  const h = now.getHours();
-  const m = now.getMinutes();
-  const s = now.getSeconds();
-  els.currentTimeDisplay.textContent =
-    String(h).padStart(2, '0') + ':' +
-    String(m).padStart(2, '0') + ':' +
-    String(s).padStart(2, '0');
+  if (!activeTimerConfig || activePresetIndex === null) {
+    els.timerModeIndicator.textContent = '--';
+    return;
+  }
+
+  const mode = activeTimerConfig.mode;
+  if (mode === 'countdown' || mode === 'countdown-tod') {
+    els.timerModeIndicator.textContent = 'C/D';
+  } else if (mode === 'countup' || mode === 'countup-tod') {
+    els.timerModeIndicator.textContent = 'C/U';
+  } else if (mode === 'tod') {
+    els.timerModeIndicator.textContent = 'TOD';
+  } else if (mode === 'hidden') {
+    els.timerModeIndicator.textContent = '--';
+  } else {
+    els.timerModeIndicator.textContent = '--';
+  }
 }
 
 // ============ Modal Management ============
@@ -2415,12 +2417,7 @@ function renderLivePreview() {
     els.livePreviewTimer.style.visibility = 'hidden';
     broadcastTimerState();
     broadcastDisplayState({ visible: false });
-    // Update clock display even when hidden
-    const nowHidden = Date.now();
-    if (nowHidden - lastClockUpdate >= 1000) {
-      updateCurrentTimeDisplay();
-      lastClockUpdate = nowHidden;
-    }
+    updateModeIndicator();
     requestAnimationFrame(renderLivePreview);
     return;
   } else {
@@ -2590,14 +2587,12 @@ function renderLivePreview() {
     const elapsedMs = totalMs - elapsed;
     updateProgressBar(elapsedMs, totalMs);
   } else if (isCountup) {
-    // For countup, show elapsed time with no max
+    // For countup, show elapsed time in the time slot
     els.progressFill.style.width = '0%';
-    els.elapsedTime.textContent = formatTimePlain(elapsed, 'MM:SS');
-    els.remainingTime.textContent = '--:--';
+    els.remainingTime.textContent = formatTimePlain(elapsed, 'MM:SS');
   } else {
     // Reset for other modes
     els.progressFill.style.width = '0%';
-    els.elapsedTime.textContent = '00:00';
     els.remainingTime.textContent = '00:00';
   }
 
@@ -2661,16 +2656,11 @@ function renderLivePreview() {
     opacity: currentOpacity,
     blackout: isBlackedOut,
     overtime: timerState.overtime,
-    elapsed: els.elapsedTime?.textContent || '',
     remaining: els.remainingTime?.textContent || ''
   });
 
-  // Update clock display (throttled to once per second)
-  const now = Date.now();
-  if (now - lastClockUpdate >= 1000) {
-    updateCurrentTimeDisplay();
-    lastClockUpdate = now;
-  }
+  // Update mode indicator
+  updateModeIndicator();
 
   requestAnimationFrame(renderLivePreview);
 }
