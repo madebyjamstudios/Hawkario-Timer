@@ -1281,7 +1281,7 @@ function autoFitLivePreviewMessage() {
   if (naturalWidth > 0 && naturalHeight > 0) {
     const widthRatio = targetWidth / naturalWidth;
     const heightRatio = targetHeight / naturalHeight;
-    const scale = Math.min(widthRatio, heightRatio);
+    const scale = Math.max(0.1, Math.min(widthRatio, heightRatio)); // Min 0.1 scale
     els.livePreviewMessage.style.transform = `scale(${scale})`;
   }
 }
