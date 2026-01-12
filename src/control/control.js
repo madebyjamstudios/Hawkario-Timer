@@ -8,6 +8,7 @@ import { validateConfig, validatePresets, safeJSONParse, validateExportData } fr
 import { STORAGE_KEYS } from '../shared/constants.js';
 import { createTimerState, FIXED_STYLE } from '../shared/timerState.js';
 import { computeDisplay, getShadowCSS, getCombinedShadowCSS, FlashAnimator } from '../shared/renderTimer.js';
+import { autoFitMessage, applyMessageStyle } from '../shared/renderMessage.js';
 
 // DOM Elements
 const els = {
@@ -259,13 +260,6 @@ function initTimeInputMS(input) {
     // Tab - allow natural behavior
     if (e.key === 'Tab') return;
 
-    // Enter - blur input to allow modal save handlers to trigger
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      input.blur();
-      return;
-    }
-
     // Cmd/Ctrl+A - select current section only
     if ((e.metaKey || e.ctrlKey) && e.key === 'a') {
       e.preventDefault();
@@ -457,13 +451,6 @@ function initTimeInput(input) {
 
     // Tab - allow natural behavior
     if (e.key === 'Tab') return;
-
-    // Enter - blur input to allow modal save handlers to trigger
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      input.blur();
-      return;
-    }
 
     // Cmd/Ctrl+A - select current section only
     if ((e.metaKey || e.ctrlKey) && e.key === 'a') {
@@ -1236,52 +1223,31 @@ function updateMessageField(messageId, field, value) {
 
 /**
  * Update the live preview message display
+ * Uses shared module for identical rendering with output
  */
 function updateLivePreviewMessage(message) {
   if (!els.livePreviewMessage) return;
 
   if (!message || !message.visible) {
     els.livePreview.classList.remove('with-message');
+    els.livePreviewMessage.classList.remove('bold', 'italic', 'uppercase');
     return;
   }
 
-  els.livePreviewMessage.textContent = message.text || '';
-  els.livePreviewMessage.style.color = message.color || '#ffffff';
-  els.livePreviewMessage.style.fontWeight = message.bold ? '800' : '600';
-  els.livePreviewMessage.style.fontStyle = message.italic ? 'italic' : 'normal';
-  els.livePreviewMessage.style.textTransform = message.uppercase ? 'uppercase' : 'none';
+  // Use shared module for styling (identical to output)
+  applyMessageStyle(els.livePreviewMessage, message);
   els.livePreview.classList.add('with-message');
 
-  // Auto-fit message text to fill container (matching viewer behavior)
+  // Auto-fit using shared module (identical to output)
   autoFitLivePreviewMessage();
 }
 
 /**
- * Auto-fit live preview message text to fill its container
- * Uses 75% width to encourage line wrapping, 48% height (matching output)
+ * Auto-fit live preview message - wrapper for shared function
  */
 function autoFitLivePreviewMessage() {
   if (!els.livePreviewMessage || !els.livePreview.classList.contains('with-message')) return;
-
-  // Use font-size scaling for preview (simpler, no transform issues)
-  els.livePreviewMessage.style.fontSize = '100px';
-  els.livePreviewMessage.style.transform = 'none';
-  els.livePreviewMessage.style.maxWidth = '90%';
-
-  const containerWidth = els.livePreview.clientWidth;
-  const containerHeight = els.livePreview.clientHeight;
-  const targetWidth = containerWidth * 0.85;
-  const targetHeight = containerHeight * 0.40;
-  const naturalWidth = els.livePreviewMessage.scrollWidth;
-  const naturalHeight = els.livePreviewMessage.scrollHeight;
-
-  if (naturalWidth > 0 && naturalHeight > 0) {
-    const widthRatio = targetWidth / naturalWidth;
-    const heightRatio = targetHeight / naturalHeight;
-    const ratio = Math.min(widthRatio, heightRatio);
-    const newFontSize = Math.max(8, 100 * ratio); // Min 8px
-    els.livePreviewMessage.style.fontSize = newFontSize + 'px';
-  }
+  autoFitMessage(els.livePreviewMessage, els.livePreview);
 }
 
 function toggleMessageVisibility(messageId) {

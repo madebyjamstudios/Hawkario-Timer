@@ -245,25 +245,30 @@ button:disabled {
 }
 
 .live-preview.with-message .timer-preview {
-  grid-row: 1 !important;
-  grid-column: 1 !important;
-  align-self: end !important;
-  justify-self: center !important;
+  grid-row: 1;
+  grid-column: 1;
+  align-self: end;
+  justify-self: center;
   text-align: center;
   width: 100%;
   max-height: 100%;
 }
 
 .live-preview.with-message .message-preview {
-  grid-row: 2 !important;
-  grid-column: 1 !important;
-  display: block !important;
+  grid-row: 2;
+  grid-column: 1;
+  display: block;
   opacity: 1;
-  align-self: start !important;
-  justify-self: center !important;
+  align-self: start;
+  justify-self: center;
   text-align: center;
-  width: 100%;
+  /* NO width: 100% - let transform scaling work properly */
 }
+
+/* Message formatting classes (shared with output) */
+.message-preview.bold { font-weight: 800; }
+.message-preview.italic { font-style: italic; }
+.message-preview.uppercase { text-transform: uppercase; }
 
 /* Vertically centered colon for time display */
 .colon {

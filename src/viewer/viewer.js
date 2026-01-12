@@ -8,6 +8,7 @@ import { formatTime, formatTimeOfDay, hexToRgba } from '../shared/timer.js';
 import { playWarningSound, playEndSound, initAudio } from '../shared/sounds.js';
 import { FIXED_STYLE } from '../shared/timerState.js';
 import { computeDisplay, getShadowCSS, getCombinedShadowCSS, autoFitText, FlashAnimator } from '../shared/renderTimer.js';
+import { autoFitMessage, applyMessageStyle } from '../shared/renderMessage.js';
 
 // DOM Elements
 const timerEl = document.getElementById('timer');
@@ -84,52 +85,15 @@ function handleMessageUpdate(message) {
   // Store message state
   currentMessage = message;
 
-  // Apply message content and styling
-  messageOverlayEl.textContent = message.text || '';
-  messageOverlayEl.style.color = message.color || '#ffffff';
-  messageOverlayEl.classList.toggle('bold', !!message.bold);
-  messageOverlayEl.classList.toggle('italic', !!message.italic);
-  messageOverlayEl.classList.toggle('uppercase', !!message.uppercase);
+  // Apply message content and styling using shared module
+  applyMessageStyle(messageOverlayEl, message);
   messageOverlayEl.classList.add('visible');
 
   // Enable split layout
   stageEl.classList.add('with-message');
 
-  // Auto-fit the message
-  autoFitMessage();
-}
-
-/**
- * Auto-fit message text using transform scale
- * Uses fixed reference dimensions so preview and output look identical.
- * Text layout is calculated at reference size, then scaled to fit container.
- */
-function autoFitMessage() {
-  if (!currentMessage) return;
-
-  // Fixed reference size - text wraps at this width regardless of window size
-  // This ensures preview and output show identical layouts
-  const REF_WIDTH = 800;  // Reference width for line wrapping
-  const REF_FONT = 48;    // Reference font size
-
-  messageOverlayEl.style.fontSize = REF_FONT + 'px';
-  messageOverlayEl.style.maxWidth = REF_WIDTH + 'px';
-  messageOverlayEl.style.transform = 'scale(1)';
-  messageOverlayEl.style.transformOrigin = 'center center';
-
-  const containerWidth = window.innerWidth;
-  const containerHeight = window.innerHeight;
-  const targetWidth = containerWidth * 0.85;
-  const targetHeight = containerHeight * 0.45;
-  const naturalWidth = messageOverlayEl.scrollWidth;
-  const naturalHeight = messageOverlayEl.scrollHeight;
-
-  if (naturalWidth > 0 && naturalHeight > 0) {
-    const widthRatio = targetWidth / naturalWidth;
-    const heightRatio = targetHeight / naturalHeight;
-    const scale = Math.min(widthRatio, heightRatio);
-    messageOverlayEl.style.transform = `scale(${scale})`;
-  }
+  // Auto-fit the message using shared module
+  autoFitMessage(messageOverlayEl, stageEl);
 }
 
 /**
@@ -299,7 +263,9 @@ function render() {
 
   // Auto-fit to viewport
   autoFitTimer();
-  autoFitMessage();
+  if (currentMessage) {
+    autoFitMessage(messageOverlayEl, stageEl);
+  }
 
   // Apply color and stroke (skip during flash animation)
   if (!flashAnimator?.isFlashing) {

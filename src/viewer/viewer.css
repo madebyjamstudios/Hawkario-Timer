@@ -128,7 +128,7 @@ html, body {
   align-self: start;
   justify-self: center;
   text-align: center;
-  width: 100%;
+  /* NO width: 100% - let transform scaling work properly */
 }
 
 /* ============ Message Overlay ============ */
