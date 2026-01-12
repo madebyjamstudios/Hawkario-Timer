@@ -166,16 +166,15 @@ function handleMessageUpdate(message) {
   if (!message || !message.visible) {
     // Hide message with animation
     if (wasVisible) {
-      // Trigger hide animation
+      // Trigger hide transition (keep visible class for transition to work)
       messageOverlayEl.classList.add('hiding');
-      messageOverlayEl.classList.remove('visible');
 
-      // Wait for animation to complete before cleanup
+      // Wait for transition to complete before cleanup
       setTimeout(() => {
-        messageOverlayEl.classList.remove('hiding', 'bold', 'italic', 'uppercase');
+        messageOverlayEl.classList.remove('visible', 'hiding', 'bold', 'italic', 'uppercase');
         virtualCanvasEl.classList.remove('with-message');
         fitTimerContent();
-      }, 250); // Match animation duration
+      }, 250); // Match transition duration
     } else {
       // Not currently visible, just cleanup
       messageOverlayEl.classList.remove('visible', 'hiding', 'bold', 'italic', 'uppercase');

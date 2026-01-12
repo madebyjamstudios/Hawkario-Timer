@@ -15,7 +15,7 @@ import { FIXED_STYLE } from './timerState.js';
  * @returns {Object} Display values { text, elapsedMs, remainingMs, overtime, visible }
  */
 export function computeDisplay(state, now = Date.now()) {
-  const { mode, durationMs, format, startedAt, pausedAccMs, isRunning, ended, overtime, overtimeStartedAt, todFormat } = state;
+  const { mode, durationMs, format, startedAt, pausedAccMs, isRunning, ended, overtime, overtimeStartedAt, todFormat, timezone } = state;
 
   // Hidden mode
   if (mode === 'hidden') {
@@ -32,7 +32,7 @@ export function computeDisplay(state, now = Date.now()) {
   if (mode === 'tod') {
     return {
       visible: true,
-      text: formatTimeOfDay(todFormat),
+      text: formatTimeOfDay(todFormat, timezone),
       elapsedMs: 0,
       remainingMs: 0,
       overtime: false
@@ -98,7 +98,7 @@ export function computeDisplay(state, now = Date.now()) {
 
   // Append time of day if needed (on new line)
   if (showToD) {
-    displayText += '<br><span class="tod-line">' + formatTimeOfDay(todFormat) + '</span>';
+    displayText += '<br><span class="tod-line">' + formatTimeOfDay(todFormat, timezone) + '</span>';
   }
 
   return {

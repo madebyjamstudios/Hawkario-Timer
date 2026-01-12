@@ -751,8 +751,43 @@ function showToast(message, type = 'info') {
 
 const APP_SETTINGS_KEY = 'ninja:appSettings';
 
+// Global timezone options
+const TIMEZONES = [
+  { value: 'auto', label: 'Auto (System)' },
+  // Americas
+  { value: 'Pacific/Honolulu', label: 'Hawaii (HST)' },
+  { value: 'America/Anchorage', label: 'Alaska (AKST)' },
+  { value: 'America/Los_Angeles', label: 'Pacific (PST)' },
+  { value: 'America/Denver', label: 'Mountain (MST)' },
+  { value: 'America/Chicago', label: 'Central (CST)' },
+  { value: 'America/New_York', label: 'Eastern (EST)' },
+  { value: 'America/Sao_Paulo', label: 'São Paulo (BRT)' },
+  // Europe & Africa
+  { value: 'Atlantic/Reykjavik', label: 'Iceland (GMT)' },
+  { value: 'Europe/London', label: 'London (GMT/BST)' },
+  { value: 'Europe/Paris', label: 'Paris (CET)' },
+  { value: 'Europe/Berlin', label: 'Berlin (CET)' },
+  { value: 'Europe/Moscow', label: 'Moscow (MSK)' },
+  { value: 'Africa/Cairo', label: 'Cairo (EET)' },
+  { value: 'Africa/Johannesburg', label: 'Johannesburg (SAST)' },
+  // Middle East & Asia
+  { value: 'Asia/Dubai', label: 'Dubai (GST)' },
+  { value: 'Asia/Kolkata', label: 'India (IST)' },
+  { value: 'Asia/Bangkok', label: 'Bangkok (ICT)' },
+  { value: 'Asia/Singapore', label: 'Singapore (SGT)' },
+  { value: 'Asia/Hong_Kong', label: 'Hong Kong (HKT)' },
+  { value: 'Asia/Shanghai', label: 'Shanghai (CST)' },
+  { value: 'Asia/Tokyo', label: 'Tokyo (JST)' },
+  { value: 'Asia/Seoul', label: 'Seoul (KST)' },
+  // Australia & Pacific
+  { value: 'Australia/Perth', label: 'Perth (AWST)' },
+  { value: 'Australia/Sydney', label: 'Sydney (AEST)' },
+  { value: 'Pacific/Auckland', label: 'Auckland (NZST)' },
+];
+
 const DEFAULT_APP_SETTINGS = {
   todFormat: '12h',
+  timezone: 'auto',
   confirmDelete: true,
   outputOnTop: false,
   controlOnTop: false,
@@ -915,6 +950,19 @@ function openAppSettings() {
 
   // Populate form fields
   els.todFormat.value = settings.todFormat;
+
+  // Populate timezone dropdown
+  if (els.timezone) {
+    els.timezone.innerHTML = '';
+    TIMEZONES.forEach(tz => {
+      const option = document.createElement('option');
+      option.value = tz.value;
+      option.textContent = tz.label;
+      els.timezone.appendChild(option);
+    });
+    els.timezone.value = settings.timezone || 'auto';
+  }
+
   els.confirmDelete.value = settings.confirmDelete ? 'on' : 'off';
   els.defaultMode.value = settings.defaults.mode;
   setDefaultDurationInputs(settings.defaults.durationSec);
@@ -939,9 +987,6 @@ function openAppSettings() {
   document.querySelector('.progress-bar').classList.remove('complete');
   document.getElementById('updateStatus').textContent = '';
   document.getElementById('updateStatus').className = '';
-
-  // Auto-check for updates when settings open
-  checkForUpdates();
 }
 
 function closeAppSettings() {
@@ -954,6 +999,7 @@ function saveAppSettingsFromForm() {
 
   const settings = {
     todFormat: els.todFormat.value,
+    timezone: els.timezone?.value || 'auto',
     confirmDelete: els.confirmDelete.value === 'on',
     outputOnTop: outputOnTop,
     controlOnTop: controlOnTop,
@@ -2069,11 +2115,13 @@ function updateModalPreview() {
   }
 
   if (mode === 'tod') {
-    displayText = formatTimeOfDay(loadAppSettings().todFormat);
+    const appSettings = loadAppSettings();
+    displayText = formatTimeOfDay(appSettings.todFormat, appSettings.timezone);
   } else {
     displayText = formatTime(isCountdown ? durationSec * 1000 : 0, format);
     if (showToD) {
-      displayText += '<br><span class="tod-line">' + formatTimeOfDay(loadAppSettings().todFormat) + '</span>';
+      const appSettings = loadAppSettings();
+      displayText += '<br><span class="tod-line">' + formatTimeOfDay(appSettings.todFormat, appSettings.timezone) + '</span>';
     }
   }
 
@@ -2406,7 +2454,7 @@ function applyLivePreviewStyle() {
 function broadcastTimerState() {
   if (!outputWindowReady) return;
 
-  const todFormat = loadAppSettings().todFormat;
+  const appSettings = loadAppSettings();
 
   // Increment sequence number
   stateSeq++;
@@ -2429,7 +2477,8 @@ function broadcastTimerState() {
       startedAt: flashState.startedAt
     },
     style: activeTimerConfig.style,
-    todFormat: todFormat,
+    todFormat: appSettings.todFormat,
+    timezone: appSettings.timezone || 'auto',
     // Warning thresholds for color changes
     warnYellowSec: activeTimerConfig.warnYellowSec ?? 60,
     warnOrangeSec: activeTimerConfig.warnOrangeSec ?? 15
@@ -2499,9 +2548,11 @@ function renderLivePreview() {
   }
 
   // Handle Time of Day only mode
-  const todFormat = loadAppSettings().todFormat;
+  const appSettings = loadAppSettings();
+  const todFormat = appSettings.todFormat;
+  const timezone = appSettings.timezone;
   if (mode === 'tod') {
-    displayText = formatTimeOfDay(todFormat);
+    displayText = formatTimeOfDay(todFormat, timezone);
     els.livePreviewTimer.innerHTML = displayText;
     // Only refit when text changes
     if (displayText !== lastPreviewTimerText) {
@@ -2653,7 +2704,7 @@ function renderLivePreview() {
   }
 
   if (showToD) {
-    displayText += '<br><span class="tod-line">' + formatTimeOfDay(todFormat) + '</span>';
+    displayText += '<br><span class="tod-line">' + formatTimeOfDay(todFormat, timezone) + '</span>';
   }
 
   // Update display (use innerHTML for ToD line breaks)
@@ -3830,7 +3881,8 @@ function setupEventListeners() {
     let displayText = '00:00';
 
     if (mode === 'tod') {
-      displayText = formatTimeOfDay(loadAppSettings().todFormat);
+      const appSettings = loadAppSettings();
+      displayText = formatTimeOfDay(appSettings.todFormat, appSettings.timezone);
     } else if (mode !== 'hidden') {
       const isCountdown = mode === 'countdown' || mode === 'countdown-tod';
       if (!isRunning && timerState.pausedAcc === 0 && timerState.startedAt === null) {
@@ -4423,6 +4475,9 @@ function init() {
     const footer = document.querySelector('footer small');
     if (footer) footer.textContent = `v${version}`;
   });
+
+  // Check for updates on startup (non-blocking)
+  checkForUpdates();
 }
 
 // Start when DOM is ready

@@ -271,11 +271,13 @@ button:disabled {
   top: 52% !important;  /* Just below middle line */
   transform: translate(-50%, 0) !important;  /* Only center horizontally */
   animation: messageShow 0.3s ease-out;
+  transition: opacity 0.25s ease-in, scale 0.25s ease-in;
 }
 
-.live-preview .message-preview.hiding {
-  display: block;
-  animation: messageHide 0.25s ease-in forwards;
+.live-preview .virtual-canvas.with-message .message-preview.hiding {
+  opacity: 0;
+  scale: 0.85;
+  animation: none;
 }
 
 @keyframes messageShow {
