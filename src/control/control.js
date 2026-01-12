@@ -1251,9 +1251,9 @@ function renderMessageList() {
     row.append(leftCol, content, actions);
     els.messageList.appendChild(row);
 
-    // Tooltip on hover
-    row.addEventListener('mouseenter', () => showMessageTooltip(msg, row));
-    row.addEventListener('mouseleave', hideMessageTooltip);
+    // Tooltip on hover (only on text input, not whole row)
+    textInput.addEventListener('mouseenter', () => showMessageTooltip(msg, textInput));
+    textInput.addEventListener('mouseleave', hideMessageTooltip);
 
     // Setup events for this message item
     setupMessageItemEvents(row, msg.id, textInput, boldBtn, italicBtn, uppercaseBtn, colorInput, visibilityBtn, deleteBtn, dragHandle, idx);
