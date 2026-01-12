@@ -1915,6 +1915,7 @@ function renderSmartSegments() {
 
 /**
  * Render smart segment markers for a specific duration
+ * Creates markers at key positions: 0%, 25%, 50%, 75%, 100%
  */
 function renderSmartSegmentsForDuration(durationSec) {
   if (!els.progressSegments) return;
@@ -1925,37 +1926,24 @@ function renderSmartSegmentsForDuration(durationSec) {
 
   if (durationSec <= 0) return;
 
-  // Determine smart segment intervals based on duration
-  let intervalSec;
-  if (durationSec >= 3600) {
-    // 1+ hour: mark every 15 minutes
-    intervalSec = 900;
-  } else if (durationSec >= 1800) {
-    // 30-60 min: mark every 10 minutes
-    intervalSec = 600;
-  } else if (durationSec >= 600) {
-    // 10-30 min: mark every 5 minutes
-    intervalSec = 300;
-  } else if (durationSec >= 120) {
-    // 2-10 min: mark every minute
-    intervalSec = 60;
-  } else {
-    // Under 2 min: mark every 30 seconds
-    intervalSec = 30;
-  }
+  // Create markers at key positions (0%, 25%, 50%, 75%, 100%)
+  const positions = [0, 25, 50, 75, 100];
 
-  // Create segment markers
-  for (let t = intervalSec; t < durationSec; t += intervalSec) {
-    const percent = (t / durationSec) * 100;
+  for (const percent of positions) {
+    const timeSec = (percent / 100) * durationSec;
 
     const marker = document.createElement('div');
     marker.className = 'segment-marker';
     marker.style.left = percent + '%';
 
     // Format time label
-    const minutes = Math.floor(t / 60);
-    const seconds = t % 60;
-    if (seconds === 0) {
+    const hours = Math.floor(timeSec / 3600);
+    const minutes = Math.floor((timeSec % 3600) / 60);
+    const seconds = Math.round(timeSec % 60);
+
+    if (hours > 0) {
+      marker.dataset.time = hours + ':' + String(minutes).padStart(2, '0');
+    } else if (seconds === 0) {
       marker.dataset.time = minutes + ':00';
     } else {
       marker.dataset.time = minutes + ':' + String(seconds).padStart(2, '0');
