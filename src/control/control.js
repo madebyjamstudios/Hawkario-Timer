@@ -3451,8 +3451,10 @@ let profileDragState = {
   startY: 0
 };
 
-// Store close handler reference for cleanup
+// Store handler references for cleanup
 let profileDropdownCloseHandler = null;
+let profileDragMoveHandler = null;
+let profileDragEndHandler = null;
 
 /**
  * Hide the profile dropdown
@@ -3463,6 +3465,20 @@ function hideProfileDropdown() {
     document.removeEventListener('click', profileDropdownCloseHandler);
     profileDropdownCloseHandler = null;
   }
+
+  // Remove drag handlers if present
+  if (profileDragMoveHandler) {
+    document.removeEventListener('mousemove', profileDragMoveHandler);
+    profileDragMoveHandler = null;
+  }
+  if (profileDragEndHandler) {
+    document.removeEventListener('mouseup', profileDragEndHandler);
+    profileDragEndHandler = null;
+  }
+
+  // Reset drag state
+  profileDragState.isDragging = false;
+  profileDragState.dragActivated = false;
 
   if (profileDropdown) {
     profileDropdown.remove();
@@ -3579,12 +3595,19 @@ function hideProfileColorPicker() {
 
 /**
  * Show the profile dropdown menu
+ * @param {boolean} forceRefresh - If true, refresh the dropdown without toggling
  */
-function showProfileDropdown() {
-  // If already open, close it
+function showProfileDropdown(forceRefresh = false) {
+  // If already open, either toggle or refresh
   if (profileDropdown) {
-    hideProfileDropdown();
-    return;
+    if (forceRefresh) {
+      // Refresh: close silently and continue to recreate
+      hideProfileDropdown();
+    } else {
+      // Toggle: close and return
+      hideProfileDropdown();
+      return;
+    }
   }
 
   // Position dropdown below the button
@@ -3744,8 +3767,10 @@ function showProfileDropdown() {
       profileDragState.items = [];
       profileDragState.listSection = null;
       profileDragState.initialScrollTop = 0;
-      document.removeEventListener('mousemove', handleProfileDragMove);
-      document.removeEventListener('mouseup', handleProfileDragEnd);
+      document.removeEventListener('mousemove', profileDragMoveHandler);
+      document.removeEventListener('mouseup', profileDragEndHandler);
+      profileDragMoveHandler = null;
+      profileDragEndHandler = null;
       return;
     }
 
@@ -3779,12 +3804,18 @@ function showProfileDropdown() {
     profileDragState.listSection = null;
     profileDragState.initialScrollTop = 0;
 
-    document.removeEventListener('mousemove', handleProfileDragMove);
-    document.removeEventListener('mouseup', handleProfileDragEnd);
+    document.removeEventListener('mousemove', profileDragMoveHandler);
+    document.removeEventListener('mouseup', profileDragEndHandler);
+    profileDragMoveHandler = null;
+    profileDragEndHandler = null;
   };
 
-  document.addEventListener('mousemove', handleProfileDragMove);
-  document.addEventListener('mouseup', handleProfileDragEnd);
+  // Store handler references for cleanup
+  profileDragMoveHandler = handleProfileDragMove;
+  profileDragEndHandler = handleProfileDragEnd;
+
+  document.addEventListener('mousemove', profileDragMoveHandler);
+  document.addEventListener('mouseup', profileDragEndHandler);
 
   // New profile section (at top)
   const newSection = document.createElement('div');
@@ -3800,7 +3831,6 @@ function showProfileDropdown() {
     New Profile
   `;
   newAction.addEventListener('click', () => {
-    hideProfileDropdown();
     createNewProfile();
   });
   newSection.appendChild(newAction);
@@ -4273,9 +4303,9 @@ function createNewProfile() {
   // Switch to the new profile
   switchProfile(newProfile.id);
 
-  // Set highlight ID and reopen dropdown to show animation
+  // Set highlight ID and refresh dropdown to show animation
   highlightProfileId = newProfile.id;
-  showProfileDropdown();
+  showProfileDropdown(true); // Force refresh without toggle
 
   showToast('Profile created', 'success');
 }
