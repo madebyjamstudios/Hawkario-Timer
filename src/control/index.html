@@ -51,16 +51,18 @@
     <div id="timerProgressContainer" class="timer-progress-container">
       <!-- Interactive track -->
       <div class="progress-track" id="progressTrack">
-        <!-- Warning zone backgrounds (yellow/orange) -->
-        <div id="warningZones" class="warning-zones"></div>
+        <!-- Inner clip area for fill and warning zones -->
+        <div class="progress-clip">
+          <!-- Warning zone backgrounds (yellow/orange) -->
+          <div id="warningZones" class="warning-zones"></div>
+          <!-- Elapsed fill -->
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
 
         <!-- Time segment dividers -->
         <div id="progressSegments" class="progress-segments"></div>
 
-        <!-- Elapsed fill -->
-        <div id="progressFill" class="progress-fill"></div>
-
-        <!-- Current position indicator (blue dot) -->
+        <!-- Current position indicator -->
         <div id="progressIndicator" class="progress-indicator"></div>
 
         <!-- Hover seek line (follows mouse) -->
