@@ -1275,8 +1275,9 @@ footer small {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 12px 0;
+  padding: 4px 0 12px 0;
   gap: 0;
+  margin-left: 2px;
 }
 
 .digit-group {
