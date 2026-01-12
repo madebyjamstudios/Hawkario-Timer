@@ -291,12 +291,12 @@ export class FlashAnimator {
     this.originalStroke = '';
     this.originalStrokeWidth = '';
 
-    this.maxFlashes = 2;
+    this.maxFlashes = 3;
     this.glowDuration = 400;
     this.greyDuration = 300;
     this.cycleDuration = this.greyDuration + this.glowDuration; // 700ms per cycle
-    // Pattern: grey→glow→grey→glow→grey→restore (transition from grey back to white)
-    this.totalDuration = this.maxFlashes * this.cycleDuration + this.greyDuration;
+    // Pattern: grey→glow→grey→glow→grey→glow→restore (ends on glow)
+    this.totalDuration = this.maxFlashes * this.cycleDuration;
 
     this.isFlashing = false;
     this.startedAt = null;
