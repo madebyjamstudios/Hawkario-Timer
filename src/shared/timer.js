@@ -66,6 +66,7 @@ const COLON_HTML = '<span class="colon">:</span>';
 
 /**
  * Format time as plain text (for inputs and textContent)
+ * First segment is not padded (9:00 not 09:00), rest are padded (0:09 not 0:9)
  */
 export function formatTimePlain(ms, format = 'MM:SS', roundUp = false) {
   const total = Math.max(0, roundUp ? Math.ceil(ms / 1000) : Math.floor(ms / 1000));
@@ -77,17 +78,16 @@ export function formatTimePlain(ms, format = 'MM:SS', roundUp = false) {
 
   switch (format) {
     case 'HH:MM:SS':
-      return `${pad(h)}:${pad(m)}:${pad(s)}`;
-    case 'SS':
-      return String(total);
+      return `${h}:${pad(m)}:${pad(s)}`;
     case 'MM:SS':
     default:
-      return `${pad(m + (h * 60))}:${pad(s)}`;
+      return `${m + (h * 60)}:${pad(s)}`;
   }
 }
 
 /**
  * Format time as HTML (with centered colons for display)
+ * First segment is not padded (9:00 not 09:00), rest are padded (0:09 not 0:9)
  */
 export function formatTime(ms, format = 'MM:SS', roundUp = false) {
   const total = Math.max(0, roundUp ? Math.ceil(ms / 1000) : Math.floor(ms / 1000));
@@ -99,12 +99,10 @@ export function formatTime(ms, format = 'MM:SS', roundUp = false) {
 
   switch (format) {
     case 'HH:MM:SS':
-      return `${pad(h)}${COLON_HTML}${pad(m)}${COLON_HTML}${pad(s)}`;
-    case 'SS':
-      return String(total);
+      return `${h}${COLON_HTML}${pad(m)}${COLON_HTML}${pad(s)}`;
     case 'MM:SS':
     default:
-      return `${pad(m + (h * 60))}${COLON_HTML}${pad(s)}`;
+      return `${m + (h * 60)}${COLON_HTML}${pad(s)}`;
   }
 }
 
