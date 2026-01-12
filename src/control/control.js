@@ -2968,6 +2968,19 @@ function toggleLink(idx) {
 
 function renderPresetList() {
   const list = loadPresets();
+
+  // Capture current progress of active row before clearing DOM
+  let savedProgress = null;
+  if (activePresetIndex !== null) {
+    const activeRow = els.presetList.querySelector(`.preset-item[data-index="${activePresetIndex}"]`);
+    if (activeRow) {
+      const progressBar = activeRow.querySelector('.row-progress-bar');
+      if (progressBar) {
+        savedProgress = progressBar.style.width;
+      }
+    }
+  }
+
   els.presetList.innerHTML = '';
 
   if (list.length === 0) {
@@ -2989,6 +3002,15 @@ function renderPresetList() {
     // Progress bar overlay (first child, behind content)
     const progressBar = document.createElement('div');
     progressBar.className = 'row-progress-bar';
+    // Restore saved progress without transition to avoid re-animation glitch
+    if (isSelected && savedProgress) {
+      progressBar.style.transition = 'none';
+      progressBar.style.width = savedProgress;
+      // Re-enable transition after a frame
+      requestAnimationFrame(() => {
+        progressBar.style.transition = '';
+      });
+    }
     row.appendChild(progressBar);
 
     // Drag handle with number/hamburger icon
