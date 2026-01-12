@@ -1275,9 +1275,8 @@ footer small {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0 0 12px 0;
+  padding: 8px 0 12px 0;
   gap: 0;
-  transform: translate(10px, -5px);
 }
 
 .digit-group {
@@ -1325,26 +1324,20 @@ footer small {
   font-size: 20px;
   color: #666;
   font-weight: 600;
-  padding: 0 2px;
+  padding: 0 3px;
   align-self: center;
-  line-height: 1;
-}
-
-/* Duration input row */
-.duration-input-row {
   display: flex;
+  align-items: center;
   justify-content: center;
-  padding: 8px 0 12px 0;
+  line-height: 1;
 }
 
 .duration-input {
   text-align: center;
-  font-size: 24px;
+  font-size: 16px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.05em;
-  width: 140px;
-  padding: 8px 12px;
+  letter-spacing: 0.02em;
 }
 
 /* Hide hours group and its separator when format is MM:SS */
