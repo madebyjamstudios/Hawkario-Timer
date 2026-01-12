@@ -47,8 +47,11 @@
 
     <!-- Progress Bar (Interactive with seek functionality) -->
     <div id="timerProgressContainer" class="timer-progress-container">
-      <!-- Timer mode indicator (C/D, C/U, TOD) -->
-      <span id="timerModeIndicator" class="timer-mode-indicator">--</span>
+      <!-- Current clock time (useful for TOD mode) -->
+      <span id="currentTimeDisplay" class="current-time-display">--:--:--</span>
+
+      <!-- Elapsed time -->
+      <span id="elapsedTime" class="progress-time">00:00</span>
 
       <!-- Interactive track -->
       <div class="progress-track" id="progressTrack">

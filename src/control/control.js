@@ -2485,7 +2485,12 @@ function renderLivePreview() {
       opacity: FIXED_STYLE.opacity,
       blackout: isBlackedOut
     });
-    updateModeIndicator();
+    // Update clock display in TOD mode
+    const nowTod = Date.now();
+    if (nowTod - lastClockUpdate >= 1000) {
+      updateCurrentTimeDisplay();
+      lastClockUpdate = nowTod;
+    }
     requestAnimationFrame(renderLivePreview);
     return;
   }

@@ -20,9 +20,9 @@ export function autoFitMessage(messageEl, containerEl) {
   const containerWidth = containerEl.clientWidth || containerEl.offsetWidth;
   const containerHeight = containerEl.clientHeight || containerEl.offsetHeight;
 
-  // Target area for the message (90% width, 80% height - height is lenient to avoid jumps)
+  // Target area for the message (90% width, 45% height for 50/50 split)
   const targetWidth = containerWidth * 0.9;
-  const targetHeight = containerHeight * 0.80;
+  const targetHeight = containerHeight * 0.45;
 
   // Measure at reference size with fixed pixel max-width
   messageEl.style.fontSize = REF_FONT_SIZE + 'px';
