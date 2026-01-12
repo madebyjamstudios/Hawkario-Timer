@@ -1114,18 +1114,25 @@ function openAppSettings() {
 
   els.appSettingsModal.classList.remove('hidden');
 
-  // Reset update buttons and progress bar state
-  document.getElementById('checkUpdates').classList.remove('hidden');
-  document.getElementById('downloadUpdates').classList.add('hidden');
-  document.getElementById('restartApp').classList.add('hidden');
+  // Reset progress bar state
   document.getElementById('downloadProgress').classList.add('hidden');
   document.getElementById('progressFill').style.width = '0%';
   document.getElementById('progressText').textContent = '0%';
   document.getElementById('progressTime').textContent = '';
   document.getElementById('progressTime').classList.remove('complete');
   document.querySelector('.progress-bar').classList.remove('complete');
-  document.getElementById('updateStatus').textContent = '';
-  document.getElementById('updateStatus').className = '';
+  document.getElementById('restartApp').classList.add('hidden');
+
+  // If update was already detected, re-apply the status instead of resetting
+  if (pendingUpdate?.updateAvailable) {
+    showUpdateBadge(pendingUpdate);
+  } else {
+    // No update detected yet - show check button and clear status
+    document.getElementById('checkUpdates').classList.remove('hidden');
+    document.getElementById('downloadUpdates').classList.add('hidden');
+    document.getElementById('updateStatus').textContent = '';
+    document.getElementById('updateStatus').className = '';
+  }
 }
 
 function closeAppSettings() {
