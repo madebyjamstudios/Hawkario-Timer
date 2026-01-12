@@ -100,13 +100,18 @@ function handleMessageUpdate(message) {
 }
 
 /**
- * Auto-fit message text to fill its container
- * Uses 75% width to encourage line wrapping, 48% height for visual impact
+ * Auto-fit message text using transform scale
+ * Uses fixed font size and max-width to maintain consistent line wrapping,
+ * then scales the entire block to fit the container
  */
 function autoFitMessage() {
   if (!currentMessage) return;
 
-  messageOverlayEl.style.fontSize = '100px';
+  // Fixed base size for consistent line wrapping
+  messageOverlayEl.style.fontSize = '48px';
+  messageOverlayEl.style.maxWidth = '600px';
+  messageOverlayEl.style.transform = 'scale(1)';
+  messageOverlayEl.style.transformOrigin = 'center top';
 
   const containerWidth = window.innerWidth;
   const containerHeight = window.innerHeight;
@@ -116,14 +121,10 @@ function autoFitMessage() {
   const naturalHeight = messageOverlayEl.scrollHeight;
 
   if (naturalWidth > 0 && naturalHeight > 0) {
-    // Calculate ratios for both width and height constraints
     const widthRatio = targetWidth / naturalWidth;
     const heightRatio = targetHeight / naturalHeight;
-
-    // Use the smaller ratio to ensure it fits both constraints
-    const ratio = Math.min(widthRatio, heightRatio);
-    const newFontSize = Math.max(10, 100 * ratio);
-    messageOverlayEl.style.fontSize = newFontSize + 'px';
+    const scale = Math.min(widthRatio, heightRatio);
+    messageOverlayEl.style.transform = `scale(${scale})`;
   }
 }
 

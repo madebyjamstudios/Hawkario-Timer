@@ -134,9 +134,8 @@ html, body {
   -webkit-user-select: none;
   padding: 0.1em 0.15em;
   box-sizing: border-box;
-  max-width: 75vw;
-  max-height: 48vh;
-  overflow: hidden;
+  /* max-width set by JS for consistent line wrapping */
+  overflow: visible;
   word-wrap: break-word;
   overflow-wrap: break-word;
   white-space: pre-wrap;

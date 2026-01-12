@@ -1262,8 +1262,11 @@ function updateLivePreviewMessage(message) {
 function autoFitLivePreviewMessage() {
   if (!els.livePreviewMessage || !els.livePreview.classList.contains('with-message')) return;
 
-  // Reset to measure natural size
-  els.livePreviewMessage.style.fontSize = '100px';
+  // Fixed base size for consistent line wrapping (matches viewer)
+  els.livePreviewMessage.style.fontSize = '48px';
+  els.livePreviewMessage.style.maxWidth = '600px';
+  els.livePreviewMessage.style.transform = 'scale(1)';
+  els.livePreviewMessage.style.transformOrigin = 'center top';
 
   const containerWidth = els.livePreview.clientWidth;
   const containerHeight = els.livePreview.clientHeight;
@@ -1275,9 +1278,8 @@ function autoFitLivePreviewMessage() {
   if (naturalWidth > 0 && naturalHeight > 0) {
     const widthRatio = targetWidth / naturalWidth;
     const heightRatio = targetHeight / naturalHeight;
-    const ratio = Math.min(widthRatio, heightRatio);
-    const newFontSize = Math.max(10, 100 * ratio);
-    els.livePreviewMessage.style.fontSize = newFontSize + 'px';
+    const scale = Math.min(widthRatio, heightRatio);
+    els.livePreviewMessage.style.transform = `scale(${scale})`;
   }
 }
 

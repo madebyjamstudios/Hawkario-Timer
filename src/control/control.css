@@ -230,9 +230,8 @@ button:disabled {
   font-weight: 600;
   color: #ffffff;
   text-align: center;
-  max-width: 75%;
-  max-height: 48%;
-  overflow: hidden;
+  /* max-width set by JS for consistent line wrapping */
+  overflow: visible;
   word-wrap: break-word;
   overflow-wrap: break-word;
   white-space: pre-wrap;
