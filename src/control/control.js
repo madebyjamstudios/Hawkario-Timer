@@ -3623,14 +3623,41 @@ function showProfileDropdown() {
   document.addEventListener('mousemove', handleProfileDragMove);
   document.addEventListener('mouseup', handleProfileDragEnd);
 
-  profileDropdown.appendChild(listSection);
+  // New profile section (at top)
+  const newSection = document.createElement('div');
+  newSection.className = 'profile-dropdown-section';
+
+  const newAction = document.createElement('div');
+  newAction.className = 'profile-action new-profile';
+  newAction.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="12" y1="5" x2="12" y2="19"/>
+      <line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    New Profile
+  `;
+  newAction.addEventListener('click', () => {
+    hideProfileDropdown();
+    createNewProfile();
+  });
+  newSection.appendChild(newAction);
+
+  profileDropdown.appendChild(newSection);
 
   // Divider
   const divider1 = document.createElement('div');
   divider1.className = 'profile-dropdown-divider';
   profileDropdown.appendChild(divider1);
 
-  // Actions section (rename, duplicate, delete)
+  // Profile list section (scrollable)
+  profileDropdown.appendChild(listSection);
+
+  // Divider
+  const divider2 = document.createElement('div');
+  divider2.className = 'profile-dropdown-divider';
+  profileDropdown.appendChild(divider2);
+
+  // Actions section (rename, duplicate, delete) at bottom
   const actionsSection = document.createElement('div');
   actionsSection.className = 'profile-dropdown-section';
 
@@ -3688,32 +3715,6 @@ function showProfileDropdown() {
   actionsSection.appendChild(deleteAction);
 
   profileDropdown.appendChild(actionsSection);
-
-  // Divider
-  const divider2 = document.createElement('div');
-  divider2.className = 'profile-dropdown-divider';
-  profileDropdown.appendChild(divider2);
-
-  // New profile section
-  const newSection = document.createElement('div');
-  newSection.className = 'profile-dropdown-section';
-
-  const newAction = document.createElement('div');
-  newAction.className = 'profile-action new-profile';
-  newAction.innerHTML = `
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <line x1="12" y1="5" x2="12" y2="19"/>
-      <line x1="5" y1="12" x2="19" y2="12"/>
-    </svg>
-    New Profile
-  `;
-  newAction.addEventListener('click', () => {
-    hideProfileDropdown();
-    createNewProfile();
-  });
-  newSection.appendChild(newAction);
-
-  profileDropdown.appendChild(newSection);
 
   // Add to DOM
   document.body.appendChild(profileDropdown);
