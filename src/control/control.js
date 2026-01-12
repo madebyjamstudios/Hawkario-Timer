@@ -2212,7 +2212,7 @@ function fitPreviewMessage() {
 
   // FIXED max-width in reference pixels - NEVER changes
   // Transform: scale() handles all resizing
-  const REF_MAX_WIDTH = 1400;
+  const REF_MAX_WIDTH = 1700;
 
   // Target: 90% of reference width, 45% height (bottom half of 50/50 split)
   const targetWidth = REF_WIDTH * 0.9;
