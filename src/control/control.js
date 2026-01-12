@@ -1617,6 +1617,9 @@ function updateProgressBar(currentElapsedMs, currentTotalMs) {
   els.progressFill.style.width = progressPercent + '%';
   els.progressIndicator.style.left = progressPercent + '%';
 
+  // Show indicator only when timer has progress (hide at 0% for clean rounded edges)
+  els.progressIndicator.style.opacity = progressPercent === 0 ? '0' : '1';
+
   // Update fill color based on warning zone
   const remainingMs = currentTotalMs - currentElapsedMs;
   const remainingSec = remainingMs / 1000;
@@ -2822,6 +2825,10 @@ function sendCommand(command) {
       timerState.ended = false;
       timerState.overtime = false;
       timerState.overtimeStartedAt = null;
+      // Pulse the progress indicator
+      els.progressIndicator.classList.remove('pulse');
+      void els.progressIndicator.offsetWidth; // Force reflow
+      els.progressIndicator.classList.add('pulse');
       break;
 
     case 'pause':
@@ -2836,6 +2843,10 @@ function sendCommand(command) {
       isRunning = true;
       timerState.startedAt = Date.now();
       // Keep pausedAcc as is - it contains the elapsed time (including seeked position)
+      // Pulse the progress indicator
+      els.progressIndicator.classList.remove('pulse');
+      void els.progressIndicator.offsetWidth; // Force reflow
+      els.progressIndicator.classList.add('pulse');
       break;
 
     case 'reset':
