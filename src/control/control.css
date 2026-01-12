@@ -609,6 +609,7 @@ button:disabled {
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
   min-width: auto;
+  margin-bottom: 16px;
 }
 
 .progress-track {
