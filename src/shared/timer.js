@@ -130,24 +130,40 @@ export function hexToRgba(hex, opacity = 1) {
 /**
  * Format current time of day
  * @param {string} format - '12h' or '24h' (default: '12h')
+ * @param {string} timezone - IANA timezone (e.g., 'America/New_York') or 'auto' for system
  * @returns {string} Formatted time string
  */
-export function formatTimeOfDay(format = '12h') {
+export function formatTimeOfDay(format = '12h', timezone = 'auto') {
   const now = new Date();
-  let h = now.getHours();
-  const m = now.getMinutes();
-  const s = now.getSeconds();
 
-  const pad = n => String(n).padStart(2, '0');
+  // Use Intl.DateTimeFormat for timezone support
+  const options = {
+    hour: 'numeric',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: format === '12h'
+  };
+
+  // Only set timezone if it's a valid IANA timezone (not 'auto')
+  if (timezone && timezone !== 'auto') {
+    options.timeZone = timezone;
+  }
+
+  const formatter = new Intl.DateTimeFormat('en-US', options);
+  const parts = formatter.formatToParts(now);
+
+  // Extract parts
+  const h = parts.find(p => p.type === 'hour')?.value || '0';
+  const m = parts.find(p => p.type === 'minute')?.value || '00';
+  const s = parts.find(p => p.type === 'second')?.value || '00';
+  const period = parts.find(p => p.type === 'dayPeriod')?.value || '';
 
   if (format === '12h') {
-    const period = h >= 12 ? 'PM' : 'AM';
-    h = h % 12 || 12; // Convert 0 to 12 for midnight
-    return `${h}${COLON_HTML}${pad(m)}${COLON_HTML}${pad(s)} ${period}`;
+    return `${h}${COLON_HTML}${m}${COLON_HTML}${s} ${period}`;
   }
 
   // 24-hour format
-  return `${h}${COLON_HTML}${pad(m)}${COLON_HTML}${pad(s)}`;
+  return `${h}${COLON_HTML}${m}${COLON_HTML}${s}`;
 }
 
 /**
