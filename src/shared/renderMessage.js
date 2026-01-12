@@ -3,14 +3,13 @@
  * Used by BOTH preview and output for identical rendering
  */
 
-// Line width in em units - ensures consistent character count per line
-// regardless of font size (roughly 12-14 characters per line)
-const LINE_WIDTH_EM = 12;
+// Reference size for consistent layout (like a virtual canvas)
+const REF_FONT_SIZE = 100;
+const REF_MAX_WIDTH = 1200; // Fixed pixel width for line wrapping at reference size
 
 /**
- * Auto-fit message text using font-size scaling with em-based width
- * Uses em units for max-width so line breaks happen at the same words
- * regardless of container size
+ * Auto-fit message text using pure font-size scaling (like timer does)
+ * Uses fixed pixel max-width so scaling is smooth and predictable
  *
  * @param {HTMLElement} messageEl - The message text element
  * @param {HTMLElement} containerEl - The container element
@@ -18,26 +17,31 @@ const LINE_WIDTH_EM = 12;
 export function autoFitMessage(messageEl, containerEl) {
   if (!messageEl || !containerEl) return;
 
-  // Reset to measure at base size
-  messageEl.style.fontSize = '100px';
-  messageEl.style.maxWidth = LINE_WIDTH_EM + 'em';  // em-based = consistent line breaks
-  messageEl.style.transform = 'none';
-
   const containerWidth = containerEl.clientWidth || containerEl.offsetWidth;
   const containerHeight = containerEl.clientHeight || containerEl.offsetHeight;
+
+  // Target area for the message (90% width, 45% height for 50/50 split)
   const targetWidth = containerWidth * 0.9;
-  // Message gets 50% of container (50/50 split), use 45% for padding
   const targetHeight = containerHeight * 0.45;
+
+  // Measure at reference size with fixed pixel max-width
+  messageEl.style.fontSize = REF_FONT_SIZE + 'px';
+  messageEl.style.maxWidth = REF_MAX_WIDTH + 'px';
+  messageEl.style.transform = 'none';
+
   const naturalWidth = messageEl.scrollWidth;
   const naturalHeight = messageEl.scrollHeight;
 
   if (naturalWidth > 0 && naturalHeight > 0) {
+    // Calculate scale ratio (same as timer)
     const widthRatio = targetWidth / naturalWidth;
     const heightRatio = targetHeight / naturalHeight;
     const ratio = Math.min(widthRatio, heightRatio);
-    const newFontSize = Math.max(8, 100 * ratio);
+
+    // Apply new font size and scale max-width proportionally
+    const newFontSize = Math.max(8, REF_FONT_SIZE * ratio);
     messageEl.style.fontSize = newFontSize + 'px';
-    // maxWidth stays in em, so it scales with font size = same line breaks
+    messageEl.style.maxWidth = (REF_MAX_WIDTH * ratio) + 'px';
   }
 }
 
