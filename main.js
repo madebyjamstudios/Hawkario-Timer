@@ -170,6 +170,14 @@ ipcMain.on('window:fullscreen-output', () => {
   }
 });
 
+// Focus output window (bring to top)
+ipcMain.on('window:focus-output', () => {
+  if (outputWindow && !outputWindow.isDestroyed()) {
+    outputWindow.show();
+    outputWindow.focus();
+  }
+});
+
 // Keyboard shortcuts from output -> control
 ipcMain.on('keyboard:shortcut', (_event, shortcut) => {
   if (mainWindow && !mainWindow.isDestroyed()) {

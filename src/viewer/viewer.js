@@ -451,6 +451,11 @@ function init() {
   // Apply initial styles
   applyStyle({ color: '#ffffff', bgColor: '#000000', strokeWidth: 0, strokeColor: '#000000', shadowSize: 0 });
 
+  // Click anywhere to bring window to top (focus)
+  document.addEventListener('click', () => {
+    window.ninja.focusOutput();
+  });
+
   // Setup canonical timer state listener (new StageTimer-style sync)
   window.ninja.onTimerState(handleTimerState);
 

@@ -70,6 +70,10 @@ contextBridge.exposeInMainWorld('ninja', {
     ipcRenderer.send('window:fullscreen-output');
   },
 
+  focusOutput: () => {
+    ipcRenderer.send('window:focus-output');
+  },
+
   // Listen for window events
   onOutputWindowReady: (callback) => {
     ipcRenderer.on('window:output-ready', () => callback());
