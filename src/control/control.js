@@ -4364,6 +4364,11 @@ function init() {
   setupPreviewResize();
   restorePreviewWidth();
 
+  // Update preview scale on window resize
+  window.addEventListener('resize', () => {
+    updatePreviewScale();
+  });
+
   // Setup custom confirm dialog
   setupConfirmDialog();
 
