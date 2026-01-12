@@ -1655,6 +1655,7 @@ function updateRowProgressBar(idx, progressPercent) {
 
 /**
  * Update the playing class and button states on preset rows without full re-render
+ * Only updates innerHTML when state actually changes to avoid interfering with clicks
  */
 function updatePlayingRowState() {
   const rows = els.presetList.querySelectorAll('.preset-item');
@@ -1666,14 +1667,18 @@ function updatePlayingRowState() {
     row.classList.toggle('selected', isSelected);
     row.classList.toggle('playing', isPlaying);
 
-    // Update play/pause button icon and class
+    // Update play/pause button icon and class - only if state changed
     const playBtn = row.querySelector('.play-btn, .pause-btn');
     if (playBtn) {
-      if (isPlaying) {
+      const shouldBePause = isPlaying;
+      const currentlyPause = playBtn.classList.contains('pause-btn');
+
+      // Only update if the button state needs to change
+      if (shouldBePause && !currentlyPause) {
         playBtn.className = 'icon-btn pause-btn';
         playBtn.innerHTML = ICONS.pause;
         playBtn.title = 'Pause';
-      } else {
+      } else if (!shouldBePause && currentlyPause) {
         playBtn.className = 'icon-btn play-btn';
         playBtn.innerHTML = ICONS.play;
         playBtn.title = isPaused ? 'Resume' : 'Load & Start';
