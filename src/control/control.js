@@ -3469,8 +3469,9 @@ function hideProfileDropdown() {
   els.profileBtn?.classList.remove('active');
 }
 
-// Current color picker element
+// Current color picker element and state
 let profileColorPicker = null;
+let profileColorPickerCloseHandler = null;
 
 /**
  * Show color picker for a profile
@@ -3481,6 +3482,9 @@ function showProfileColorPicker(profileId, anchorEl) {
 
   const profile = profiles.find(p => p.id === profileId);
   if (!profile) return;
+
+  // Track pending selection (not saved until Save is clicked)
+  let pendingColor = profile.color || PROFILE_COLORS[0];
 
   const rect = anchorEl.getBoundingClientRect();
 
@@ -3493,30 +3497,67 @@ function showProfileColorPicker(profileId, anchorEl) {
   // Create color swatches (5x2 grid for 10 colors)
   PROFILE_COLORS.forEach(color => {
     const swatch = document.createElement('div');
-    swatch.className = 'color-swatch' + (profile.color === color ? ' selected' : '');
+    swatch.className = 'color-swatch' + (pendingColor === color ? ' selected' : '');
     swatch.style.background = color;
     swatch.style.boxShadow = `0 0 6px ${color}`;
+    swatch.dataset.color = color;
 
+    // Click to SELECT (not save yet)
     swatch.addEventListener('click', (e) => {
       e.stopPropagation();
-      // Update profile color
-      profile.color = color;
-      saveProfiles();
-      updateProfileButton();
-      hideProfileColorPicker();
-      // Refresh dropdown to show new color
-      hideProfileDropdown();
-      showProfileDropdown();
+      pendingColor = color;
+      // Update visual selection
+      profileColorPicker.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+      swatch.classList.add('selected');
     });
 
     profileColorPicker.appendChild(swatch);
   });
 
+  // Add Cancel/Save buttons
+  const buttons = document.createElement('div');
+  buttons.className = 'color-picker-buttons';
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'color-picker-cancel';
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    hideProfileColorPicker();
+  });
+
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'color-picker-save';
+  saveBtn.textContent = 'Save';
+  saveBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    // Save the pending color
+    profile.color = pendingColor;
+    saveProfiles();
+    updateProfileButton();
+    hideProfileColorPicker();
+    // Update the color dot in the dropdown directly (no reopen)
+    const dot = document.querySelector(`[data-profile-id="${profileId}"] .profile-color-dot`);
+    if (dot) {
+      dot.style.background = pendingColor;
+      dot.style.boxShadow = `0 0 6px ${pendingColor}`;
+    }
+  });
+
+  buttons.appendChild(cancelBtn);
+  buttons.appendChild(saveBtn);
+  profileColorPicker.appendChild(buttons);
+
   document.body.appendChild(profileColorPicker);
 
-  // Close on click outside
+  // Close on click outside (but not on picker itself)
+  profileColorPickerCloseHandler = (e) => {
+    if (!profileColorPicker?.contains(e.target)) {
+      hideProfileColorPicker();
+    }
+  };
   setTimeout(() => {
-    document.addEventListener('click', hideProfileColorPicker, { once: true });
+    document.addEventListener('click', profileColorPickerCloseHandler);
   }, 0);
 }
 
@@ -3524,6 +3565,10 @@ function showProfileColorPicker(profileId, anchorEl) {
  * Hide the color picker
  */
 function hideProfileColorPicker() {
+  if (profileColorPickerCloseHandler) {
+    document.removeEventListener('click', profileColorPickerCloseHandler);
+    profileColorPickerCloseHandler = null;
+  }
   if (profileColorPicker) {
     profileColorPicker.remove();
     profileColorPicker = null;
@@ -3644,8 +3689,9 @@ function showProfileDropdown() {
     const { fromIndex, items, slotHeight, baseY } = profileDragState;
 
     // Calculate which slot the mouse is over
+    // Use smaller offset (30% instead of 50%) for more responsive dragging in both directions
     const mouseY = e.clientY;
-    let newSlot = Math.floor((mouseY - baseY + slotHeight / 2) / slotHeight);
+    let newSlot = Math.floor((mouseY - baseY + slotHeight * 0.3) / slotHeight);
     newSlot = Math.max(0, Math.min(items.length - 1, newSlot));
 
     if (newSlot !== profileDragState.currentSlot) {
