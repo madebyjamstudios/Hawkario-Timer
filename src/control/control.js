@@ -628,7 +628,9 @@ function setActiveTimerConfig(config) {
       shadowSize: config.style?.shadowSize ?? 0,
       shadowColor: config.style?.shadowColor || '#000000',
       bgColor: config.style?.bgColor || '#000000'
-    }
+    },
+    warnYellowSec: config.warnYellowSec ?? 60,
+    warnOrangeSec: config.warnOrangeSec ?? 15
   };
 }
 
@@ -1958,6 +1960,9 @@ function renderSmartSegmentsForDuration(durationSec) {
   // 0% = full duration remaining, 75% = 25% remaining
   const positions = [0, 25, 50, 75];
 
+  // Determine if we need to show hours based on total duration
+  const needsHours = durationSec >= 3600;
+
   for (const percent of positions) {
     // Calculate TIME REMAINING at this position (not elapsed)
     const timeRemainingSec = durationSec - ((percent / 100) * durationSec);
@@ -1971,13 +1976,14 @@ function renderSmartSegmentsForDuration(durationSec) {
       marker.style.background = 'transparent';
     }
 
-    // Format time label
+    // Format time label - use consistent format based on total duration
     const hours = Math.floor(timeRemainingSec / 3600);
     const minutes = Math.floor((timeRemainingSec % 3600) / 60);
     const seconds = Math.round(timeRemainingSec % 60);
 
-    if (hours > 0) {
-      marker.dataset.time = hours + ':' + String(minutes).padStart(2, '0');
+    if (needsHours) {
+      // For timers >= 1 hour, always show H:MM:SS format
+      marker.dataset.time = hours + ':' + String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0');
     } else if (seconds === 0) {
       marker.dataset.time = minutes + ':00';
     } else {
