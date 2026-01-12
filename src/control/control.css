@@ -1896,7 +1896,7 @@ button.danger:active {
 }
 
 .message-list-container {
-  padding: 4px 2px;
+  padding: 4px;
 }
 
 .message-list {
@@ -1908,9 +1908,9 @@ button.danger:active {
 .message-item {
   display: flex;
   align-items: stretch;
-  gap: 8px;
-  padding: 10px 8px;
-  padding-left: 4px;
+  gap: 10px;
+  padding: 12px 16px;
+  padding-left: 8px;
   background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%);
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -1939,9 +1939,9 @@ button.danger:active {
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  width: 24px;
+  width: 28px;
   flex-shrink: 0;
-  padding: 2px 0;
+  padding: 4px 0;
 }
 
 .message-left-col .message-delete-btn {
@@ -1960,8 +1960,8 @@ button.danger:active {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   cursor: grab;
   position: relative;
   flex-shrink: 0;
