@@ -1309,18 +1309,20 @@ function setupMessageItemEvents(row, messageId, textInput, boldBtn, italicBtn, u
   visibilityBtn.addEventListener('click', () => {
     const wasActive = visibilityBtn.classList.contains('active');
 
-    // Add transitioning animation
+    // Add transitioning animation (diagonal stripes)
     visibilityBtn.classList.add('transitioning');
 
     if (wasActive) {
-      // Deactivating - play animation first, then toggle
+      // Deactivating - play shrink animation first, then toggle
       visibilityBtn.classList.add('deactivating');
       setTimeout(() => {
         toggleMessageVisibility(messageId);
-      }, 300); // Wait for animation before re-render
+      }, 300);
     } else {
-      // Activating - toggle immediately (pulse animation plays on new state)
-      toggleMessageVisibility(messageId);
+      // Activating - show stripes briefly, then toggle
+      setTimeout(() => {
+        toggleMessageVisibility(messageId);
+      }, 200);
     }
   });
 
