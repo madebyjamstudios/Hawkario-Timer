@@ -259,6 +259,13 @@ function initTimeInputMS(input) {
     // Tab - allow natural behavior
     if (e.key === 'Tab') return;
 
+    // Enter - blur input to allow modal save handlers to trigger
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      input.blur();
+      return;
+    }
+
     // Cmd/Ctrl+A - select current section only
     if ((e.metaKey || e.ctrlKey) && e.key === 'a') {
       e.preventDefault();
@@ -450,6 +457,13 @@ function initTimeInput(input) {
 
     // Tab - allow natural behavior
     if (e.key === 'Tab') return;
+
+    // Enter - blur input to allow modal save handlers to trigger
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      input.blur();
+      return;
+    }
 
     // Cmd/Ctrl+A - select current section only
     if ((e.metaKey || e.ctrlKey) && e.key === 'a') {
