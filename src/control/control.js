@@ -3729,6 +3729,7 @@ function setupEventListeners() {
         } else {
           sendCommand('start');
         }
+        renderPresetList(); // Update button states
         break;
 
       case 'r':
