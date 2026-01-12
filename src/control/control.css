@@ -247,12 +247,14 @@ button:disabled {
 }
 
 .live-preview.with-message .timer-preview {
+  grid-row: 1;
   align-self: end;
   max-height: 45%;
 }
 
 .live-preview.with-message .message-preview {
   display: block;
+  grid-row: 2;
   align-self: start;
 }
 
