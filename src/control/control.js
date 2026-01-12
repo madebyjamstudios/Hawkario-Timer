@@ -2004,8 +2004,12 @@ function saveModal() {
   }
 
   savePresets(presets);
-  renderPresetList();
+
+  // Close modal first, then re-render after a frame to avoid click blocking
   closeModal();
+  requestAnimationFrame(() => {
+    renderPresetList();
+  });
 }
 
 function updateModalPreview() {
