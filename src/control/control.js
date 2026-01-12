@@ -1074,6 +1074,10 @@ function renderMessageList() {
     row.className = 'message-item' + (msg.visible ? ' showing' : '');
     row.dataset.id = msg.id;
 
+    // Left column: drag handle + delete button stacked
+    const leftCol = document.createElement('div');
+    leftCol.className = 'message-left-col';
+
     // Drag handle
     const dragHandle = document.createElement('div');
     dragHandle.className = 'message-drag-handle';
@@ -1081,6 +1085,13 @@ function renderMessageList() {
       <span class="message-number">${idx + 1}</span>
       <span class="message-drag-icon"><span></span></span>
     `;
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'icon-btn message-delete-btn';
+    deleteBtn.title = 'Delete';
+    deleteBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+
+    leftCol.append(dragHandle, deleteBtn);
 
     // Content area
     const content = document.createElement('div');
@@ -1123,7 +1134,7 @@ function renderMessageList() {
     formatRow.append(boldBtn, italicBtn, uppercaseBtn, colorInput);
     content.append(textInput, formatRow);
 
-    // Actions
+    // Actions (visibility only - delete moved to left column)
     const actions = document.createElement('div');
     actions.className = 'message-actions';
 
@@ -1132,13 +1143,8 @@ function renderMessageList() {
     visibilityBtn.title = msg.visible ? 'Hide from viewer' : 'Show on viewer';
     visibilityBtn.innerHTML = '<span class="visibility-indicator"></span>';
 
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'icon-btn message-delete-btn';
-    deleteBtn.title = 'Delete';
-    deleteBtn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
-
-    actions.append(visibilityBtn, deleteBtn);
-    row.append(dragHandle, content, actions);
+    actions.append(visibilityBtn);
+    row.append(leftCol, content, actions);
     els.messageList.appendChild(row);
 
     // Setup events for this message item
