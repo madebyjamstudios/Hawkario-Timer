@@ -3454,10 +3454,52 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
-// Placeholder functions for profile management (to be implemented in Phase 5)
+/**
+ * Switch to a different profile
+ */
 function switchProfile(id) {
-  // TODO: Implement in Phase 4
-  console.log('Switch to profile:', id);
+  // Don't switch if already on this profile
+  if (id === activeProfileId) return;
+
+  // Find the profile
+  const profile = profiles.find(p => p.id === id);
+  if (!profile) return;
+
+  // Stop any running timer
+  if (isRunning) {
+    isRunning = false;
+    timerState.startedAt = null;
+    timerState.pausedAcc = 0;
+    timerState.ended = false;
+    timerState.overtime = false;
+    timerState.overtimeStartedAt = null;
+  }
+
+  // Reset active preset index
+  activePresetIndex = null;
+
+  // Update active profile
+  activeProfileId = id;
+  saveProfiles();
+
+  // Update UI
+  updateProfileButton();
+  renderPresetList();
+
+  // Select first timer in new profile if available
+  const presets = getActivePresets();
+  if (presets.length > 0) {
+    activePresetIndex = 0;
+    setActiveTimerConfig(presets[0].config);
+    applyConfig(presets[0].config);
+  }
+
+  // Update progress bar
+  updateProgressBar();
+  broadcastTimerState();
+
+  // Show toast
+  showToast(`Switched to "${profile.name}"`, 'success');
 }
 
 function promptRenameProfile() {
