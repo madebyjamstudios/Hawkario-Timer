@@ -164,16 +164,26 @@ function handleMessageUpdate(message) {
   const wasVisible = currentMessage?.visible;
 
   if (!message || !message.visible) {
-    // Hide message and restore full layout
+    // Hide message with animation
+    if (wasVisible) {
+      // Trigger hide animation
+      messageOverlayEl.classList.add('hiding');
+      messageOverlayEl.classList.remove('visible');
+
+      // Wait for animation to complete before cleanup
+      setTimeout(() => {
+        messageOverlayEl.classList.remove('hiding', 'bold', 'italic', 'uppercase');
+        virtualCanvasEl.classList.remove('with-message');
+        fitTimerContent();
+      }, 250); // Match animation duration
+    } else {
+      // Not currently visible, just cleanup
+      messageOverlayEl.classList.remove('visible', 'hiding', 'bold', 'italic', 'uppercase');
+      virtualCanvasEl.classList.remove('with-message');
+    }
+
     currentMessage = null;
     lastMessageText = '';
-    messageOverlayEl.classList.remove('visible', 'bold', 'italic', 'uppercase');
-    virtualCanvasEl.classList.remove('with-message');
-
-    // Refit timer since it now has full height
-    if (wasVisible) {
-      fitTimerContent();
-    }
     return;
   }
 

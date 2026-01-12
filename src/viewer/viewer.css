@@ -166,6 +166,65 @@ html, body {
 .message-overlay.visible {
   display: block;
   opacity: 1;
+  animation: messageShow 0.3s ease-out;
+}
+
+.message-overlay.hiding {
+  display: block;
+  animation: messageHide 0.25s ease-in forwards;
+}
+
+@keyframes messageShow {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes messageHide {
+  from {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.85);
+  }
+}
+
+/* Override animation when in split layout */
+.virtual-canvas.with-message .message-overlay.visible {
+  animation: messageShowSplit 0.3s ease-out;
+}
+
+.virtual-canvas.with-message .message-overlay.hiding {
+  animation: messageHideSplit 0.25s ease-in forwards;
+}
+
+@keyframes messageShowSplit {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 0) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+}
+
+@keyframes messageHideSplit {
+  from {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, 0) scale(0.85);
+  }
 }
 
 .message-overlay.bold {

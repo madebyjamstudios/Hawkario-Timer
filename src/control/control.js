@@ -1321,14 +1321,24 @@ function updateLivePreviewMessage(message) {
   const wasVisible = els.livePreviewCanvas.classList.contains('with-message');
 
   if (!message || !message.visible) {
-    els.livePreviewCanvas.classList.remove('with-message');
-    els.livePreviewMessage.classList.remove('bold', 'italic', 'uppercase');
-    lastPreviewMessageText = '';
-
-    // Refit timer since it now has full height
+    // Hide message with animation
     if (wasVisible) {
-      fitPreviewTimer();
+      // Trigger hide animation
+      els.livePreviewMessage.classList.add('hiding');
+
+      // Wait for animation to complete before cleanup
+      setTimeout(() => {
+        els.livePreviewMessage.classList.remove('hiding', 'bold', 'italic', 'uppercase');
+        els.livePreviewCanvas.classList.remove('with-message');
+        fitPreviewTimer();
+      }, 250); // Match animation duration
+    } else {
+      // Not currently visible, just cleanup
+      els.livePreviewMessage.classList.remove('hiding', 'bold', 'italic', 'uppercase');
+      els.livePreviewCanvas.classList.remove('with-message');
     }
+
+    lastPreviewMessageText = '';
     return;
   }
 
