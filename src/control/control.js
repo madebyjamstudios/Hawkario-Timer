@@ -1029,6 +1029,31 @@ function saveMessagesToStorage(list) {
   }
 }
 
+/**
+ * Restore active message from storage (for hot reload persistence)
+ * Called on init to restore message state after reload
+ */
+function restoreActiveMessage() {
+  const messages = loadMessages();
+  const visibleMsg = messages.find(m => m.visible);
+
+  if (visibleMsg) {
+    activeMessage = visibleMsg;
+    const msgData = {
+      text: visibleMsg.text,
+      bold: visibleMsg.bold,
+      italic: visibleMsg.italic,
+      uppercase: visibleMsg.uppercase,
+      color: visibleMsg.color,
+      visible: true
+    };
+    // Update preview
+    updateLivePreviewMessage(msgData);
+    // Send to viewer (if connected)
+    window.ninja.sendMessage(msgData);
+  }
+}
+
 function updateTabBadges() {
   const timerCount = loadPresets().length;
   const messageCount = loadMessages().length;
@@ -3360,13 +3385,20 @@ function setupEventListeners() {
 
   // Message state request - output window asks for current message (on load/reload)
   window.ninja.onMessageStateRequest(() => {
-    if (activeMessage && activeMessage.visible) {
+    // Check activeMessage first, then fall back to storage
+    let visibleMsg = activeMessage;
+    if (!visibleMsg || !visibleMsg.visible) {
+      const messages = loadMessages();
+      visibleMsg = messages.find(m => m.visible);
+    }
+
+    if (visibleMsg) {
       const msgData = {
-        text: activeMessage.text,
-        bold: activeMessage.bold,
-        italic: activeMessage.italic,
-        uppercase: activeMessage.uppercase,
-        color: activeMessage.color,
+        text: visibleMsg.text,
+        bold: visibleMsg.bold,
+        italic: visibleMsg.italic,
+        uppercase: visibleMsg.uppercase,
+        color: visibleMsg.color,
         visible: true
       };
       window.ninja.sendMessage(msgData);
@@ -3884,6 +3916,7 @@ function init() {
   applyPreview();
   renderPresetList();
   renderMessageList();
+  restoreActiveMessage(); // Restore visible message after hot reload
 
   // Start live preview render loop
   renderLivePreview();
