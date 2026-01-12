@@ -3438,10 +3438,19 @@ let profileDragState = {
   startY: 0
 };
 
+// Store close handler reference for cleanup
+let profileDropdownCloseHandler = null;
+
 /**
  * Hide the profile dropdown
  */
 function hideProfileDropdown() {
+  // Remove close handler if present
+  if (profileDropdownCloseHandler) {
+    document.removeEventListener('click', profileDropdownCloseHandler);
+    profileDropdownCloseHandler = null;
+  }
+
   if (profileDropdown) {
     profileDropdown.remove();
     profileDropdown = null;
@@ -3677,13 +3686,13 @@ function showProfileDropdown() {
   els.profileBtn.classList.add('active');
 
   // Close on click outside
-  const closeHandler = (e) => {
+  // Store and add close handler
+  profileDropdownCloseHandler = (e) => {
     if (!profileDropdown?.contains(e.target) && e.target !== els.profileBtn && !els.profileBtn?.contains(e.target)) {
       hideProfileDropdown();
-      document.removeEventListener('click', closeHandler);
     }
   };
-  setTimeout(() => document.addEventListener('click', closeHandler), 0);
+  setTimeout(() => document.addEventListener('click', profileDropdownCloseHandler), 0);
 }
 
 /**
