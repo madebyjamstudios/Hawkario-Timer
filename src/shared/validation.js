@@ -103,25 +103,6 @@ export function validateStyle(style) {
 }
 
 /**
- * Validate warning settings
- */
-export function validateWarning(warn) {
-  if (!warn || typeof warn !== 'object') {
-    return getDefaultWarning();
-  }
-
-  return {
-    enabled: Boolean(warn.enabled),
-    seconds: validateNumber(warn.seconds, 120, 0, 359999),
-    colorEnabled: Boolean(warn.colorEnabled),
-    color: validateHexColor(warn.color, '#E64A19'),
-    flashEnabled: Boolean(warn.flashEnabled),
-    flashRateMs: validateNumber(warn.flashRateMs, 500, 100, 2000),
-    soundEnabled: Boolean(warn.soundEnabled)
-  };
-}
-
-/**
  * Validate sound settings
  */
 export function validateSound(sound) {
@@ -184,18 +165,6 @@ function getDefaultStyle() {
     shadowSize: 0,
     shadowColor: '#000000',
     bgColor: '#000000'
-  };
-}
-
-function getDefaultWarning() {
-  return {
-    enabled: true,
-    seconds: 120,
-    colorEnabled: true,
-    color: '#E64A19',
-    flashEnabled: false,
-    flashRateMs: 500,
-    soundEnabled: false
   };
 }
 

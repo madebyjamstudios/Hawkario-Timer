@@ -702,7 +702,8 @@ const dragState = {
   draggedLinkZone: null, // Link zone being dragged with timer (if any)
   hasLink: false,        // Whether dragged timer has a link to timer above
   slotHeight: 0,         // Height of timer + link zone for transforms
-  originalBaseY: 0       // Original Y position of first slot (before any transforms)
+  originalBaseY: 0,      // Original Y position of first slot (before any transforms)
+  autoScrollInterval: null // Interval for auto-scrolling during drag
 };
 
 // Message drag state (simpler than timers - no link zones)
@@ -722,8 +723,52 @@ const messageDragState = {
   originalWidth: 0,
   visibleItems: [],
   slotHeight: 0,
-  originalBaseY: 0
+  originalBaseY: 0,
+  autoScrollInterval: null // Interval for auto-scrolling during drag
 };
+
+// Auto-scroll configuration
+const AUTO_SCROLL_ZONE = 50; // Pixels from edge to trigger scroll
+const AUTO_SCROLL_SPEED = 8; // Pixels per frame
+
+/**
+ * Handle auto-scroll during drag operations
+ * @param {number} clientY - Mouse Y position
+ * @param {HTMLElement} container - Scrollable container
+ * @param {Object} state - Drag state object (dragState or messageDragState)
+ */
+function handleDragAutoScroll(clientY, container, state) {
+  const rect = container.getBoundingClientRect();
+  const topZone = rect.top + AUTO_SCROLL_ZONE;
+  const bottomZone = rect.bottom - AUTO_SCROLL_ZONE;
+
+  // Clear existing interval
+  if (state.autoScrollInterval) {
+    clearInterval(state.autoScrollInterval);
+    state.autoScrollInterval = null;
+  }
+
+  // Check if in scroll zones
+  if (clientY < topZone && container.scrollTop > 0) {
+    // Scroll up
+    state.autoScrollInterval = setInterval(() => {
+      container.scrollTop -= AUTO_SCROLL_SPEED;
+      if (container.scrollTop <= 0) {
+        clearInterval(state.autoScrollInterval);
+        state.autoScrollInterval = null;
+      }
+    }, 16);
+  } else if (clientY > bottomZone && container.scrollTop < container.scrollHeight - container.clientHeight) {
+    // Scroll down
+    state.autoScrollInterval = setInterval(() => {
+      container.scrollTop += AUTO_SCROLL_SPEED;
+      if (container.scrollTop >= container.scrollHeight - container.clientHeight) {
+        clearInterval(state.autoScrollInterval);
+        state.autoScrollInterval = null;
+      }
+    }, 16);
+  }
+}
 
 // SVG Icons
 const ICONS = {
@@ -2014,7 +2059,6 @@ function openModal(presetIndex = null) {
     // Editing existing preset
     const presets = loadPresets();
     const preset = presets[presetIndex];
-    console.log('Opening modal for preset:', preset.name, 'config:', preset.config); // Debug log
     els.modalTitle.textContent = 'Edit Timer';
     els.presetName.value = preset.name;
     applyConfig(preset.config);
@@ -2049,7 +2093,6 @@ function saveModal() {
 
   const name = els.presetName.value.trim() || 'Timer';
   const config = getCurrentConfig();
-  console.log('Saving config:', config); // Debug log
   const presets = loadPresets();
 
   if (editingPresetIndex !== null) {
@@ -2826,7 +2869,6 @@ function getCurrentConfig() {
 
 function applyConfig(config) {
   if (!config) return;
-  console.log('Applying config, mode:', config.mode); // Debug log
 
   els.mode.value = config.mode || 'countdown';
   setDurationInputs(config.durationSec || 1200);
@@ -2942,7 +2984,6 @@ function loadPresets() {
   try {
     // Check for presets in current key
     let data = localStorage.getItem(STORAGE_KEYS.PRESETS);
-    console.log('Loading presets from localStorage:', data); // Debug log
 
     // Migration: check for old key from first version
     if (!data) {
@@ -2965,7 +3006,6 @@ function loadPresets() {
 
 function savePresets(list) {
   try {
-    console.log('Saving presets to localStorage:', JSON.stringify(list)); // Debug log
     localStorage.setItem(STORAGE_KEYS.PRESETS, JSON.stringify(list));
   } catch (e) {
     showToast('Failed to save presets', 'error');
@@ -4143,6 +4183,9 @@ function setupDragListeners() {
     dragState.ghostEl.style.left = (e.clientX - dragState.grabOffsetX) + 'px';
     dragState.ghostEl.style.top = (e.clientY - dragState.grabOffsetY) + 'px';
 
+    // Auto-scroll when near edges
+    handleDragAutoScroll(e.clientY, els.presetList, dragState);
+
     // Calculate target slot based on cursor position
     const targetSlot = calculateTargetSlot(e.clientY);
 
@@ -4156,6 +4199,12 @@ function setupDragListeners() {
   // Finish drag on mouseup
   document.addEventListener('mouseup', () => {
     if (!dragState.isDragging) return;
+
+    // Clear auto-scroll interval
+    if (dragState.autoScrollInterval) {
+      clearInterval(dragState.autoScrollInterval);
+      dragState.autoScrollInterval = null;
+    }
 
     // If drag was never activated (just a click), just reset state
     if (!dragState.dragActivated) {
@@ -4334,6 +4383,9 @@ function setupMessageDragListeners() {
 
     messageDragState.ghostEl.style.left = (e.clientX - messageDragState.grabOffsetX) + 'px';
     messageDragState.ghostEl.style.top = (e.clientY - messageDragState.grabOffsetY) + 'px';
+
+    // Auto-scroll when near edges
+    handleDragAutoScroll(e.clientY, els.messageList, messageDragState);
 
     const targetSlot = calculateMessageTargetSlot(e.clientY);
     if (targetSlot !== messageDragState.currentSlot) {

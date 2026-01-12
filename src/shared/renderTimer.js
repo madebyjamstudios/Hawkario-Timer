@@ -4,7 +4,6 @@
  */
 
 import { formatTime, formatTimeOfDay } from './timer.js';
-import { FIXED_STYLE } from './timerState.js';
 
 /**
  * Compute display values from canonical timer state
@@ -216,63 +215,6 @@ export function getCombinedShadowCSS(strokeWidth, strokeColor, shadowSize, shado
     return strokeShadow;
   } else {
     return glowShadow;
-  }
-}
-
-/**
- * Apply style to timer element
- *
- * @param {HTMLElement} timerEl - The timer text element
- * @param {HTMLElement} containerEl - The container/stage element
- * @param {Object} style - Style configuration
- * @param {boolean} isFlashing - Whether flash animation is active
- */
-export function applyStyle(timerEl, containerEl, style, isFlashing = false) {
-  if (!style || isFlashing) return;
-
-  timerEl.style.fontFamily = FIXED_STYLE.fontFamily;
-  timerEl.style.fontWeight = FIXED_STYLE.fontWeight;
-  timerEl.style.color = style.color || '#ffffff';
-  timerEl.style.opacity = FIXED_STYLE.opacity;
-  timerEl.style.letterSpacing = FIXED_STYLE.letterSpacing + 'em';
-
-  // Use shadow-based stroke instead of -webkit-text-stroke to avoid intersection artifacts
-  timerEl.style.webkitTextStrokeWidth = '0px';
-  timerEl.style.textShadow = getCombinedShadowCSS(
-    style.strokeWidth ?? 0,
-    style.strokeColor || '#000000',
-    style.shadowSize ?? 0,
-    style.shadowColor
-  );
-  timerEl.style.textAlign = FIXED_STYLE.align;
-
-  // Background
-  const bg = style.bgColor || '#000000';
-  if (containerEl) {
-    containerEl.style.background = bg;
-  }
-  document.body.style.background = bg;
-}
-
-/**
- * Auto-fit timer text to fill container width
- *
- * @param {HTMLElement} timerEl - The timer text element
- * @param {HTMLElement} containerEl - The container element
- * @param {number} targetRatio - Target width ratio (0.9 = 90% of container)
- */
-export function autoFitText(timerEl, containerEl, targetRatio = 0.9) {
-  // Reset to measure natural size
-  timerEl.style.fontSize = '100px';
-
-  const containerWidth = containerEl?.clientWidth || window.innerWidth;
-  const targetWidth = containerWidth * targetRatio;
-  const naturalWidth = timerEl.scrollWidth;
-
-  if (naturalWidth > 0 && containerWidth > 0) {
-    const ratio = targetWidth / naturalWidth;
-    const newFontSize = Math.max(10, 100 * ratio);
-    timerEl.style.fontSize = newFontSize + 'px';
   }
 }
 

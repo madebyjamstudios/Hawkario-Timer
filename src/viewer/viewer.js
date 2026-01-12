@@ -7,7 +7,7 @@
 import { formatTime, formatTimeOfDay, hexToRgba } from '../shared/timer.js';
 import { playWarningSound, playEndSound, initAudio } from '../shared/sounds.js';
 import { FIXED_STYLE } from '../shared/timerState.js';
-import { computeDisplay, getShadowCSS, getCombinedShadowCSS, autoFitText, FlashAnimator } from '../shared/renderTimer.js';
+import { computeDisplay, getShadowCSS, getCombinedShadowCSS, FlashAnimator } from '../shared/renderTimer.js';
 import { autoFitMessage, applyMessageStyle } from '../shared/renderMessage.js';
 
 // DOM Elements

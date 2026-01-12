@@ -2,14 +2,6 @@
  * Ninja Timer - Shared Constants
  */
 
-// Brand colors
-export const BRAND_COLORS = {
-  orange: '#E64A19',
-  orangeLight: '#FF5722',
-  orangeDark: '#BF360C',
-  overtimeRed: '#ff3333'  // Exception: overtime stays red
-};
-
 // Local storage keys
 export const STORAGE_KEYS = {
   PRESETS: 'ninja-presets-v1',
@@ -65,18 +57,3 @@ export const DEFAULT_CONFIG = {
   }
 };
 
-// Sound types
-export const SOUND_TYPES = {
-  WARNING: 'warning',
-  END: 'end',
-  TICK: 'tick'
-};
-
-// Keyboard shortcuts
-export const SHORTCUTS = {
-  START: 'start',
-  PAUSE: 'pause',
-  RESET: 'reset',
-  TOGGLE: 'toggle',
-  FULLSCREEN: 'fullscreen'
-};
