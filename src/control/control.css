@@ -242,20 +242,22 @@ button:disabled {
 }
 
 .live-preview.with-message {
-  grid-template-rows: 1fr 1fr;
+  grid-template-rows: 1fr 1fr !important;
   place-items: center center;
 }
 
 .live-preview.with-message .timer-preview {
-  grid-row: 1;
-  align-self: end;
+  grid-row: 1 !important;
+  grid-column: 1 !important;
+  align-self: end !important;
   max-height: 45%;
 }
 
 .live-preview.with-message .message-preview {
-  display: block;
-  grid-row: 2;
-  align-self: start;
+  display: block !important;
+  grid-row: 2 !important;
+  grid-column: 1 !important;
+  align-self: start !important;
 }
 
 /* Vertically centered colon for time display */
