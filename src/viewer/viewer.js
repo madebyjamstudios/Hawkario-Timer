@@ -101,29 +101,40 @@ function handleMessageUpdate(message) {
 
 /**
  * Auto-fit message text using transform scale
- * Uses fixed font size and max-width to maintain consistent line wrapping,
- * then scales the entire block to fit the container
+ * Uses large max-width so text stays on fewer lines, then scales down to fit.
+ * Only wraps to new lines when window is very small.
  */
 function autoFitMessage() {
   if (!currentMessage) return;
 
-  // Fixed base size for consistent line wrapping
+  // Large max-width keeps text on fewer lines - scales down instead of wrapping
   messageOverlayEl.style.fontSize = '48px';
-  messageOverlayEl.style.maxWidth = '600px';
+  messageOverlayEl.style.maxWidth = '2000px';
   messageOverlayEl.style.transform = 'scale(1)';
   messageOverlayEl.style.transformOrigin = 'center top';
 
   const containerWidth = window.innerWidth;
   const containerHeight = window.innerHeight;
-  const targetWidth = containerWidth * 0.75;
-  const targetHeight = containerHeight * 0.48;
+  const targetWidth = containerWidth * 0.85;
+  const targetHeight = containerHeight * 0.45;
   const naturalWidth = messageOverlayEl.scrollWidth;
   const naturalHeight = messageOverlayEl.scrollHeight;
 
   if (naturalWidth > 0 && naturalHeight > 0) {
     const widthRatio = targetWidth / naturalWidth;
     const heightRatio = targetHeight / naturalHeight;
-    const scale = Math.min(widthRatio, heightRatio);
+    let scale = Math.min(widthRatio, heightRatio);
+
+    // If scale gets too small, allow wrapping by reducing max-width
+    if (scale < 0.3 && containerWidth < 500) {
+      messageOverlayEl.style.maxWidth = '400px';
+      const newNaturalWidth = messageOverlayEl.scrollWidth;
+      const newNaturalHeight = messageOverlayEl.scrollHeight;
+      const newWidthRatio = targetWidth / newNaturalWidth;
+      const newHeightRatio = targetHeight / newNaturalHeight;
+      scale = Math.min(newWidthRatio, newHeightRatio);
+    }
+
     messageOverlayEl.style.transform = `scale(${scale})`;
   }
 }

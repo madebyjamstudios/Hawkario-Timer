@@ -1262,23 +1262,34 @@ function updateLivePreviewMessage(message) {
 function autoFitLivePreviewMessage() {
   if (!els.livePreviewMessage || !els.livePreview.classList.contains('with-message')) return;
 
-  // Fixed base size for consistent line wrapping (matches viewer)
+  // Large max-width keeps text on fewer lines - scales down instead of wrapping
   els.livePreviewMessage.style.fontSize = '48px';
-  els.livePreviewMessage.style.maxWidth = '600px';
+  els.livePreviewMessage.style.maxWidth = '2000px';
   els.livePreviewMessage.style.transform = 'scale(1)';
   els.livePreviewMessage.style.transformOrigin = 'center top';
 
   const containerWidth = els.livePreview.clientWidth;
   const containerHeight = els.livePreview.clientHeight;
-  const targetWidth = containerWidth * 0.75;
-  const targetHeight = containerHeight * 0.48;
+  const targetWidth = containerWidth * 0.85;
+  const targetHeight = containerHeight * 0.45;
   const naturalWidth = els.livePreviewMessage.scrollWidth;
   const naturalHeight = els.livePreviewMessage.scrollHeight;
 
   if (naturalWidth > 0 && naturalHeight > 0) {
     const widthRatio = targetWidth / naturalWidth;
     const heightRatio = targetHeight / naturalHeight;
-    const scale = Math.min(widthRatio, heightRatio);
+    let scale = Math.min(widthRatio, heightRatio);
+
+    // If scale gets too small, allow wrapping by reducing max-width
+    if (scale < 0.3 && containerWidth < 200) {
+      els.livePreviewMessage.style.maxWidth = '400px';
+      const newNaturalWidth = els.livePreviewMessage.scrollWidth;
+      const newNaturalHeight = els.livePreviewMessage.scrollHeight;
+      const newWidthRatio = targetWidth / newNaturalWidth;
+      const newHeightRatio = targetHeight / newNaturalHeight;
+      scale = Math.min(newWidthRatio, newHeightRatio);
+    }
+
     els.livePreviewMessage.style.transform = `scale(${scale})`;
   }
 }
