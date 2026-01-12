@@ -2017,11 +2017,18 @@ button.danger:active {
   color: #fff;
   font-size: 14px;
   box-sizing: border-box;
+  /* Truncate long text with ellipsis */
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .message-text-input:focus {
   border-color: #1f6feb;
   outline: none;
+  /* Show full text when editing */
+  overflow: visible;
+  text-overflow: clip;
 }
 
 .message-format-row {
