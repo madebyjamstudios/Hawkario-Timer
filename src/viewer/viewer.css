@@ -170,3 +170,16 @@ html, body {
 .message-overlay.uppercase {
   text-transform: uppercase;
 }
+
+/* Resolution display for debugging */
+.resolution-display {
+  position: fixed;
+  bottom: 8px;
+  right: 8px;
+  color: #666;
+  font-size: 11px;
+  font-family: monospace;
+  opacity: 0.7;
+  pointer-events: none;
+  z-index: 100;
+}

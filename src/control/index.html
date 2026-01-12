@@ -45,14 +45,36 @@
       </div>
     </div>
 
-    <!-- Progress Bar -->
+    <!-- Progress Bar (Interactive with seek functionality) -->
     <div id="timerProgressContainer" class="timer-progress-container">
+      <!-- Current clock time (useful for TOD mode) -->
+      <span id="currentTimeDisplay" class="current-time-display">--:--:--</span>
+
+      <!-- Elapsed time -->
       <span id="elapsedTime" class="progress-time">00:00</span>
-      <div class="progress-track">
+
+      <!-- Interactive track -->
+      <div class="progress-track" id="progressTrack">
+        <!-- Warning zone backgrounds (yellow/orange) -->
+        <div id="warningZones" class="warning-zones"></div>
+
+        <!-- Time segment dividers -->
         <div id="progressSegments" class="progress-segments"></div>
+
+        <!-- Elapsed fill -->
         <div id="progressFill" class="progress-fill"></div>
+
+        <!-- Current position indicator (blue dot) -->
         <div id="progressIndicator" class="progress-indicator"></div>
+
+        <!-- Hover seek line (follows mouse) -->
+        <div id="seekLine" class="seek-line hidden"></div>
+
+        <!-- Hover time tooltip -->
+        <div id="seekTooltip" class="seek-tooltip hidden">00:00</div>
       </div>
+
+      <!-- Remaining time -->
       <span id="remainingTime" class="progress-time">00:00</span>
     </div>
 

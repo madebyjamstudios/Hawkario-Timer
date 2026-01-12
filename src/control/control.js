@@ -64,6 +64,11 @@ const els = {
   progressFill: document.getElementById('progressFill'),
   progressSegments: document.getElementById('progressSegments'),
   progressIndicator: document.getElementById('progressIndicator'),
+  progressTrack: document.getElementById('progressTrack'),
+  seekLine: document.getElementById('seekLine'),
+  seekTooltip: document.getElementById('seekTooltip'),
+  warningZones: document.getElementById('warningZones'),
+  currentTimeDisplay: document.getElementById('currentTimeDisplay'),
   importFile: document.getElementById('importFile'),
   addTimer: document.getElementById('addTimer'),
 
@@ -1566,6 +1571,17 @@ function getLinkedTimerChain() {
 // Track last rendered segment count to avoid unnecessary DOM updates
 let lastSegmentCount = 0;
 
+// Cached total duration for seek calculations
+let cachedTotalMs = 0;
+
+// Last rendered warning thresholds (to avoid unnecessary re-renders)
+let lastWarnYellowSec = null;
+let lastWarnOrangeSec = null;
+let lastDurationSec = null;
+
+// Last clock update time (throttle to once per second)
+let lastClockUpdate = 0;
+
 /**
  * Update the progress bar with elapsed/remaining time
  * Shows segments for linked timers and positions indicator accordingly
@@ -1579,11 +1595,16 @@ function updateProgressBar(currentElapsedMs, currentTotalMs) {
     els.progressIndicator.style.left = '0%';
     els.elapsedTime.textContent = '00:00';
     els.remainingTime.textContent = '00:00';
-    // Clear segments
+    cachedTotalMs = 0;
+    // Clear segments and warning zones
     if (lastSegmentCount !== 0) {
       els.progressSegments.innerHTML = '';
       lastSegmentCount = 0;
     }
+    els.warningZones.innerHTML = '';
+    lastWarnYellowSec = null;
+    lastWarnOrangeSec = null;
+    lastDurationSec = null;
     return;
   }
 
@@ -1591,6 +1612,7 @@ function updateProgressBar(currentElapsedMs, currentTotalMs) {
 
   // If no chain or single timer, use simple progress
   if (chain.length <= 1) {
+    cachedTotalMs = currentTotalMs;
     const remainingMs = Math.max(0, currentTotalMs - currentElapsedMs);
     const progressPercent = Math.min(100, (currentElapsedMs / currentTotalMs) * 100);
 
@@ -1599,16 +1621,20 @@ function updateProgressBar(currentElapsedMs, currentTotalMs) {
     els.elapsedTime.textContent = formatTimePlain(currentElapsedMs, 'MM:SS');
     els.remainingTime.textContent = formatTimePlain(remainingMs, 'MM:SS');
 
-    // Clear segments for single timer
-    if (lastSegmentCount !== 0) {
-      els.progressSegments.innerHTML = '';
-      lastSegmentCount = 0;
-    }
+    // Clear linked timer segment dividers for single timer, but keep smart segments
+    const dividers = els.progressSegments.querySelectorAll('.segment-divider');
+    dividers.forEach(d => d.remove());
+    lastSegmentCount = 0;
+
+    // Render warning zones and smart segments
+    renderWarningZones();
+    renderSmartSegments();
     return;
   }
 
   // Calculate total duration of chain
   const totalChainMs = chain.reduce((sum, t) => sum + t.durationMs, 0);
+  cachedTotalMs = totalChainMs;
 
   // Calculate cumulative elapsed time
   // Sum up all completed timers before active + current timer's elapsed
@@ -1635,9 +1661,11 @@ function updateProgressBar(currentElapsedMs, currentTotalMs) {
   els.elapsedTime.textContent = formatTimePlain(cumulativeElapsedMs, 'MM:SS');
   els.remainingTime.textContent = formatTimePlain(totalRemainingMs, 'MM:SS');
 
-  // Render segment dividers (only if count changed)
+  // Render segment dividers for linked timers (only if count changed)
   if (chain.length !== lastSegmentCount) {
-    els.progressSegments.innerHTML = '';
+    // Clear only dividers, keep segment markers
+    const dividers = els.progressSegments.querySelectorAll('.segment-divider');
+    dividers.forEach(d => d.remove());
 
     // Add dividers between segments (not at 0% or 100%)
     let cumulativePercent = 0;
@@ -1652,6 +1680,10 @@ function updateProgressBar(currentElapsedMs, currentTotalMs) {
 
     lastSegmentCount = chain.length;
   }
+
+  // Render warning zones and smart segments
+  renderWarningZones();
+  renderSmartSegments();
 }
 
 /**
@@ -1681,6 +1713,265 @@ function updatePlayingRowState() {
     row.classList.toggle('selected', isSelected);
     row.classList.toggle('playing', isPlaying);
   });
+}
+
+// ============ Progress Bar Interactivity ============
+
+/**
+ * Initialize progress bar mouse interaction for seek functionality
+ */
+function initProgressBarInteractivity() {
+  const track = els.progressTrack;
+  if (!track) return;
+
+  track.addEventListener('mouseenter', () => {
+    els.seekLine.classList.remove('hidden');
+    els.seekTooltip.classList.remove('hidden');
+  });
+
+  track.addEventListener('mouseleave', () => {
+    els.seekLine.classList.add('hidden');
+    els.seekTooltip.classList.add('hidden');
+  });
+
+  track.addEventListener('mousemove', (e) => {
+    const rect = track.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const percent = Math.max(0, Math.min(100, (x / rect.width) * 100));
+
+    // Position seek line and tooltip
+    els.seekLine.style.left = percent + '%';
+    els.seekTooltip.style.left = percent + '%';
+
+    // Calculate time at position
+    if (cachedTotalMs > 0) {
+      const timeAtPosition = (percent / 100) * cachedTotalMs;
+      els.seekTooltip.textContent = formatTimePlain(timeAtPosition, 'MM:SS');
+    } else {
+      els.seekTooltip.textContent = '--:--';
+    }
+  });
+
+  track.addEventListener('click', (e) => {
+    // Don't seek if no timer is active or in TOD mode
+    if (activePresetIndex === null) return;
+    if (activeTimerConfig.mode === 'tod') return;
+    if (cachedTotalMs <= 0) return;
+
+    const rect = track.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const percent = Math.max(0, Math.min(100, (x / rect.width) * 100));
+
+    // Calculate target elapsed time
+    const targetElapsedMs = (percent / 100) * cachedTotalMs;
+
+    // Seek to position
+    seekToTime(targetElapsedMs);
+  });
+}
+
+/**
+ * Seek timer to a specific elapsed time
+ * @param {number} targetElapsedMs - Target elapsed time in milliseconds
+ */
+function seekToTime(targetElapsedMs) {
+  const chain = getLinkedTimerChain();
+
+  // Handle linked timer chains
+  if (chain.length > 1) {
+    // Find which timer in the chain the target time falls into
+    let cumulativeMs = 0;
+    for (let i = 0; i < chain.length; i++) {
+      const timerEnd = cumulativeMs + chain[i].durationMs;
+      if (targetElapsedMs < timerEnd || i === chain.length - 1) {
+        // Target is in this timer
+        const timerElapsed = targetElapsedMs - cumulativeMs;
+
+        // Switch to this timer if different
+        if (chain[i].index !== activePresetIndex) {
+          activePresetIndex = chain[i].index;
+          setActiveTimerConfig(chain[i].preset.config);
+          applyConfig(chain[i].preset.config);
+          renderPresetList();
+        }
+
+        // Set elapsed time within this timer
+        const now = Date.now();
+        if (isRunning) {
+          timerState.startedAt = now - timerElapsed;
+        } else {
+          timerState.pausedAcc = timerElapsed;
+          timerState.startedAt = now;
+        }
+
+        // Clear ended/overtime state if seeking back
+        const durationMs = chain[i].durationMs;
+        if (timerElapsed < durationMs) {
+          timerState.ended = false;
+          timerState.overtime = false;
+          timerState.overtimeStartedAt = null;
+        }
+
+        break;
+      }
+      cumulativeMs = timerEnd;
+    }
+  } else {
+    // Single timer - simple seek
+    const durationMs = activeTimerConfig.durationSec * 1000;
+    const clampedElapsed = Math.max(0, Math.min(targetElapsedMs, durationMs));
+
+    const now = Date.now();
+    if (isRunning) {
+      timerState.startedAt = now - clampedElapsed;
+    } else {
+      timerState.pausedAcc = clampedElapsed;
+      if (timerState.startedAt === null) {
+        timerState.startedAt = now;
+      }
+    }
+
+    // Clear ended/overtime state if seeking back
+    if (clampedElapsed < durationMs) {
+      timerState.ended = false;
+      timerState.overtime = false;
+      timerState.overtimeStartedAt = null;
+    }
+  }
+
+  broadcastTimerState();
+}
+
+/**
+ * Render warning zone backgrounds on the progress bar
+ */
+function renderWarningZones() {
+  if (!activeTimerConfig || !els.warningZones) return;
+
+  const durationSec = activeTimerConfig.durationSec;
+  const yellowSec = activeTimerConfig.warnYellowSec ?? 60;
+  const orangeSec = activeTimerConfig.warnOrangeSec ?? 15;
+
+  // Skip if nothing changed
+  if (durationSec === lastDurationSec &&
+      yellowSec === lastWarnYellowSec &&
+      orangeSec === lastWarnOrangeSec) {
+    return;
+  }
+
+  lastDurationSec = durationSec;
+  lastWarnYellowSec = yellowSec;
+  lastWarnOrangeSec = orangeSec;
+
+  els.warningZones.innerHTML = '';
+
+  // Don't show warning zones for TOD mode
+  if (activeTimerConfig.mode === 'tod') return;
+  if (durationSec <= 0) return;
+
+  // Yellow zone: from (duration - yellow) to (duration - orange)
+  const yellowStartPercent = Math.max(0, ((durationSec - yellowSec) / durationSec) * 100);
+  const orangeStartPercent = Math.max(0, ((durationSec - orangeSec) / durationSec) * 100);
+
+  // Yellow zone (between yellow and orange thresholds)
+  if (yellowSec > orangeSec && yellowStartPercent < orangeStartPercent) {
+    const yellowZone = document.createElement('div');
+    yellowZone.className = 'warning-zone yellow';
+    yellowZone.style.left = yellowStartPercent + '%';
+    yellowZone.style.width = (orangeStartPercent - yellowStartPercent) + '%';
+    els.warningZones.appendChild(yellowZone);
+  }
+
+  // Orange zone (from orange threshold to end)
+  if (orangeSec > 0 && orangeStartPercent < 100) {
+    const orangeZone = document.createElement('div');
+    orangeZone.className = 'warning-zone orange';
+    orangeZone.style.left = orangeStartPercent + '%';
+    orangeZone.style.right = '0';
+    els.warningZones.appendChild(orangeZone);
+  }
+}
+
+/**
+ * Render smart segment markers based on timer duration
+ */
+function renderSmartSegments() {
+  if (!activeTimerConfig || !els.progressSegments) return;
+
+  // For linked chains, skip smart segments (use dividers only)
+  const chain = getLinkedTimerChain();
+  if (chain.length > 1) {
+    // Clear only segment markers, keep dividers
+    const markers = els.progressSegments.querySelectorAll('.segment-marker');
+    markers.forEach(m => m.remove());
+    return;
+  }
+
+  const durationSec = activeTimerConfig.durationSec;
+
+  // Skip if duration hasn't changed
+  if (durationSec === lastDurationSec) return;
+
+  // Clear existing markers
+  const markers = els.progressSegments.querySelectorAll('.segment-marker');
+  markers.forEach(m => m.remove());
+
+  if (durationSec <= 0 || activeTimerConfig.mode === 'tod') return;
+
+  // Determine smart segment intervals based on duration
+  let intervalSec;
+  if (durationSec >= 3600) {
+    // 1+ hour: mark every 15 minutes
+    intervalSec = 900;
+  } else if (durationSec >= 1800) {
+    // 30-60 min: mark every 10 minutes
+    intervalSec = 600;
+  } else if (durationSec >= 600) {
+    // 10-30 min: mark every 5 minutes
+    intervalSec = 300;
+  } else if (durationSec >= 120) {
+    // 2-10 min: mark every minute
+    intervalSec = 60;
+  } else {
+    // Under 2 min: mark every 30 seconds
+    intervalSec = 30;
+  }
+
+  // Create segment markers
+  for (let t = intervalSec; t < durationSec; t += intervalSec) {
+    const percent = (t / durationSec) * 100;
+
+    const marker = document.createElement('div');
+    marker.className = 'segment-marker';
+    marker.style.left = percent + '%';
+
+    // Format time label
+    const minutes = Math.floor(t / 60);
+    const seconds = t % 60;
+    if (seconds === 0) {
+      marker.dataset.time = minutes + ':00';
+    } else {
+      marker.dataset.time = minutes + ':' + String(seconds).padStart(2, '0');
+    }
+
+    els.progressSegments.appendChild(marker);
+  }
+}
+
+/**
+ * Update the current clock time display
+ */
+function updateCurrentTimeDisplay() {
+  if (!els.currentTimeDisplay) return;
+
+  const now = new Date();
+  const h = now.getHours();
+  const m = now.getMinutes();
+  const s = now.getSeconds();
+  els.currentTimeDisplay.textContent =
+    String(h).padStart(2, '0') + ':' +
+    String(m).padStart(2, '0') + ':' +
+    String(s).padStart(2, '0');
 }
 
 // ============ Modal Management ============
@@ -2124,6 +2415,12 @@ function renderLivePreview() {
     els.livePreviewTimer.style.visibility = 'hidden';
     broadcastTimerState();
     broadcastDisplayState({ visible: false });
+    // Update clock display even when hidden
+    const nowHidden = Date.now();
+    if (nowHidden - lastClockUpdate >= 1000) {
+      updateCurrentTimeDisplay();
+      lastClockUpdate = nowHidden;
+    }
     requestAnimationFrame(renderLivePreview);
     return;
   } else {
@@ -2191,6 +2488,12 @@ function renderLivePreview() {
       opacity: FIXED_STYLE.opacity,
       blackout: isBlackedOut
     });
+    // Update clock display in TOD mode
+    const nowTod = Date.now();
+    if (nowTod - lastClockUpdate >= 1000) {
+      updateCurrentTimeDisplay();
+      lastClockUpdate = nowTod;
+    }
     requestAnimationFrame(renderLivePreview);
     return;
   }
@@ -2366,6 +2669,13 @@ function renderLivePreview() {
     elapsed: els.elapsedTime?.textContent || '',
     remaining: els.remainingTime?.textContent || ''
   });
+
+  // Update clock display (throttled to once per second)
+  const now = Date.now();
+  if (now - lastClockUpdate >= 1000) {
+    updateCurrentTimeDisplay();
+    lastClockUpdate = now;
+  }
 
   requestAnimationFrame(renderLivePreview);
 }
@@ -3979,6 +4289,9 @@ function init() {
   renderPresetList();
   renderMessageList();
   restoreActiveMessage(); // Restore visible message after hot reload
+
+  // Initialize progress bar click-to-seek functionality
+  initProgressBarInteractivity();
 
   // Start live preview render loop
   renderLivePreview();

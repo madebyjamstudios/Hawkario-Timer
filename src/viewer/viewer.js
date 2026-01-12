@@ -15,6 +15,16 @@ const timerEl = document.getElementById('timer');
 const stageEl = document.querySelector('.stage');
 const fsHintEl = document.getElementById('fsHint');
 const messageOverlayEl = document.getElementById('messageOverlay');
+const resolutionEl = document.getElementById('resolutionDisplay');
+
+// Update resolution display
+function updateResolution() {
+  if (resolutionEl) {
+    resolutionEl.textContent = `${window.innerWidth} x ${window.innerHeight}`;
+  }
+}
+window.addEventListener('resize', updateResolution);
+updateResolution();
 
 // Canonical timer state from control window
 let canonicalState = null;
