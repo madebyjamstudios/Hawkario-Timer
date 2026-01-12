@@ -13,9 +13,14 @@ import { autoFitMessage, applyMessageStyle } from '../shared/renderMessage.js';
 // DOM Elements
 const timerEl = document.getElementById('timer');
 const stageEl = document.querySelector('.stage');
+const virtualCanvasEl = document.getElementById('virtualCanvas');
 const fsHintEl = document.getElementById('fsHint');
 const messageOverlayEl = document.getElementById('messageOverlay');
 const resolutionEl = document.getElementById('resolutionDisplay');
+
+// Virtual canvas reference dimensions
+const REF_WIDTH = 1920;
+const REF_HEIGHT = 1080;
 
 // Update resolution display
 function updateResolution() {
@@ -23,8 +28,22 @@ function updateResolution() {
     resolutionEl.textContent = `${window.innerWidth} x ${window.innerHeight}`;
   }
 }
-window.addEventListener('resize', updateResolution);
+
+/**
+ * Update virtual canvas scale based on window size
+ * This is the ONLY thing that changes on resize - no font recalculation
+ */
+function updateCanvasScale() {
+  const scale = Math.min(window.innerWidth / REF_WIDTH, window.innerHeight / REF_HEIGHT);
+  virtualCanvasEl.style.transform = `scale(${scale})`;
+}
+
+window.addEventListener('resize', () => {
+  updateResolution();
+  updateCanvasScale();
+});
 updateResolution();
+updateCanvasScale();
 
 // Canonical timer state from control window
 let canonicalState = null;
@@ -80,30 +99,104 @@ function toggleBlackout() {
 // Current message state
 let currentMessage = null;
 
+// Track last rendered text to only refit when content changes
+let lastTimerText = '';
+let lastMessageText = '';
+
+/**
+ * Fit timer text to reference canvas size
+ * Only called when timer content changes, NOT on resize
+ */
+function fitTimerContent() {
+  // Target: 90% of reference width, 85% height (or 45% when message visible)
+  const targetWidth = REF_WIDTH * 0.9;
+  const targetHeight = REF_HEIGHT * (currentMessage ? 0.45 : 0.85);
+
+  // Reset to 100px base to measure natural size
+  timerEl.style.fontSize = '100px';
+
+  const naturalWidth = timerEl.scrollWidth;
+  const naturalHeight = timerEl.scrollHeight;
+
+  if (naturalWidth > 0 && naturalHeight > 0) {
+    const widthRatio = targetWidth / naturalWidth;
+    const heightRatio = targetHeight / naturalHeight;
+    const ratio = Math.min(widthRatio, heightRatio);
+    const newFontSize = Math.max(10, 100 * ratio);
+    timerEl.style.fontSize = newFontSize + 'px';
+  }
+}
+
+/**
+ * Fit message text to reference canvas size
+ * Only called when message content changes, NOT on resize
+ */
+function fitMessageContent() {
+  if (!currentMessage || !currentMessage.visible) return;
+
+  const REF_MAX_WIDTH = 1200; // Fixed max-width in reference pixels
+
+  // Target: 90% of reference width, 45% height (bottom half of 50/50 split)
+  const targetWidth = REF_WIDTH * 0.9;
+  const targetHeight = REF_HEIGHT * 0.45;
+
+  // Measure at reference size
+  messageOverlayEl.style.fontSize = '100px';
+  messageOverlayEl.style.maxWidth = REF_MAX_WIDTH + 'px';
+
+  const naturalWidth = messageOverlayEl.scrollWidth;
+  const naturalHeight = messageOverlayEl.scrollHeight;
+
+  if (naturalWidth > 0 && naturalHeight > 0) {
+    const widthRatio = targetWidth / naturalWidth;
+    const heightRatio = targetHeight / naturalHeight;
+    const ratio = Math.min(widthRatio, heightRatio);
+    const newFontSize = Math.max(8, 100 * ratio);
+    messageOverlayEl.style.fontSize = newFontSize + 'px';
+    messageOverlayEl.style.maxWidth = (REF_MAX_WIDTH * ratio) + 'px';
+  }
+}
+
 /**
  * Handle message updates from control window
  */
 function handleMessageUpdate(message) {
+  const wasVisible = currentMessage?.visible;
+
   if (!message || !message.visible) {
     // Hide message and restore full layout
     currentMessage = null;
+    lastMessageText = '';
     messageOverlayEl.classList.remove('visible', 'bold', 'italic', 'uppercase');
-    stageEl.classList.remove('with-message');
+    virtualCanvasEl.classList.remove('with-message');
+
+    // Refit timer since it now has full height
+    if (wasVisible) {
+      fitTimerContent();
+    }
     return;
   }
 
   // Store message state
   currentMessage = message;
 
-  // Apply message content and styling using shared module
+  // Apply message content and styling
   applyMessageStyle(messageOverlayEl, message);
   messageOverlayEl.classList.add('visible');
 
-  // Enable split layout
-  stageEl.classList.add('with-message');
+  // Enable split layout on virtual canvas
+  virtualCanvasEl.classList.add('with-message');
 
-  // Auto-fit the message using shared module
-  autoFitMessage(messageOverlayEl, stageEl);
+  // Fit message content (only when text changes)
+  if (message.text !== lastMessageText) {
+    lastMessageText = message.text;
+    fitMessageContent();
+  }
+
+  // Refit timer if message just became visible (area changed)
+  if (!wasVisible) {
+    fitTimerContent();
+  }
 }
 
 /**
@@ -139,13 +232,14 @@ function applyStyle(style) {
   timerEl.style.textAlign = FIXED_STYLE.align;
 
   // Always centered
-  stageEl.style.placeItems = 'center';
+  virtualCanvasEl.style.placeItems = 'center';
   timerEl.style.justifySelf = 'center';
 
   // Background
   const bg = style.background || style.bgColor || '#000000';
   document.body.style.background = bg;
   stageEl.style.background = bg;
+  virtualCanvasEl.style.background = bg;
 }
 
 /**
@@ -188,33 +282,6 @@ function handleDisplayUpdate(newState) {
   // Apply style if provided (legacy format)
   if (newState.style) {
     applyStyle(newState.style);
-  }
-}
-
-/**
- * Auto-fit timer text to fill viewport (90% width, 85% height)
- */
-function autoFitTimer() {
-  timerEl.style.fontSize = '100px';
-  timerEl.style.transform = 'scale(1)';
-
-  const containerWidth = window.innerWidth;
-  const containerHeight = window.innerHeight;
-  const targetWidth = containerWidth * 0.9;
-  // Use 45% height when message is visible (50/50 split), otherwise 85%
-  const targetHeight = containerHeight * (currentMessage ? 0.45 : 0.85);
-  const naturalWidth = timerEl.scrollWidth;
-  const naturalHeight = timerEl.scrollHeight;
-
-  if (naturalWidth > 0 && containerWidth > 0) {
-    // Calculate ratios for both width and height constraints
-    const widthRatio = targetWidth / naturalWidth;
-    const heightRatio = targetHeight / naturalHeight;
-
-    // Use the smaller ratio to ensure it fits both constraints
-    const ratio = Math.min(widthRatio, heightRatio);
-    const newFontSize = Math.max(10, 100 * ratio);
-    timerEl.style.fontSize = newFontSize + 'px';
   }
 }
 
@@ -271,10 +338,10 @@ function render() {
   // Apply display text (use innerHTML for ToD line breaks)
   timerEl.innerHTML = text;
 
-  // Auto-fit to viewport
-  autoFitTimer();
-  if (currentMessage) {
-    autoFitMessage(messageOverlayEl, stageEl);
+  // Only refit timer when text changes (not on every frame)
+  if (text !== lastTimerText) {
+    lastTimerText = text;
+    fitTimerContent();
   }
 
   // Apply color and stroke (skip during flash animation)

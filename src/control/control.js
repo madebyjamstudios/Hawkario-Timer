@@ -42,6 +42,7 @@ const els = {
   previewWrapper: document.getElementById('previewWrapper'),
   livePreviewContainer: document.querySelector('.live-preview-wrapper'),
   livePreview: document.getElementById('livePreview'),
+  livePreviewCanvas: document.getElementById('livePreviewCanvas'),
   livePreviewTimer: document.getElementById('livePreviewTimer'),
   livePreviewMessage: document.getElementById('livePreviewMessage'),
 
@@ -1313,31 +1314,39 @@ function updateMessageField(messageId, field, value) {
 
 /**
  * Update the live preview message display
- * Uses shared module for identical rendering with output
+ * Uses virtual canvas for identical rendering with output
  */
 function updateLivePreviewMessage(message) {
-  if (!els.livePreviewMessage) return;
+  if (!els.livePreviewMessage || !els.livePreviewCanvas) return;
+
+  const wasVisible = els.livePreviewCanvas.classList.contains('with-message');
 
   if (!message || !message.visible) {
-    els.livePreview.classList.remove('with-message');
+    els.livePreviewCanvas.classList.remove('with-message');
     els.livePreviewMessage.classList.remove('bold', 'italic', 'uppercase');
+    lastPreviewMessageText = '';
+
+    // Refit timer since it now has full height
+    if (wasVisible) {
+      fitPreviewTimer();
+    }
     return;
   }
 
   // Use shared module for styling (identical to output)
   applyMessageStyle(els.livePreviewMessage, message);
-  els.livePreview.classList.add('with-message');
+  els.livePreviewCanvas.classList.add('with-message');
 
-  // Auto-fit using shared module (identical to output)
-  autoFitLivePreviewMessage();
-}
+  // Fit message content (only when text changes)
+  if (message.text !== lastPreviewMessageText) {
+    lastPreviewMessageText = message.text;
+    fitPreviewMessage();
+  }
 
-/**
- * Auto-fit live preview message - wrapper for shared function
- */
-function autoFitLivePreviewMessage() {
-  if (!els.livePreviewMessage || !els.livePreview.classList.contains('with-message')) return;
-  autoFitMessage(els.livePreviewMessage, els.livePreview);
+  // Refit timer if message just became visible (area changed)
+  if (!wasVisible) {
+    fitPreviewTimer();
+  }
 }
 
 function toggleMessageVisibility(messageId) {
@@ -2142,6 +2151,87 @@ let isResizing = false;
 let startY = 0;
 let startWidth = 0;
 
+// Virtual canvas reference dimensions (same as viewer)
+const REF_WIDTH = 1920;
+const REF_HEIGHT = 1080;
+
+// Track last rendered text to only refit when content changes
+let lastPreviewTimerText = '';
+let lastPreviewMessageText = '';
+
+/**
+ * Update preview virtual canvas scale based on container size
+ * This is the ONLY thing that changes on resize - no font recalculation
+ */
+function updatePreviewScale() {
+  if (!els.livePreviewCanvas || !els.livePreview) return;
+  const containerWidth = els.livePreview.offsetWidth;
+  const containerHeight = els.livePreview.offsetHeight;
+  if (containerWidth <= 0 || containerHeight <= 0) return;
+
+  const scale = Math.min(containerWidth / REF_WIDTH, containerHeight / REF_HEIGHT);
+  els.livePreviewCanvas.style.transform = `scale(${scale})`;
+}
+
+/**
+ * Fit preview timer text to reference canvas size
+ * Only called when timer content changes, NOT on resize
+ */
+function fitPreviewTimer() {
+  if (!els.livePreviewTimer) return;
+
+  // Check if message is visible to determine available height
+  const hasMessage = els.livePreviewCanvas?.classList.contains('with-message');
+
+  // Target: 90% of reference width, 85% height (or 45% when message visible)
+  const targetWidth = REF_WIDTH * 0.9;
+  const targetHeight = REF_HEIGHT * (hasMessage ? 0.45 : 0.85);
+
+  // Reset to 100px base to measure natural size
+  els.livePreviewTimer.style.fontSize = '100px';
+
+  const naturalWidth = els.livePreviewTimer.scrollWidth;
+  const naturalHeight = els.livePreviewTimer.scrollHeight;
+
+  if (naturalWidth > 0 && naturalHeight > 0) {
+    const widthRatio = targetWidth / naturalWidth;
+    const heightRatio = targetHeight / naturalHeight;
+    const ratio = Math.min(widthRatio, heightRatio);
+    const newFontSize = Math.max(10, 100 * ratio);
+    els.livePreviewTimer.style.fontSize = newFontSize + 'px';
+  }
+}
+
+/**
+ * Fit preview message text to reference canvas size
+ * Only called when message content changes, NOT on resize
+ */
+function fitPreviewMessage() {
+  if (!els.livePreviewMessage) return;
+
+  const REF_MAX_WIDTH = 1200; // Fixed max-width in reference pixels
+
+  // Target: 90% of reference width, 45% height (bottom half of 50/50 split)
+  const targetWidth = REF_WIDTH * 0.9;
+  const targetHeight = REF_HEIGHT * 0.45;
+
+  // Measure at reference size
+  els.livePreviewMessage.style.fontSize = '100px';
+  els.livePreviewMessage.style.maxWidth = REF_MAX_WIDTH + 'px';
+
+  const naturalWidth = els.livePreviewMessage.scrollWidth;
+  const naturalHeight = els.livePreviewMessage.scrollHeight;
+
+  if (naturalWidth > 0 && naturalHeight > 0) {
+    const widthRatio = targetWidth / naturalWidth;
+    const heightRatio = targetHeight / naturalHeight;
+    const ratio = Math.min(widthRatio, heightRatio);
+    const newFontSize = Math.max(8, 100 * ratio);
+    els.livePreviewMessage.style.fontSize = newFontSize + 'px';
+    els.livePreviewMessage.style.maxWidth = (REF_MAX_WIDTH * ratio) + 'px';
+  }
+}
+
 function setupPreviewResize() {
   els.previewResizeHandle.addEventListener('mousedown', startResize);
   document.addEventListener('mousemove', doResize);
@@ -2168,8 +2258,8 @@ function doResize(e) {
   const newWidth = Math.max(150, Math.min(containerWidth, startWidth + widthDelta));
   els.previewWrapper.style.width = newWidth + 'px';
 
-  // Update preview text scaling in real-time
-  autoFitText(els.livePreviewTimer, els.livePreview, getAutoFitPercent());
+  // Update virtual canvas scale (no font recalculation)
+  updatePreviewScale();
 }
 
 function stopResize() {
@@ -2194,8 +2284,11 @@ function restorePreviewWidth() {
       els.previewWrapper.style.width = containerWidth + 'px';
     }
   }
-  // Apply scaling after restoring width
-  requestAnimationFrame(() => autoFitText(els.livePreviewTimer, els.livePreview, getAutoFitPercent()));
+  // Apply virtual canvas scale and fit timer content
+  requestAnimationFrame(() => {
+    updatePreviewScale();
+    fitPreviewTimer();
+  });
 }
 
 /**
@@ -2300,6 +2393,9 @@ function applyLivePreviewStyle() {
   const shadowColor = els.shadowColor.value || '#000000';
 
   els.livePreview.style.background = els.bgColor.value;
+  if (els.livePreviewCanvas) {
+    els.livePreviewCanvas.style.background = els.bgColor.value;
+  }
   els.livePreviewTimer.style.fontFamily = FIXED_STYLE.fontFamily;
   els.livePreviewTimer.style.fontWeight = FIXED_STYLE.fontWeight;
   els.livePreviewTimer.style.letterSpacing = FIXED_STYLE.letterSpacing + 'em';
@@ -2318,7 +2414,7 @@ function applyLivePreviewStyle() {
     );
   }
 
-  // Font size is handled by autoFitText in renderLivePreview
+  // Font size is handled by fitPreviewTimer (only when text changes)
 }
 
 /**
@@ -2425,13 +2521,17 @@ function renderLivePreview() {
   if (mode === 'tod') {
     displayText = formatTimeOfDay(todFormat);
     els.livePreviewTimer.innerHTML = displayText;
-    autoFitText(els.livePreviewTimer, els.livePreview, 0.95);
+    // Only refit when text changes
+    if (displayText !== lastPreviewTimerText) {
+      lastPreviewTimerText = displayText;
+      fitPreviewTimer();
+    }
     // Skip color changes during flash animation
     if (!flashAnimator?.isFlashing) {
       els.livePreviewTimer.style.color = fontColor;
       els.livePreviewTimer.style.opacity = FIXED_STYLE.opacity;
     }
-    els.livePreview.classList.remove('warning');
+    els.livePreviewCanvas.classList.remove('warning');
 
     // Update row progress bar for ToD mode (internal timer still runs)
     if (activePresetIndex !== null && isRunning && timerState.startedAt) {
@@ -2576,11 +2676,11 @@ function renderLivePreview() {
 
   // Update display (use innerHTML for ToD line breaks)
   els.livePreviewTimer.innerHTML = displayText;
-  // Timer-only modes get more space (0.95), ToD+timer uses 0.9
-  const fitPercent = showToD ? 0.9 : 0.95;
-  autoFitText(els.livePreviewTimer, els.livePreview, fitPercent);
-  // Also auto-fit message if visible
-  autoFitLivePreviewMessage();
+  // Only refit when text changes (not on every frame)
+  if (displayText !== lastPreviewTimerText) {
+    lastPreviewTimerText = displayText;
+    fitPreviewTimer();
+  }
 
   // Update progress bar
   if (isCountdown) {

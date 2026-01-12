@@ -18,9 +18,22 @@ html, body {
 .stage {
   position: fixed;
   inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  overflow: hidden;
+}
+
+/* ============ Virtual Canvas ============ */
+/* Fixed reference size - scaled via CSS transform on resize */
+.virtual-canvas {
+  width: 1920px;
+  height: 1080px;
   display: grid;
   place-items: center;
-  background: transparent;
+  transform-origin: center center;
+  /* Scale applied via JS */
 }
 
 .timer {
@@ -28,8 +41,6 @@ html, body {
   user-select: none;
   -webkit-user-select: none;
   white-space: nowrap;
-  max-width: 90vw;
-  max-height: 90vh;
   overflow: visible;
   /* Padding to prevent stroke from being clipped at edges */
   padding: 0.1em 0.15em;
@@ -107,25 +118,24 @@ html, body {
 
 /* ============ Split Layout (Timer + Message) ============ */
 
-/* 50/50 split (matches preview) */
-.stage.with-message {
+/* 50/50 split when message is visible */
+.virtual-canvas.with-message {
   grid-template-rows: 50% 50%;
   grid-template-columns: 100%;
 }
 
-.stage.with-message .timer {
+.virtual-canvas.with-message .timer {
   grid-row: 1;
   grid-column: 1;
-  align-self: end;
+  align-self: center;  /* Centered vertically in row 1 */
   justify-self: center;
   text-align: center;
-  max-height: 45vh;
 }
 
-.stage.with-message .message-overlay {
+.virtual-canvas.with-message .message-overlay {
   grid-row: 2;
   grid-column: 1;
-  align-self: start;
+  align-self: start;  /* TOP-aligned in row 2 */
   justify-self: center;
   text-align: center;
 }
