@@ -1078,12 +1078,18 @@ function renderMessageList() {
     const leftCol = document.createElement('div');
     leftCol.className = 'message-left-col';
 
-    // Drag handle
+    // Drag handle (number shows by default, drag icon on hover)
     const dragHandle = document.createElement('div');
     dragHandle.className = 'message-drag-handle';
     dragHandle.innerHTML = `
       <span class="message-number">${idx + 1}</span>
-      <span class="message-drag-icon"><span></span></span>
+      <span class="message-drag-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="9" cy="6" r="2"/><circle cx="15" cy="6" r="2"/>
+          <circle cx="9" cy="12" r="2"/><circle cx="15" cy="12" r="2"/>
+          <circle cx="9" cy="18" r="2"/><circle cx="15" cy="18" r="2"/>
+        </svg>
+      </span>
     `;
 
     const deleteBtn = document.createElement('button');
