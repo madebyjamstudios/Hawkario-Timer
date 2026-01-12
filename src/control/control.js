@@ -3432,15 +3432,16 @@ let profileDropdown = null;
 // Profile drag state (transform-based like timers)
 let profileDragState = {
   isDragging: false,
-  justDragged: false, // Prevents click from firing right after drag
+  dragActivated: false, // True only after mouse moves 5px+
   fromIndex: null,
   currentSlot: null,
   draggedEl: null,
   items: [],        // All profile item elements
+  listSection: null, // Reference to list section for has-drag class
   slotHeight: 0,    // Height of each profile item
   baseY: 0,         // Y position of first item
-  startY: 0,
-  offsetY: 0        // Mouse offset within dragged item
+  startX: 0,
+  startY: 0
 };
 
 // Store close handler reference for cleanup
@@ -3502,9 +3503,9 @@ function showProfileDropdown() {
       </svg>
     `;
 
-    // Click to switch profile (but not if dragging or just finished dragging)
+    // Click to switch profile (but not if drag is active)
     item.addEventListener('click', (e) => {
-      if (profileDragState.isDragging || profileDragState.justDragged) return;
+      if (profileDragState.isDragging) return;
       switchProfile(profile.id);
       hideProfileDropdown();
     });
@@ -3515,26 +3516,15 @@ function showProfileDropdown() {
       e.preventDefault();
       e.stopPropagation();
 
-      // Capture all items and their dimensions
-      const allItems = Array.from(listSection.querySelectorAll('.profile-item'));
-      const itemRect = item.getBoundingClientRect();
-      const firstRect = allItems[0].getBoundingClientRect();
-
+      // Just record start position - don't activate until mouse moves 5px
       profileDragState.isDragging = true;
+      profileDragState.dragActivated = false;
       profileDragState.fromIndex = idx;
       profileDragState.currentSlot = idx;
       profileDragState.draggedEl = item;
-      profileDragState.items = allItems;
-      profileDragState.slotHeight = itemRect.height;
-      profileDragState.baseY = firstRect.top;
+      profileDragState.listSection = listSection;
+      profileDragState.startX = e.clientX;
       profileDragState.startY = e.clientY;
-      profileDragState.offsetY = e.clientY - itemRect.top;
-
-      item.classList.add('dragging');
-      listSection.classList.add('has-drag');
-
-      // Add transition class to all items for smooth movement
-      allItems.forEach(el => el.style.transition = 'transform 0.15s ease');
     });
 
     listSection.appendChild(item);
@@ -3543,6 +3533,32 @@ function showProfileDropdown() {
   // Profile drag mousemove handler - uses transforms like timers
   const handleProfileDragMove = (e) => {
     if (!profileDragState.isDragging) return;
+
+    // Check if we should activate drag (mouse moved > 5px)
+    if (!profileDragState.dragActivated) {
+      const dx = e.clientX - profileDragState.startX;
+      const dy = e.clientY - profileDragState.startY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance < 5) return; // Not moved enough yet
+
+      // Activate drag - set up visual feedback
+      profileDragState.dragActivated = true;
+
+      const allItems = Array.from(listSection.querySelectorAll('.profile-item'));
+      const itemRect = profileDragState.draggedEl.getBoundingClientRect();
+      const firstRect = allItems[0].getBoundingClientRect();
+
+      profileDragState.items = allItems;
+      profileDragState.slotHeight = itemRect.height;
+      profileDragState.baseY = firstRect.top;
+
+      profileDragState.draggedEl.classList.add('dragging');
+      listSection.classList.add('has-drag');
+
+      // Add transition class to all items for smooth movement
+      allItems.forEach(el => el.style.transition = 'transform 0.15s ease');
+    }
 
     const { fromIndex, items, slotHeight, baseY } = profileDragState;
 
@@ -3583,11 +3599,21 @@ function showProfileDropdown() {
   const handleProfileDragEnd = () => {
     if (!profileDragState.isDragging) return;
 
-    const { fromIndex, currentSlot, items, draggedEl } = profileDragState;
+    // If drag was never activated (just a click), just reset state
+    if (!profileDragState.dragActivated) {
+      profileDragState.isDragging = false;
+      profileDragState.dragActivated = false;
+      profileDragState.fromIndex = null;
+      profileDragState.currentSlot = null;
+      profileDragState.draggedEl = null;
+      profileDragState.items = [];
+      profileDragState.listSection = null;
+      document.removeEventListener('mousemove', handleProfileDragMove);
+      document.removeEventListener('mouseup', handleProfileDragEnd);
+      return;
+    }
 
-    // Set justDragged to prevent click from firing
-    profileDragState.justDragged = true;
-    setTimeout(() => { profileDragState.justDragged = false; }, 100);
+    const { fromIndex, currentSlot, items, draggedEl } = profileDragState;
 
     // Remove transitions and transforms
     items.forEach(el => {
@@ -3602,19 +3628,19 @@ function showProfileDropdown() {
     if (fromIndex !== currentSlot) {
       reorderProfiles(fromIndex, currentSlot);
 
-      // Re-render the dropdown to reflect new order (after a tiny delay to let click pass)
-      setTimeout(() => {
-        hideProfileDropdown();
-        showProfileDropdown();
-      }, 50);
+      // Re-render the dropdown to reflect new order
+      hideProfileDropdown();
+      showProfileDropdown();
     }
 
     // Reset drag state
     profileDragState.isDragging = false;
+    profileDragState.dragActivated = false;
     profileDragState.fromIndex = null;
     profileDragState.currentSlot = null;
     profileDragState.draggedEl = null;
     profileDragState.items = [];
+    profileDragState.listSection = null;
 
     document.removeEventListener('mousemove', handleProfileDragMove);
     document.removeEventListener('mouseup', handleProfileDragEnd);
