@@ -140,22 +140,9 @@ function setDurationInputs(totalSeconds) {
   updateDurationDigitDisplay();
 }
 
-// Update duration digit value displays
+// Update duration display (now using unified input field)
 function updateDurationDigitDisplay() {
-  const { h, m, s } = parseTimeValue(els.duration.value);
-  const digitH1 = document.getElementById('digitH1');
-  const digitH2 = document.getElementById('digitH2');
-  const digitM1 = document.getElementById('digitM1');
-  const digitM2 = document.getElementById('digitM2');
-  const digitS1 = document.getElementById('digitS1');
-  const digitS2 = document.getElementById('digitS2');
-
-  if (digitH1) digitH1.textContent = Math.floor(h / 10);
-  if (digitH2) digitH2.textContent = h % 10;
-  if (digitM1) digitM1.textContent = Math.floor(m / 10);
-  if (digitM2) digitM2.textContent = m % 10;
-  if (digitS1) digitS1.textContent = Math.floor(s / 10);
-  if (digitS2) digitS2.textContent = s % 10;
+  // Duration is now shown in the unified input field - no individual digit displays to update
 }
 
 // Show/hide hours group based on format selection
@@ -1900,27 +1887,12 @@ function alignDurationButtons() {
   const fontSize = parseFloat(window.getComputedStyle(timerEl).fontSize) || 20;
 
   // Approximate character width (monospace-like with tabular nums)
-  // Inter font at tabular-nums is roughly 0.65em per digit
   const charWidth = fontSize * 0.65;
-  const colonWidth = fontSize * 0.35;
 
   // Apply widths to digit columns
   const digitCols = controls.querySelectorAll('.digit-col');
   digitCols.forEach(col => {
     col.style.width = charWidth + 'px';
-  });
-
-  // Apply widths to separators
-  const separators = controls.querySelectorAll('.digit-separator');
-  separators.forEach(sep => {
-    sep.style.width = colonWidth + 'px';
-    sep.style.fontSize = fontSize * 0.7 + 'px';
-  });
-
-  // Scale digit values to match timer
-  const digitValues = controls.querySelectorAll('.digit-value');
-  digitValues.forEach(val => {
-    val.style.fontSize = fontSize * 0.5 + 'px';
   });
 
   // Scale buttons proportionally
@@ -3017,6 +2989,7 @@ function handleImport(e) {
 
 function setupEventListeners() {
   // Initialize time inputs with section-based navigation
+  initTimeInput(els.duration);
   initTimeInput(els.defaultDuration);
   initTimeInputMS(els.warnYellowSec);
   initTimeInputMS(els.warnOrangeSec);
