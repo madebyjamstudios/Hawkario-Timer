@@ -1786,6 +1786,20 @@ h3 {
   }
 }
 
+/* Update available text label */
+.update-indicator {
+  font-size: 11px;
+  color: #ef4444;
+  font-weight: 500;
+  margin-left: 8px;
+  animation: fade-pulse 2s infinite;
+}
+
+@keyframes fade-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
 /* Download progress bar */
 .download-progress {
   margin-top: 12px;

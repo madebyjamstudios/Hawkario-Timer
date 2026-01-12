@@ -928,15 +928,21 @@ async function checkForUpdates(silent = false) {
   }
 }
 
-// Show update badge on settings button
+// Show update indicator next to settings button
 function showUpdateBadge() {
   const settingsBtn = els.appSettingsBtn;
-  if (settingsBtn && !settingsBtn.querySelector('.update-badge')) {
-    const badge = document.createElement('span');
-    badge.className = 'update-badge';
-    badge.title = 'Update available';
-    settingsBtn.appendChild(badge);
-  }
+  if (!settingsBtn || document.querySelector('.update-indicator')) return;
+
+  // Add badge to button
+  const badge = document.createElement('span');
+  badge.className = 'update-badge';
+  settingsBtn.appendChild(badge);
+
+  // Add text label after the button
+  const label = document.createElement('span');
+  label.className = 'update-indicator';
+  label.textContent = 'Update available';
+  settingsBtn.parentNode.insertBefore(label, settingsBtn.nextSibling);
 }
 
 // Auto-check for updates on startup (silent)
