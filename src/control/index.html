@@ -417,10 +417,11 @@
           <h3 class="settings-section-title">Display</h3>
           <div class="kv">
             <label for="timerZoom">Timer Size</label>
-            <div class="range-with-value">
-              <input id="timerZoom" type="range" min="50" max="150" step="5" value="100" />
-              <span id="timerZoomValue">100%</span>
-            </div>
+            <select id="timerZoom">
+              <option value="75">Small</option>
+              <option value="100" selected>Medium</option>
+              <option value="125">Large</option>
+            </select>
           </div>
         </div>
 

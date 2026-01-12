@@ -96,7 +96,6 @@ const els = {
   defaultFormat: document.getElementById('defaultFormat'),
   defaultSound: document.getElementById('defaultSound'),
   timerZoom: document.getElementById('timerZoom'),
-  timerZoomValue: document.getElementById('timerZoomValue'),
   outputOnTop: document.getElementById('outputOnTop'),
   controlOnTop: document.getElementById('controlOnTop'),
 
@@ -1129,9 +1128,6 @@ function openAppSettings() {
   // Load timer zoom setting
   if (els.timerZoom) {
     els.timerZoom.value = settings.timerZoom ?? 100;
-    if (els.timerZoomValue) {
-      els.timerZoomValue.textContent = (settings.timerZoom ?? 100) + '%';
-    }
   }
 
   // Load window stay on top settings from saved settings
@@ -3918,14 +3914,6 @@ function setupEventListeners() {
   els.settingsExport.addEventListener('click', handleExport);
   els.settingsImport.addEventListener('click', () => els.importFile.click());
 
-  // Timer zoom slider - update display value
-  if (els.timerZoom) {
-    els.timerZoom.addEventListener('input', () => {
-      if (els.timerZoomValue) {
-        els.timerZoomValue.textContent = els.timerZoom.value + '%';
-      }
-    });
-  }
 
   // Refresh updates button
   document.getElementById('refreshUpdates')?.addEventListener('click', async () => {
