@@ -2309,12 +2309,15 @@ function stopResize() {
 }
 
 function restorePreviewWidth() {
+  const containerWidth = els.previewSection.offsetWidth;
   const saved = localStorage.getItem(PREVIEW_WIDTH_KEY);
+
   if (saved) {
-    els.previewWrapper.style.width = saved + 'px';
+    // Clamp saved width to container (fixes oversized preview on smaller window)
+    const width = Math.min(parseInt(saved, 10), containerWidth);
+    els.previewWrapper.style.width = (width > 0 ? width : containerWidth) + 'px';
   } else {
     // Default to maximum width on first launch
-    const containerWidth = els.previewSection.offsetWidth;
     if (containerWidth > 0) {
       els.previewWrapper.style.width = containerWidth + 'px';
     }
