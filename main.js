@@ -29,6 +29,41 @@ let lastTimerConfig = null;
 let outputAlwaysOnTop = true;  // Default: output stays on top
 let controlAlwaysOnTop = false; // Default: control window normal
 
+// ============ Safe IPC Helpers (Production Safety) ============
+
+/**
+ * Safely send a message to a window, handling all edge cases
+ * @param {BrowserWindow} window - Target window
+ * @param {string} channel - IPC channel name
+ * @param {*} data - Data to send
+ * @returns {boolean} - True if sent successfully
+ */
+function safeSend(window, channel, data) {
+  try {
+    if (window && !window.isDestroyed() && window.webContents) {
+      window.webContents.send(channel, data);
+      return true;
+    }
+  } catch (err) {
+    console.error(`[SafeSend] Failed to send "${channel}":`, err.message);
+  }
+  return false;
+}
+
+/**
+ * Safely send to main window
+ */
+function safeToMain(channel, data) {
+  return safeSend(mainWindow, channel, data);
+}
+
+/**
+ * Safely send to output window
+ */
+function safeToOutput(channel, data) {
+  return safeSend(outputWindow, channel, data);
+}
+
 function createMainWindow() {
   mainWindow = new BrowserWindow({
     width: 400,
@@ -48,8 +83,12 @@ function createMainWindow() {
 
   mainWindow.on('closed', () => {
     mainWindow = null;
-    if (outputWindow) {
-      outputWindow.close();
+    try {
+      if (outputWindow && !outputWindow.isDestroyed()) {
+        outputWindow.close();
+      }
+    } catch (err) {
+      console.error('[MainWindow:closed] Error closing output:', err);
     }
   });
 }
@@ -99,28 +138,34 @@ function createOutputWindow() {
   });
 }
 
-// ============ IPC Handlers ============
+// ============ IPC Handlers (with Production Safety) ============
 
 // ---- Canonical Timer State (StageTimer-style sync) ----
 
 // Timer state broadcast: control -> main -> output
 ipcMain.on('timer:state', (_event, state) => {
-  if (outputWindow && !outputWindow.isDestroyed()) {
-    outputWindow.webContents.send('timer:state', state);
+  try {
+    safeToOutput('timer:state', state);
+  } catch (err) {
+    console.error('[IPC:timer:state] Error:', err);
   }
 });
 
 // Timer state request: output -> main -> control
 ipcMain.on('timer:request-state', () => {
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.send('timer:request-state');
+  try {
+    safeToMain('timer:request-state');
+  } catch (err) {
+    console.error('[IPC:timer:request-state] Error:', err);
   }
 });
 
 // Blackout set (ABSOLUTE state, not toggle): control -> main -> output
 ipcMain.on('blackout:set', (_event, isBlacked) => {
-  if (outputWindow && !outputWindow.isDestroyed()) {
-    outputWindow.webContents.send('blackout:state', isBlacked);
+  try {
+    safeToOutput('blackout:state', isBlacked);
+  } catch (err) {
+    console.error('[IPC:blackout:set] Error:', err);
   }
 });
 
@@ -128,71 +173,90 @@ ipcMain.on('blackout:set', (_event, isBlacked) => {
 
 // Timer commands: control -> main -> output
 ipcMain.on('timer:command', (_event, data) => {
-  const { command, config } = data;
+  try {
+    const { command, config } = data || {};
 
-  // Store config for new windows
-  if (config) {
-    lastTimerConfig = config;
-  }
+    // Store config for new windows
+    if (config) {
+      lastTimerConfig = config;
+    }
 
-  // Forward to output window
-  if (outputWindow && !outputWindow.isDestroyed()) {
-    outputWindow.webContents.send('timer:update', { command, config });
+    // Forward to output window
+    safeToOutput('timer:update', { command, config });
+  } catch (err) {
+    console.error('[IPC:timer:command] Error:', err);
   }
 });
 
 // Display state sync: control -> output (runs every frame for live mirror)
 ipcMain.on('display:state', (_event, state) => {
-  if (outputWindow && !outputWindow.isDestroyed()) {
-    outputWindow.webContents.send('display:update', state);
+  try {
+    safeToOutput('display:update', state);
+  } catch (err) {
+    console.error('[IPC:display:state] Error:', err);
   }
 });
 
 // Output window signals it's fully initialized and ready to receive state
 ipcMain.on('output:ready', () => {
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.send('window:output-ready');
+  try {
+    safeToMain('window:output-ready');
+  } catch (err) {
+    console.error('[IPC:output:ready] Error:', err);
   }
 });
 
 // Window management
 ipcMain.on('window:open-output', () => {
-  createOutputWindow();
+  try {
+    createOutputWindow();
+  } catch (err) {
+    console.error('[IPC:window:open-output] Error:', err);
+  }
 });
 
 ipcMain.on('window:fullscreen-output', () => {
-  if (outputWindow && !outputWindow.isDestroyed()) {
-    // Always bring window to front first
-    outputWindow.show();
-    outputWindow.focus();
-    // Then toggle fullscreen
-    outputWindow.setFullScreen(!outputWindow.isFullScreen());
+  try {
+    if (outputWindow && !outputWindow.isDestroyed()) {
+      // Always bring window to front first
+      outputWindow.show();
+      outputWindow.focus();
+      // Then toggle fullscreen
+      outputWindow.setFullScreen(!outputWindow.isFullScreen());
+    }
+  } catch (err) {
+    console.error('[IPC:window:fullscreen-output] Error:', err);
   }
 });
 
 // Focus output window (bring to top)
 ipcMain.on('window:focus-output', () => {
-  if (outputWindow && !outputWindow.isDestroyed()) {
-    outputWindow.show();
-    outputWindow.focus();
+  try {
+    if (outputWindow && !outputWindow.isDestroyed()) {
+      outputWindow.show();
+      outputWindow.focus();
+    }
+  } catch (err) {
+    console.error('[IPC:window:focus-output] Error:', err);
   }
 });
 
 // Keyboard shortcuts from output -> control
 ipcMain.on('keyboard:shortcut', (_event, shortcut) => {
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.send('keyboard:shortcut', shortcut);
+  try {
+    safeToMain('keyboard:shortcut', shortcut);
+  } catch (err) {
+    console.error('[IPC:keyboard:shortcut] Error:', err);
   }
 });
 
 // Blackout toggle: control -> main -> output (and back to control for state sync)
 ipcMain.on('blackout:toggle', () => {
-  if (outputWindow && !outputWindow.isDestroyed()) {
-    outputWindow.webContents.send('blackout:toggle');
-  }
-  // Also notify control window for UI sync
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.send('blackout:toggle');
+  try {
+    safeToOutput('blackout:toggle');
+    safeToMain('blackout:toggle');
+  } catch (err) {
+    console.error('[IPC:blackout:toggle] Error:', err);
   }
 });
 
@@ -400,34 +464,42 @@ ipcMain.on('app:restart', () => {
   app.exit(0);
 });
 
-// ============ Message Broadcasting ============
+// ============ Message Broadcasting (with Production Safety) ============
 
 // Message send: control -> main -> output
 ipcMain.on('message:send', (_event, message) => {
-  if (outputWindow && !outputWindow.isDestroyed()) {
-    outputWindow.webContents.send('message:update', message);
+  try {
+    safeToOutput('message:update', message);
+  } catch (err) {
+    console.error('[IPC:message:send] Error:', err);
   }
 });
 
 // Message state request: output -> main -> control
 ipcMain.on('message:request-state', () => {
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.send('message:request-state');
+  try {
+    safeToMain('message:request-state');
+  } catch (err) {
+    console.error('[IPC:message:request-state] Error:', err);
   }
 });
 
 // Stay on top settings
 ipcMain.on('window:set-always-on-top', (_event, { window, value }) => {
-  if (window === 'output') {
-    outputAlwaysOnTop = value;
-    if (outputWindow && !outputWindow.isDestroyed()) {
-      outputWindow.setAlwaysOnTop(value);
+  try {
+    if (window === 'output') {
+      outputAlwaysOnTop = value;
+      if (outputWindow && !outputWindow.isDestroyed()) {
+        outputWindow.setAlwaysOnTop(value);
+      }
+    } else if (window === 'control') {
+      controlAlwaysOnTop = value;
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.setAlwaysOnTop(value);
+      }
     }
-  } else if (window === 'control') {
-    controlAlwaysOnTop = value;
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.setAlwaysOnTop(value);
-    }
+  } catch (err) {
+    console.error('[IPC:window:set-always-on-top] Error:', err);
   }
 });
 
@@ -606,7 +678,64 @@ app.on('window-all-closed', () => {
   }
 });
 
-// Handle any uncaught errors
+// ============ Global Error Handlers (Production Safety) ============
+
+/**
+ * Log an error with context and continue operation
+ * In production, this prevents crashes from taking down the entire app
+ */
+function handleCriticalError(context, error) {
+  console.error(`[CRITICAL:${context}]`, error);
+  // Future: Could send to error reporting service
+  // Future: Could show user notification for severe errors
+}
+
+// Handle uncaught exceptions in main process
 process.on('uncaughtException', (error) => {
-  console.error('Uncaught exception:', error);
+  handleCriticalError('uncaughtException', error);
+  // Don't exit - try to keep app running
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  handleCriticalError('unhandledRejection', { reason, promise });
+});
+
+// Handle renderer process crashes
+app.on('render-process-gone', (event, webContents, details) => {
+  handleCriticalError('render-process-gone', {
+    reason: details.reason,
+    exitCode: details.exitCode
+  });
+
+  // Attempt to recover by recreating the window
+  if (mainWindow && mainWindow.webContents === webContents) {
+    console.log('[Recovery] Main window crashed, attempting restart...');
+    mainWindow = null;
+    try {
+      createMainWindow();
+    } catch (err) {
+      handleCriticalError('mainWindow-recovery-failed', err);
+    }
+  } else if (outputWindow && outputWindow.webContents === webContents) {
+    console.log('[Recovery] Output window crashed, closing...');
+    outputWindow = null;
+    // Notify control window
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      try {
+        mainWindow.webContents.send('window:output-closed');
+      } catch (err) {
+        // Ignore if main window is also having issues
+      }
+    }
+  }
+});
+
+// Handle child process crashes
+app.on('child-process-gone', (event, details) => {
+  handleCriticalError('child-process-gone', {
+    type: details.type,
+    reason: details.reason,
+    exitCode: details.exitCode
+  });
 });

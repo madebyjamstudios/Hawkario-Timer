@@ -1,6 +1,9 @@
 /**
  * Ninja Timer - Control Window
  * Main controller for timer configuration and preset management
+ *
+ * Production Safety: This file includes defensive programming patterns
+ * to prevent crashes and ensure reliable long-session operation.
  */
 
 import { parseHMS, secondsToHMS, formatTime, formatTimePlain, formatTimeOfDay, hexToRgba, debounce } from '../shared/timer.js';
@@ -10,6 +13,23 @@ import { createTimerState, FIXED_STYLE } from '../shared/timerState.js';
 import { computeDisplay, getShadowCSS, getCombinedShadowCSS, FlashAnimator } from '../shared/renderTimer.js';
 import { autoFitMessage, applyMessageStyle } from '../shared/renderMessage.js';
 import { playSound } from '../shared/sounds.js';
+import {
+  safeTimeout,
+  safeInterval,
+  safeClearTimeout,
+  safeClearInterval,
+  clearAllTimers,
+  safeAddListener,
+  clearAllListeners,
+  startRenderLoop,
+  stopRenderLoop,
+  stopAllRenderLoops,
+  safeExecute,
+  watchdogHeartbeat,
+  startWatchdog,
+  stopWatchdog,
+  cleanupAll
+} from '../shared/safeUtils.js';
 
 // DOM Elements
 const els = {
@@ -121,6 +141,52 @@ const els = {
   // Message elements
   messageList: document.getElementById('messageList')
 };
+
+// ============================================================================
+// DOM SAFEGUARDING (Production Safety)
+// ============================================================================
+
+/**
+ * Create a safe fallback element that absorbs operations without crashing
+ * @param {string} tagName - Element tag name
+ * @returns {HTMLElement} - Detached element
+ */
+function createSafeFallback(tagName = 'div') {
+  const el = document.createElement(tagName);
+  el._isFallback = true;
+  // Make common properties work without errors
+  el.value = '';
+  el.checked = false;
+  el.selectedIndex = 0;
+  el.classList.add = () => {};
+  el.classList.remove = () => {};
+  el.classList.toggle = () => false;
+  el.classList.contains = () => false;
+  return el;
+}
+
+/**
+ * Validate all DOM elements and replace missing ones with safe fallbacks
+ * Logs warnings but doesn't crash
+ */
+function safeguardElements() {
+  const missingElements = [];
+
+  for (const [key, el] of Object.entries(els)) {
+    if (!el) {
+      missingElements.push(key);
+      // Replace with safe fallback
+      els[key] = createSafeFallback();
+    }
+  }
+
+  if (missingElements.length > 0) {
+    console.warn('[DOM Safety] Missing elements (using fallbacks):', missingElements.join(', '));
+  }
+}
+
+// Run safeguarding immediately
+safeguardElements();
 
 // Helper functions for unified time input (HH:MM:SS)
 function formatTimeValue(h, m, s) {
@@ -2726,8 +2792,31 @@ function broadcastDisplayState(state) {
 /**
  * Render loop for live preview - mirrors actual timer output
  * Uses activeTimerConfig so modal editing doesn't affect display
+ *
+ * Production Safety: Wrapped in try-catch to prevent render errors from crashing the app
  */
+let renderLoopActive = true;  // Flag to stop render loop on cleanup
+
 function renderLivePreview() {
+  // Check if we should stop
+  if (!renderLoopActive) return;
+
+  // Record heartbeat for watchdog monitoring
+  watchdogHeartbeat('preview');
+
+  try {
+    renderLivePreviewInternal();
+  } catch (err) {
+    console.error('[RenderLoop] Error (recovered):', err);
+  }
+
+  // Schedule next frame if still active
+  if (renderLoopActive) {
+    requestAnimationFrame(renderLivePreview);
+  }
+}
+
+function renderLivePreviewInternal() {
   // Use stored active timer config (not form fields)
   const mode = activeTimerConfig.mode;
   const durationSec = activeTimerConfig.durationSec;
@@ -2745,8 +2834,7 @@ function renderLivePreview() {
     broadcastTimerState();
     broadcastDisplayState({ visible: false });
     updateProgressBarZones();
-    requestAnimationFrame(renderLivePreview);
-    return;
+    return; // Next frame scheduled by wrapper
   } else {
     els.livePreviewTimer.style.visibility = 'visible';
   }
