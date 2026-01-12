@@ -1347,8 +1347,9 @@ footer small {
   padding: 8px 12px;
 }
 
-/* Hide hours group when format is MM:SS */
-.duration-controls.format-mmss .hours-group {
+/* Hide hours group and its separator when format is MM:SS */
+.duration-controls.format-mmss .hours-group,
+.duration-controls.format-mmss .hours-sep {
   display: none;
 }
 
