@@ -34,6 +34,8 @@ html, body {
   padding: 0.1em 0.15em;
   box-sizing: border-box;
   text-align: center;
+  /* Draw stroke behind fill to prevent artifacts at intersections */
+  paint-order: stroke fill;
 }
 
 /* Vertically centered colon for time display */

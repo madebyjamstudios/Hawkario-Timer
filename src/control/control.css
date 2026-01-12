@@ -145,6 +145,8 @@ button:disabled {
   font-variant-numeric: tabular-nums lining-nums;
   user-select: none;
   transition: color 0.3s ease, text-shadow 0.3s ease, -webkit-text-stroke-color 0.3s ease;
+  /* Draw stroke behind fill to prevent artifacts at intersections */
+  paint-order: stroke fill;
 }
 
 /* Overtime state - red color when timer has passed */
