@@ -4329,15 +4329,16 @@ function setupDragListeners() {
         linkClone.style.pointerEvents = 'none';
         ghost.appendChild(linkClone);
 
-        // Clone and add the timer
+        // Clone and add the timer (preserve state classes like selected/playing)
         const timerClone = row.cloneNode(true);
-        timerClone.className = 'preset-item';
+        timerClone.classList.add('drag-ghost');
         timerClone.style.margin = '0';
         timerClone.style.width = dragState.originalWidth + 'px';
         ghost.appendChild(timerClone);
       } else {
+        // Clone preserves state classes (selected/playing)
         ghost = row.cloneNode(true);
-        ghost.className = 'preset-item drag-ghost';
+        ghost.classList.add('drag-ghost');
         ghost.style.width = dragState.originalWidth + 'px';
         ghost.style.margin = '0';
       }
@@ -4552,9 +4553,9 @@ function setupMessageDragListeners() {
       messageDragState.slotHeight = row.getBoundingClientRect().height + gap;
       messageDragState.originalBaseY = messages[0]?.getBoundingClientRect().top || 0;
 
-      // Create ghost
+      // Create ghost (preserve state classes like showing)
       const ghost = row.cloneNode(true);
-      ghost.className = 'message-item drag-ghost';
+      ghost.classList.add('drag-ghost');
       ghost.style.position = 'fixed';
       ghost.style.width = messageDragState.originalWidth + 'px';
       ghost.style.left = (e.clientX - messageDragState.grabOffsetX) + 'px';
