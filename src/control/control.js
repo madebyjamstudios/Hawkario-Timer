@@ -1311,15 +1311,17 @@ function setupMessageItemEvents(row, messageId, textInput, boldBtn, italicBtn, u
 
     // Add transitioning animation
     visibilityBtn.classList.add('transitioning');
-    setTimeout(() => visibilityBtn.classList.remove('transitioning'), 300);
 
-    // Add deactivation animation if turning off
     if (wasActive) {
+      // Deactivating - play animation first, then toggle
       visibilityBtn.classList.add('deactivating');
-      setTimeout(() => visibilityBtn.classList.remove('deactivating'), 350);
+      setTimeout(() => {
+        toggleMessageVisibility(messageId);
+      }, 300); // Wait for animation before re-render
+    } else {
+      // Activating - toggle immediately (pulse animation plays on new state)
+      toggleMessageVisibility(messageId);
     }
-
-    toggleMessageVisibility(messageId);
   });
 
   deleteBtn.addEventListener('click', () => {
