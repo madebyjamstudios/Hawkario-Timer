@@ -783,13 +783,20 @@ button:disabled {
 .profile-item .profile-color-dot {
   width: 12px;
   height: 12px;
-  padding: 6px;
-  margin: -6px;
-  margin-right: 0;
-  box-sizing: content-box;
-  background-clip: content-box;
+  margin-right: 6px;
   cursor: pointer;
   transition: transform 0.15s ease;
+  position: relative;
+}
+
+.profile-item .profile-color-dot::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  right: -6px;
+  bottom: -6px;
+  border-radius: 50%;
 }
 
 .profile-item .profile-color-dot:hover {
