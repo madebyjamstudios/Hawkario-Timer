@@ -928,21 +928,35 @@ async function checkForUpdates(silent = false) {
   }
 }
 
-// Show update indicator next to settings button
-function showUpdateBadge() {
+// Show update badge on settings button and status in modal
+function showUpdateBadge(result) {
   const settingsBtn = els.appSettingsBtn;
-  if (!settingsBtn || document.querySelector('.update-indicator')) return;
 
-  // Add badge to button
-  const badge = document.createElement('span');
-  badge.className = 'update-badge';
-  settingsBtn.appendChild(badge);
+  // Add badge to settings button (if not already there)
+  if (settingsBtn && !settingsBtn.querySelector('.update-badge')) {
+    const badge = document.createElement('span');
+    badge.className = 'update-badge';
+    settingsBtn.appendChild(badge);
+  }
 
-  // Add text label after the button
-  const label = document.createElement('span');
-  label.className = 'update-indicator';
-  label.textContent = 'Update available';
-  settingsBtn.parentNode.insertBefore(label, settingsBtn.nextSibling);
+  // Update the status text in the settings modal
+  const statusEl = document.getElementById('updateStatus');
+  if (statusEl && result) {
+    if (result.downloadUrl) {
+      statusEl.innerHTML = `Update available! <span class="version-info">(${result.localSha} → ${result.remoteSha})</span>`;
+    } else {
+      statusEl.innerHTML = `Update available! <span class="version-info">(${result.localSha} → ${result.remoteSha})</span><br><span class="no-release">No release found - visit GitHub to download</span>`;
+    }
+    statusEl.className = 'update-available';
+
+    // Show download button if URL available
+    const downloadBtn = document.getElementById('downloadUpdates');
+    const checkBtn = document.getElementById('checkUpdates');
+    if (result.downloadUrl && downloadBtn) {
+      downloadBtn.classList.remove('hidden');
+      checkBtn?.classList.add('hidden');
+    }
+  }
 }
 
 // Auto-check for updates on startup (silent)
@@ -953,7 +967,7 @@ async function checkForUpdatesOnStartup() {
   try {
     const result = await checkForUpdates(true);
     if (result?.updateAvailable) {
-      showUpdateBadge();
+      showUpdateBadge(result);
     }
   } catch (e) {
     // Silent fail on startup check
