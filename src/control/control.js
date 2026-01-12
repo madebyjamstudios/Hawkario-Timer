@@ -930,6 +930,7 @@ async function checkForUpdates(silent = false) {
 
 // Show update badge on settings button and status in modal
 function showUpdateBadge(result) {
+  console.log('showUpdateBadge called with result:', result);
   const settingsBtn = els.appSettingsBtn;
 
   // Add badge to settings button (if not already there)
@@ -956,6 +957,8 @@ function showUpdateBadge(result) {
   const statusEl = document.getElementById('updateStatus');
   const downloadBtn = document.getElementById('downloadUpdates');
   const checkBtn = document.getElementById('checkUpdates');
+
+  console.log('Elements found:', { statusEl: !!statusEl, downloadBtn: !!downloadBtn, checkBtn: !!checkBtn });
 
   if (statusEl && result) {
     if (result.downloadUrl) {
