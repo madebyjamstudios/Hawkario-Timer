@@ -2,7 +2,7 @@
 
 Professional countdown timer with customizable display for broadcasts, presentations, and live events.
 
-![Ninja Timer Control Window](screenshots/control-window.png)
+<img width="1184" alt="Ninja Timer Control Window" src="https://github.com/user-attachments/assets/a3469260-2922-447a-9266-29ed8d155a4e" />
 
 ## Screenshots
 
