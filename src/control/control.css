@@ -740,6 +740,14 @@ button:disabled {
   margin-right: 4px;
 }
 
+.profile-shortcut {
+  font-size: 11px;
+  color: #666;
+  font-weight: 500;
+  min-width: 16px;
+  text-align: center;
+}
+
 .profile-item .profile-item-name {
   flex: 1;
   overflow: hidden;

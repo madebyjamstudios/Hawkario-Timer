@@ -3467,9 +3467,11 @@ function showProfileDropdown() {
     const item = document.createElement('div');
     item.className = 'profile-item' + (profile.id === activeProfileId ? ' current' : '');
     const color = profile.color || PROFILE_COLORS[idx % PROFILE_COLORS.length];
+    const shortcutHint = idx < 9 ? `<span class="profile-shortcut">${idx + 1}</span>` : '';
     item.innerHTML = `
       <span class="profile-color-dot" style="background: ${color}; box-shadow: 0 0 6px ${color};"></span>
       <span class="profile-item-name">${escapeHtml(profile.name)}</span>
+      ${shortcutHint}
       <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
         <polyline points="20 6 9 17 4 12"/>
       </svg>
@@ -4778,6 +4780,17 @@ function setupEventListeners() {
       case 'b':
         // Blackout toggle
         window.ninja.toggleBlackout();
+        break;
+
+      case '1': case '2': case '3': case '4': case '5':
+      case '6': case '7': case '8': case '9':
+        // Profile switching: 1-9 keys
+        if (!e.metaKey && !e.ctrlKey && !e.altKey) {
+          const idx = parseInt(e.key) - 1;
+          if (profiles[idx]) {
+            switchProfile(profiles[idx].id);
+          }
+        }
         break;
     }
   });
