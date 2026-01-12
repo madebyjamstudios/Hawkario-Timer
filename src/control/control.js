@@ -1873,7 +1873,11 @@ function autoFitText(textEl, containerEl, targetPercent = 0.9) {
   const containerWidth = containerEl.offsetWidth;
   const containerHeight = containerEl.offsetHeight;
   const targetWidth = containerWidth * targetPercent;
-  const targetHeight = containerHeight * 0.85; // Match viewer's 85% height
+
+  // Use 45% height when message is visible (50/50 split), otherwise 85%
+  const hasMessage = containerEl.classList.contains('with-message');
+  const targetHeight = containerHeight * (hasMessage ? 0.45 : 0.85);
+
   const naturalWidth = textEl.scrollWidth;
   const naturalHeight = textEl.scrollHeight;
 

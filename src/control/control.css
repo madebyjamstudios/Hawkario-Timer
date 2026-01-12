@@ -250,6 +250,8 @@ button:disabled {
 
 .live-preview.with-message .timer-preview {
   align-self: end;
+  max-height: 100%;
+  overflow: hidden;
 }
 
 .live-preview.with-message .message-preview {
