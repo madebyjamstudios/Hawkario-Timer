@@ -1867,12 +1867,21 @@ function alignDurationButtons() {
   const fontSize = parseFloat(window.getComputedStyle(timerEl).fontSize) || 20;
 
   // Approximate character width (monospace-like with tabular nums)
+  // Inter font at tabular-nums is roughly 0.65em per digit
   const charWidth = fontSize * 0.65;
+  const colonWidth = fontSize * 0.35;
 
   // Apply widths to digit columns
   const digitCols = controls.querySelectorAll('.digit-col');
   digitCols.forEach(col => {
     col.style.width = charWidth + 'px';
+  });
+
+  // Apply widths to separators (colons) - centered vertically
+  const separators = controls.querySelectorAll('.digit-separator');
+  separators.forEach(sep => {
+    sep.style.width = colonWidth + 'px';
+    sep.style.fontSize = fontSize * 0.7 + 'px';
   });
 
   // Scale buttons proportionally

@@ -1322,6 +1322,16 @@ footer small {
   transform: scale(0.95);
 }
 
+.digit-separator {
+  font-size: 20px;
+  color: #666;
+  font-weight: 600;
+  padding: 0 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Duration input row */
 .duration-input-row {
   display: flex;
