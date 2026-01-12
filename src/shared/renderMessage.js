@@ -4,8 +4,8 @@
  */
 
 // Line width in em units - ensures consistent character count per line
-// regardless of font size (roughly 10-12 characters per line for bigger text)
-const LINE_WIDTH_EM = 10;
+// regardless of font size (roughly 12-14 characters per line)
+const LINE_WIDTH_EM = 12;
 
 /**
  * Auto-fit message text using font-size scaling with em-based width
