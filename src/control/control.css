@@ -242,22 +242,24 @@ button:disabled {
 }
 
 .live-preview.with-message {
-  grid-template-rows: 1fr 1fr;
-  /* Remove place-items - use explicit alignment per element */
+  display: flex;
+  flex-direction: column;
 }
 
 .live-preview.with-message .timer-preview {
-  grid-row: 1;
-  align-self: end;
-  justify-self: center;
-  max-height: 45%;
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  max-height: 50%;
 }
 
 .live-preview.with-message .message-preview {
-  grid-row: 2;
-  display: block;
-  align-self: start;
-  justify-self: center;
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  max-height: 50%;
 }
 
 /* Vertically centered colon for time display */
