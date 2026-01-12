@@ -713,6 +713,10 @@ button:disabled {
   animation: none !important;
 }
 
+.progress-track .progress-fill::after {
+  display: none !important;
+}
+
 /* Thin line indicator on progress bar */
 .progress-indicator {
   position: absolute;
