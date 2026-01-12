@@ -1914,20 +1914,20 @@ function renderWarningZonesForDuration(durationSec, yellowSec, orangeSec) {
  */
 function renderSmartSegments() {
   if (!activeTimerConfig || !els.progressSegments) return;
-
-  // For linked chains, skip smart segments (use dividers only)
-  const chain = getLinkedTimerChain();
-  if (chain.length > 1) {
-    // Clear only segment markers, keep dividers
-    const markers = els.progressSegments.querySelectorAll('.segment-marker');
-    markers.forEach(m => m.remove());
-    return;
-  }
-
-  const durationSec = activeTimerConfig.durationSec;
   if (activeTimerConfig.mode === 'tod') return;
 
-  renderSmartSegmentsForDuration(durationSec);
+  const chain = getLinkedTimerChain();
+
+  // Calculate total duration (either single timer or linked chain)
+  let totalDurationSec;
+  if (chain.length > 1) {
+    // Sum all linked timer durations
+    totalDurationSec = chain.reduce((sum, t) => sum + t.durationMs, 0) / 1000;
+  } else {
+    totalDurationSec = activeTimerConfig.durationSec;
+  }
+
+  renderSmartSegmentsForDuration(totalDurationSec);
 }
 
 /**
