@@ -1143,6 +1143,16 @@ function setupMessageItemEvents(row, messageId, textInput, boldBtn, italicBtn, u
 
   textInput.addEventListener('input', debouncedSave);
 
+  // Enter/Escape to blur and save
+  textInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === 'Escape') {
+      e.preventDefault();
+      // Force immediate save before blur
+      updateMessageField(messageId, 'text', textInput.value);
+      textInput.blur();
+    }
+  });
+
   colorInput.addEventListener('input', () => {
     updateMessageField(messageId, 'color', colorInput.value);
     textInput.style.color = colorInput.value;
@@ -1235,7 +1245,7 @@ function updateLivePreviewMessage(message) {
 
   els.livePreviewMessage.textContent = message.text || '';
   els.livePreviewMessage.style.color = message.color || '#ffffff';
-  els.livePreviewMessage.style.fontWeight = message.bold ? 'bold' : 'normal';
+  els.livePreviewMessage.style.fontWeight = message.bold ? '800' : '600';
   els.livePreviewMessage.style.fontStyle = message.italic ? 'italic' : 'normal';
   els.livePreviewMessage.style.textTransform = message.uppercase ? 'uppercase' : 'none';
   els.livePreviewMessage.style.display = 'block';
@@ -2839,6 +2849,23 @@ function createDefaultPreset() {
   }
 }
 
+function createDefaultMessage() {
+  const messages = loadMessages();
+  if (messages.length === 0) {
+    const defaultMsg = {
+      id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      text: '',
+      bold: false,
+      italic: false,
+      uppercase: false,
+      color: '#ffffff',
+      visible: false
+    };
+    messages.push(defaultMsg);
+    saveMessagesToStorage(messages);
+  }
+}
+
 function handleExport() {
   const presets = loadPresets();
   const appSettings = loadAppSettings();
@@ -3826,6 +3853,7 @@ function init() {
 
   // Create default preset on first launch
   createDefaultPreset();
+  createDefaultMessage();
 
   setupEventListeners();
   applyPreview();
