@@ -18,9 +18,11 @@ export function autoFitMessage(messageEl, containerEl) {
   if (!messageEl || !containerEl) return;
 
   const containerWidth = containerEl.clientWidth || containerEl.offsetWidth;
+  const containerHeight = containerEl.clientHeight || containerEl.offsetHeight;
 
-  // Target width for the message (90% of container)
+  // Target area for the message (90% width, 45% height for 50/50 split)
   const targetWidth = containerWidth * 0.9;
+  const targetHeight = containerHeight * 0.45;
 
   // Measure at reference size with fixed pixel max-width
   messageEl.style.fontSize = REF_FONT_SIZE + 'px';
@@ -28,10 +30,13 @@ export function autoFitMessage(messageEl, containerEl) {
   messageEl.style.transform = 'none';
 
   const naturalWidth = messageEl.scrollWidth;
+  const naturalHeight = messageEl.scrollHeight;
 
-  if (naturalWidth > 0) {
-    // Scale based on width only (like timer) - no sudden height jumps
-    const ratio = targetWidth / naturalWidth;
+  if (naturalWidth > 0 && naturalHeight > 0) {
+    // Calculate scale ratio (same as timer)
+    const widthRatio = targetWidth / naturalWidth;
+    const heightRatio = targetHeight / naturalHeight;
+    const ratio = Math.min(widthRatio, heightRatio);
 
     // Apply new font size and scale max-width proportionally
     const newFontSize = Math.max(8, REF_FONT_SIZE * ratio);

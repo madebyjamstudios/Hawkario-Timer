@@ -59,7 +59,7 @@ const els = {
   presetList: document.getElementById('presetList'),
   presetListContainer: document.querySelector('.preset-list-container'),
   timerProgressContainer: document.getElementById('timerProgressContainer'),
-  timerModeIndicator: document.getElementById('timerModeIndicator'),
+  elapsedTime: document.getElementById('elapsedTime'),
   remainingTime: document.getElementById('remainingTime'),
   progressFill: document.getElementById('progressFill'),
   progressSegments: document.getElementById('progressSegments'),
@@ -68,6 +68,7 @@ const els = {
   seekLine: document.getElementById('seekLine'),
   seekTooltip: document.getElementById('seekTooltip'),
   warningZones: document.getElementById('warningZones'),
+  currentTimeDisplay: document.getElementById('currentTimeDisplay'),
   importFile: document.getElementById('importFile'),
   addTimer: document.getElementById('addTimer'),
 
