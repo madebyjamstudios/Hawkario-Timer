@@ -870,19 +870,12 @@ function saveAppSettings(settings) {
 let pendingUpdate = null;
 
 async function checkForUpdates(silent = false) {
-  console.log('checkForUpdates called, silent:', silent);
-
   const statusEl = document.getElementById('updateStatus');
   const checkBtn = document.getElementById('checkUpdates');
   const downloadBtn = document.getElementById('downloadUpdates');
   const restartBtn = document.getElementById('restartApp');
 
-  console.log('Elements found:', { statusEl: !!statusEl, checkBtn: !!checkBtn, downloadBtn: !!downloadBtn });
-
-  if (!statusEl) {
-    console.error('updateStatus element not found');
-    return null;
-  }
+  if (!statusEl) return null;
 
   if (!silent) {
     statusEl.textContent = 'Checking...';
@@ -893,7 +886,6 @@ async function checkForUpdates(silent = false) {
 
   try {
     const result = await window.ninja.checkForUpdates();
-    console.log('Update check result:', result);
 
     if (result.error) {
       if (!silent) {
@@ -3809,14 +3801,7 @@ function setupEventListeners() {
   els.settingsImport.addEventListener('click', () => els.importFile.click());
 
   // Check for updates
-  const checkUpdatesBtn = document.getElementById('checkUpdates');
-  console.log('Setting up checkUpdates listener, button found:', !!checkUpdatesBtn);
-  if (checkUpdatesBtn) {
-    checkUpdatesBtn.addEventListener('click', () => {
-      console.log('Check updates button clicked');
-      checkForUpdates();
-    });
-  }
+  document.getElementById('checkUpdates')?.addEventListener('click', () => checkForUpdates());
   document.getElementById('downloadUpdates').addEventListener('click', downloadUpdates);
   document.getElementById('restartApp').addEventListener('click', restartApp);
 
