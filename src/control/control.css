@@ -601,11 +601,6 @@ button:disabled {
   pointer-events: none;
 }
 
-/* Start marker should not extend outside */
-.segment-marker[style*="left: 0%"] {
-  transform: translateX(0);
-}
-
 /* Always-visible segment time labels */
 .segment-marker::after {
   content: attr(data-time);
@@ -617,12 +612,6 @@ button:disabled {
   color: #666;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
-}
-
-/* Start label positioning */
-.segment-marker[style*="left: 0%"]::after {
-  left: 0;
-  transform: translateX(0);
 }
 
 /* Linked timer dividers (thicker) */
