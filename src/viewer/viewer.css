@@ -30,13 +30,18 @@ html, body {
 .virtual-canvas {
   width: 1920px;
   height: 1080px;
-  display: grid;
-  place-items: center;
+  position: relative;
   transform-origin: center center;
   /* Scale applied via JS */
 }
 
 .timer {
+  /* Absolute positioning for precise control */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
   font-variant-numeric: tabular-nums lining-nums;
   user-select: none;
   -webkit-user-select: none;
@@ -118,35 +123,28 @@ html, body {
 
 /* ============ Split Layout (Timer + Message) ============ */
 
-/* 50/50 split when message is visible */
-.virtual-canvas.with-message {
-  grid-template-rows: 50% 50%;
-  grid-template-columns: 100%;
-}
-
+/* When message is visible: timer in top half, message in bottom half */
 .virtual-canvas.with-message .timer {
-  grid-row: 1;
-  grid-column: 1;
-  align-self: center;  /* Centered vertically in row 1 */
-  justify-self: center;
-  text-align: center;
+  /* Centered in top half (25% from top = center of 0-50%) */
+  top: 25%;
 }
 
 .virtual-canvas.with-message .message-overlay {
-  grid-row: 2;
-  grid-column: 1;
-  align-self: start;  /* TOP-aligned in row 2 */
-  justify-self: center;
-  text-align: center;
-  padding-top: 20px;  /* Breathing room below middle line */
+  /* Starts just below middle, horizontally centered */
+  top: 52%;  /* Just below middle line */
+  transform: translate(-50%, 0);  /* Only center horizontally, don't offset vertically */
 }
 
 /* ============ Message Overlay ============ */
 
 .message-overlay {
+  /* Absolute positioning - hidden by default, centered when visible */
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+
   display: none;
-  align-self: start;
-  justify-self: center;
   text-align: center;
   font-weight: 600;
   color: #ffffff;
@@ -158,7 +156,7 @@ html, body {
   -webkit-user-select: none;
   padding: 0.1em 0.15em;
   box-sizing: border-box;
-  /* max-width set by JS for consistent line wrapping */
+  /* max-width set by JS - FIXED in reference pixels */
   overflow: visible;
   word-wrap: break-word;
   overflow-wrap: break-word;

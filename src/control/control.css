@@ -216,30 +216,39 @@ button:disabled {
 .live-preview .virtual-canvas {
   width: 1920px;
   height: 1080px;
-  display: grid;
-  place-items: center;
+  position: relative;
   transform-origin: center center;
   /* Scale applied via JS */
 }
 
 .live-preview .timer-preview {
+  /* Absolute positioning for precise control */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
   white-space: nowrap;
   overflow: visible;
   padding: 0.1em 0.15em;
   user-select: none;
   -webkit-user-select: none;
-  /* Font size set dynamically in JS to match output scaling */
+  /* Font size set dynamically in JS */
 }
 
 /* Message preview in live preview */
 .live-preview .message-preview {
+  /* Absolute positioning - hidden by default */
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+
   display: none;
-  align-self: start;
-  justify-self: center;
   font-weight: 600;
   color: #ffffff;
   text-align: center;
-  /* max-width set by JS for consistent line wrapping */
+  /* max-width set by JS - FIXED in reference pixels */
   overflow: visible;
   word-wrap: break-word;
   overflow-wrap: break-word;
@@ -249,29 +258,18 @@ button:disabled {
   -webkit-user-select: none;
 }
 
-/* Split layout for timer + message (50/50 split) */
-.live-preview .virtual-canvas.with-message {
-  grid-template-rows: 50% 50%;
-  grid-template-columns: 100%;
-}
-
+/* Split layout for timer + message */
 .live-preview .virtual-canvas.with-message .timer-preview {
-  grid-row: 1;
-  grid-column: 1;
-  align-self: center;  /* Centered vertically in row 1 */
-  justify-self: center;
-  text-align: center;
+  /* Centered in top half (25% from top = center of 0-50%) */
+  top: 25%;
 }
 
 .live-preview .virtual-canvas.with-message .message-preview {
-  grid-row: 2;
-  grid-column: 1;
+  /* Starts just below middle, horizontally centered */
   display: block;
   opacity: 1;
-  align-self: start;  /* TOP-aligned in row 2 */
-  justify-self: center;
-  text-align: center;
-  padding-top: 20px;  /* Breathing room below middle line */
+  top: 52%;  /* Just below middle line */
+  transform: translate(-50%, 0);  /* Only center horizontally */
 }
 
 /* Message formatting classes (shared with output) */

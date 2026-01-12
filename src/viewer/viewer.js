@@ -236,10 +236,6 @@ function applyStyle(style) {
   timerEl.style.letterSpacing = FIXED_STYLE.letterSpacing + 'em';
   timerEl.style.textAlign = FIXED_STYLE.align;
 
-  // Always centered
-  virtualCanvasEl.style.placeItems = 'center';
-  timerEl.style.justifySelf = 'center';
-
   // Background
   const bg = style.background || style.bgColor || '#000000';
   document.body.style.background = bg;
