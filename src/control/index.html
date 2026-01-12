@@ -180,34 +180,42 @@
           </div>
         </div>
 
-        <!-- Timer Title -->
-        <div class="kv">
-          <label for="presetName">Title:</label>
-          <input id="presetName" type="text" placeholder="Timer 1" />
-        </div>
-
-        <!-- Basic Settings -->
-        <div class="kv">
-          <label for="mode">Mode</label>
-          <select id="mode">
-            <option value="countdown">Countdown</option>
-            <option value="countup">Count Up</option>
-            <option value="tod">Time of Day</option>
-            <option value="countdown-tod">C/D + ToD</option>
-            <option value="countup-tod">C/U + ToD</option>
-            <option value="hidden">Hidden</option>
-          </select>
-        </div>
-        <div class="kv">
-          <label for="format">Format</label>
-          <select id="format">
-            <option value="HH:MM:SS">HH:MM:SS</option>
-            <option value="MM:SS" selected>MM:SS</option>
-          </select>
-        </div>
-        <div class="kv">
-          <label for="duration">Duration</label>
-          <input id="duration" type="text" class="time-input duration-input" value="00:10:00" maxlength="8" placeholder="HH:MM:SS" />
+        <!-- Timer Section -->
+        <div class="collapsible-section" data-section="timer">
+          <h3 class="section-header">
+            <span>Timer</span>
+            <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </h3>
+          <div class="section-content">
+            <div class="kv">
+              <label for="presetName">Title</label>
+              <input id="presetName" type="text" placeholder="Timer 1" />
+            </div>
+            <div class="kv">
+              <label for="mode">Mode</label>
+              <select id="mode">
+                <option value="countdown">Countdown</option>
+                <option value="countup">Count Up</option>
+                <option value="tod">Time of Day</option>
+                <option value="countdown-tod">C/D + ToD</option>
+                <option value="countup-tod">C/U + ToD</option>
+                <option value="hidden">Hidden</option>
+              </select>
+            </div>
+            <div class="kv">
+              <label for="format">Format</label>
+              <select id="format">
+                <option value="HH:MM:SS">HH:MM:SS</option>
+                <option value="MM:SS" selected>MM:SS</option>
+              </select>
+            </div>
+            <div class="kv">
+              <label for="duration">Duration</label>
+              <input id="duration" type="text" class="time-input duration-input" value="00:10:00" maxlength="8" placeholder="HH:MM:SS" />
+            </div>
+          </div>
         </div>
 
         <!-- Appearance Section -->
