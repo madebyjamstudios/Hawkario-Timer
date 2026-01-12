@@ -256,11 +256,22 @@
           </h3>
           <div class="section-content">
             <div class="kv">
-              <label for="soundEndEnable">End sound</label>
-              <select id="soundEndEnable">
-                <option value="off" selected>Off</option>
-                <option value="on">On</option>
-              </select>
+              <label for="soundEnd">End sound</label>
+              <div class="sound-select-row">
+                <select id="soundEnd">
+                  <option value="none" selected>None</option>
+                  <option value="chime">Chime</option>
+                  <option value="bell">Bell</option>
+                  <option value="alert">Alert</option>
+                  <option value="gong">Gong</option>
+                  <option value="soft">Soft</option>
+                </select>
+                <button type="button" id="soundPreview" class="icon-btn preview-btn" title="Preview sound">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                  </svg>
+                </button>
+              </div>
             </div>
             <div class="kv" id="volumeRow">
               <label for="soundVolume">Volume</label>
@@ -383,9 +394,25 @@
           <div class="kv">
             <label for="defaultSound">End sound</label>
             <select id="defaultSound">
-              <option value="off">Off</option>
-              <option value="on">On</option>
+              <option value="none">None</option>
+              <option value="chime">Chime</option>
+              <option value="bell">Bell</option>
+              <option value="alert">Alert</option>
+              <option value="gong">Gong</option>
+              <option value="soft">Soft</option>
             </select>
+          </div>
+        </div>
+
+        <!-- Display Section -->
+        <div class="settings-section">
+          <h3 class="settings-section-title">Display</h3>
+          <div class="kv">
+            <label for="timerZoom">Timer Size</label>
+            <div class="range-with-value">
+              <input id="timerZoom" type="range" min="50" max="150" step="5" value="100" />
+              <span id="timerZoomValue">100%</span>
+            </div>
           </div>
         </div>
 

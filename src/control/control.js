@@ -9,6 +9,7 @@ import { STORAGE_KEYS } from '../shared/constants.js';
 import { createTimerState, FIXED_STYLE } from '../shared/timerState.js';
 import { computeDisplay, getShadowCSS, getCombinedShadowCSS, FlashAnimator } from '../shared/renderTimer.js';
 import { autoFitMessage, applyMessageStyle } from '../shared/renderMessage.js';
+import { playSound } from '../shared/sounds.js';
 
 // DOM Elements
 const els = {
@@ -27,8 +28,9 @@ const els = {
   shadowColor: document.getElementById('shadowColor'),
   bgColor: document.getElementById('bgColor'),
 
-  // Sound (simplified)
-  soundEndEnable: document.getElementById('soundEndEnable'),
+  // Sound
+  soundEnd: document.getElementById('soundEnd'),
+  soundPreview: document.getElementById('soundPreview'),
   soundVolume: document.getElementById('soundVolume'),
   volumeRow: document.getElementById('volumeRow'),
 
@@ -93,6 +95,8 @@ const els = {
   defaultDuration: document.getElementById('defaultDuration'),
   defaultFormat: document.getElementById('defaultFormat'),
   defaultSound: document.getElementById('defaultSound'),
+  timerZoom: document.getElementById('timerZoom'),
+  timerZoomValue: document.getElementById('timerZoomValue'),
   outputOnTop: document.getElementById('outputOnTop'),
   controlOnTop: document.getElementById('controlOnTop'),
 
@@ -838,10 +842,12 @@ const DEFAULT_APP_SETTINGS = {
   confirmDelete: true,
   outputOnTop: false,
   controlOnTop: false,
+  timerZoom: 100,
   defaults: {
     mode: 'countdown',
     durationSec: 600,
-    format: 'MM:SS'
+    format: 'MM:SS',
+    soundType: 'none'
   }
 };
 
@@ -893,6 +899,7 @@ async function checkForUpdates(silent = false) {
         statusEl.className = 'update-error';
       }
       return null;
+    }
     // Store result regardless of update status
     updateResult = result;
 
@@ -1110,7 +1117,22 @@ function openAppSettings() {
   els.defaultMode.value = settings.defaults.mode;
   setDefaultDurationInputs(settings.defaults.durationSec);
   els.defaultFormat.value = settings.defaults.format;
-  els.defaultSound.value = settings.defaults.soundEnabled ? 'on' : 'off';
+  // Support both old format (soundEnabled: boolean) and new format (soundType: string)
+  if (typeof settings.defaults.soundType === 'string') {
+    els.defaultSound.value = settings.defaults.soundType;
+  } else if (settings.defaults.soundEnabled === true) {
+    els.defaultSound.value = 'chime'; // Migrate old 'on' to 'chime'
+  } else {
+    els.defaultSound.value = 'none';
+  }
+
+  // Load timer zoom setting
+  if (els.timerZoom) {
+    els.timerZoom.value = settings.timerZoom ?? 100;
+    if (els.timerZoomValue) {
+      els.timerZoomValue.textContent = (settings.timerZoom ?? 100) + '%';
+    }
+  }
 
   // Load window stay on top settings from saved settings
   els.outputOnTop.value = settings.outputOnTop ? 'on' : 'off';
@@ -1157,11 +1179,12 @@ function saveAppSettingsFromForm() {
     confirmDelete: els.confirmDelete.value === 'on',
     outputOnTop: outputOnTop,
     controlOnTop: controlOnTop,
+    timerZoom: parseInt(els.timerZoom?.value, 10) || 100,
     defaults: {
       mode: els.defaultMode.value,
       durationSec: getDefaultDurationSeconds(),
       format: els.defaultFormat.value,
-      soundEnabled: els.defaultSound.value === 'on'
+      soundType: els.defaultSound.value || 'none'
     }
   };
 
@@ -1170,6 +1193,10 @@ function saveAppSettingsFromForm() {
   window.ninja.setAlwaysOnTop('control', controlOnTop);
 
   saveAppSettings(settings);
+
+  // Apply zoom to preview immediately
+  fitPreviewTimer();
+
   closeAppSettings();
 }
 
@@ -2391,7 +2418,12 @@ function fitPreviewTimer() {
     const widthRatio = targetWidth / naturalWidth;
     const heightRatio = targetHeight / naturalHeight;
     const ratio = Math.min(widthRatio, heightRatio);
-    const newFontSize = Math.max(10, 100 * ratio);
+
+    // Apply zoom from app settings
+    const settings = loadAppSettings();
+    const zoom = (settings.timerZoom ?? 100) / 100;
+
+    const newFontSize = Math.max(10, 100 * ratio * zoom);
     els.livePreviewTimer.style.fontSize = newFontSize + 'px';
   }
 }
@@ -2646,6 +2678,7 @@ function broadcastTimerState() {
     style: activeTimerConfig.style,
     todFormat: appSettings.todFormat,
     timezone: appSettings.timezone || 'auto',
+    timerZoom: appSettings.timerZoom ?? 100,
     // Warning thresholds for color changes
     warnYellowSec: activeTimerConfig.warnYellowSec ?? 60,
     warnOrangeSec: activeTimerConfig.warnOrangeSec ?? 15
@@ -2744,6 +2777,13 @@ function renderLivePreview() {
       if (currentElapsedMs >= totalMs && !timerState.ended) {
         timerState.ended = true;
 
+        // Play end sound if configured
+        const soundType = activeTimerConfig.sound?.endType;
+        const soundVolume = activeTimerConfig.sound?.volume ?? 0.7;
+        if (soundType && soundType !== 'none') {
+          playSound(soundType, soundVolume);
+        }
+
         // Check for linked next timer
         const presets = loadPresets();
         const currentPreset = presets[activePresetIndex];
@@ -2825,6 +2865,13 @@ function renderLivePreview() {
       // Check if timer ended
       if (elapsed === 0 && !timerState.ended) {
         timerState.ended = true;
+
+        // Play end sound if configured
+        const soundType = activeTimerConfig.sound?.endType;
+        const soundVolume = activeTimerConfig.sound?.volume ?? 0.7;
+        if (soundType && soundType !== 'none') {
+          playSound(soundType, soundVolume);
+        }
 
         // Check for linked next timer
         const presets = loadPresets();
@@ -2983,7 +3030,7 @@ function getCurrentConfig() {
       bgColor: els.bgColor.value
     },
     sound: {
-      endEnabled: els.soundEndEnable.value === 'on',
+      endType: els.soundEnd.value || 'none',
       volume: parseFloat(els.soundVolume.value) || 0.7
     },
     // Warning thresholds (seconds remaining) - from MM:SS inputs
@@ -3011,7 +3058,14 @@ function applyConfig(config) {
   }
 
   if (config.sound) {
-    els.soundEndEnable.value = config.sound.endEnabled ? 'on' : 'off';
+    // Support both old format (endEnabled: boolean) and new format (endType: string)
+    if (typeof config.sound.endType === 'string') {
+      els.soundEnd.value = config.sound.endType;
+    } else if (config.sound.endEnabled === true) {
+      els.soundEnd.value = 'chime'; // Migrate old 'on' to 'chime'
+    } else {
+      els.soundEnd.value = 'none';
+    }
     els.soundVolume.value = config.sound.volume ?? 0.7;
     // Update volume row visibility
     updateVolumeRowVisibility();
@@ -3037,11 +3091,11 @@ function updateRangeDisplays() {
 }
 
 /**
- * Update volume row visibility based on sound enabled state
+ * Update volume row visibility based on sound selection
  */
 function updateVolumeRowVisibility() {
-  if (els.volumeRow) {
-    els.volumeRow.style.display = els.soundEndEnable.value === 'on' ? 'flex' : 'none';
+  if (els.volumeRow && els.soundEnd) {
+    els.volumeRow.style.display = els.soundEnd.value !== 'none' ? 'flex' : 'none';
   }
 }
 
@@ -3751,7 +3805,7 @@ function setupEventListeners() {
     els.mode, els.duration, els.format,
     els.fontColor, els.strokeWidth, els.strokeColor,
     els.shadowSize, els.shadowColor, els.bgColor,
-    els.soundEndEnable, els.soundVolume,
+    els.soundEnd, els.soundVolume,
     els.warnYellowSec, els.warnOrangeSec
   ];
 
@@ -3780,11 +3834,22 @@ function setupEventListeners() {
     els.shadowSize.addEventListener('input', updateRangeDisplays);
   }
 
-  // Sound enable toggle - show/hide volume row
-  if (els.soundEndEnable) {
-    els.soundEndEnable.addEventListener('change', updateVolumeRowVisibility);
+  // Sound selection - show/hide volume row
+  if (els.soundEnd) {
+    els.soundEnd.addEventListener('change', updateVolumeRowVisibility);
     // Initialize visibility
     updateVolumeRowVisibility();
+  }
+
+  // Sound preview button
+  if (els.soundPreview) {
+    els.soundPreview.addEventListener('click', () => {
+      const soundType = els.soundEnd.value;
+      const volume = parseFloat(els.soundVolume.value) || 0.7;
+      if (soundType && soundType !== 'none') {
+        playSound(soundType, volume);
+      }
+    });
   }
 
   // Initialize range displays
@@ -3852,6 +3917,15 @@ function setupEventListeners() {
   els.appSettingsSave.addEventListener('click', saveAppSettingsFromForm);
   els.settingsExport.addEventListener('click', handleExport);
   els.settingsImport.addEventListener('click', () => els.importFile.click());
+
+  // Timer zoom slider - update display value
+  if (els.timerZoom) {
+    els.timerZoom.addEventListener('input', () => {
+      if (els.timerZoomValue) {
+        els.timerZoomValue.textContent = els.timerZoom.value + '%';
+      }
+    });
+  }
 
   // Refresh updates button
   document.getElementById('refreshUpdates')?.addEventListener('click', async () => {

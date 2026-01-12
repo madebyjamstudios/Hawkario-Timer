@@ -103,15 +103,30 @@ export function validateStyle(style) {
 }
 
 /**
+ * Valid sound types
+ */
+const VALID_SOUND_TYPES = ['none', 'chime', 'bell', 'alert', 'gong', 'soft'];
+
+/**
  * Validate sound settings
+ * Supports both old format (endEnabled: boolean) and new format (endType: string)
  */
 export function validateSound(sound) {
   if (!sound || typeof sound !== 'object') {
     return getDefaultSound();
   }
 
+  // Support both old and new format
+  let endType = 'none';
+  if (typeof sound.endType === 'string' && VALID_SOUND_TYPES.includes(sound.endType)) {
+    endType = sound.endType;
+  } else if (sound.endEnabled === true) {
+    // Migrate old format: 'on' becomes 'chime'
+    endType = 'chime';
+  }
+
   return {
-    endEnabled: Boolean(sound.endEnabled),
+    endType,
     volume: validateNumber(sound.volume, 0.7, 0, 1)
   };
 }
@@ -170,7 +185,7 @@ function getDefaultStyle() {
 
 function getDefaultSound() {
   return {
-    endEnabled: false,
+    endType: 'none',
     volume: 0.7
   };
 }
@@ -257,6 +272,7 @@ export function validateAppSettings(settings) {
 
 /**
  * Validate default timer settings
+ * Supports both old format (soundEnabled: boolean) and new format (soundType: string)
  */
 function validateDefaultSettings(defaults) {
   if (!defaults || typeof defaults !== 'object') {
@@ -264,15 +280,24 @@ function validateDefaultSettings(defaults) {
       mode: 'countdown',
       durationSec: 600,
       format: 'MM:SS',
-      soundEnabled: false
+      soundType: 'none'
     };
+  }
+
+  // Support both old and new format
+  let soundType = 'none';
+  if (typeof defaults.soundType === 'string' && VALID_SOUND_TYPES.includes(defaults.soundType)) {
+    soundType = defaults.soundType;
+  } else if (defaults.soundEnabled === true) {
+    // Migrate old format
+    soundType = 'chime';
   }
 
   return {
     mode: validateMode(defaults.mode),
     durationSec: validateDuration(defaults.durationSec),
     format: validateFormat(defaults.format),
-    soundEnabled: Boolean(defaults.soundEnabled)
+    soundType
   };
 }
 

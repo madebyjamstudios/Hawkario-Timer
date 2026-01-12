@@ -49,6 +49,9 @@ updateCanvasScale();
 let canonicalState = null;
 let lastSeq = -1;
 
+// Timer zoom (from app settings)
+let timerZoom = 100;
+
 // Flash animator instance
 let flashAnimator = null;
 
@@ -122,7 +125,11 @@ function fitTimerContent() {
     const widthRatio = targetWidth / naturalWidth;
     const heightRatio = targetHeight / naturalHeight;
     const ratio = Math.min(widthRatio, heightRatio);
-    const newFontSize = Math.max(10, 100 * ratio);
+
+    // Apply zoom from app settings
+    const zoom = timerZoom / 100;
+
+    const newFontSize = Math.max(10, 100 * ratio * zoom);
     timerEl.style.fontSize = newFontSize + 'px';
   }
 }
@@ -252,6 +259,13 @@ function handleTimerState(state) {
   // Apply style
   if (state.style) {
     applyStyle(state.style);
+  }
+
+  // Handle timer zoom change
+  const newZoom = state.timerZoom ?? 100;
+  if (newZoom !== timerZoom) {
+    timerZoom = newZoom;
+    fitTimerContent();
   }
 
   // Handle blackout (ABSOLUTE state)
