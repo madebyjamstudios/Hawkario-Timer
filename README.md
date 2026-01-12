@@ -2,17 +2,16 @@
 
 Professional countdown timer with customizable display for broadcasts, presentations, and live events.
 
-<img width="1184" alt="Ninja Timer Control Window" src="https://github.com/user-attachments/assets/a3469260-2922-447a-9266-29ed8d155a4e" />
+<img width="600" alt="Ninja Timer - Professional countdown timer control panel with multiple timer presets, live preview, and playback controls" src="https://github.com/user-attachments/assets/45b8c3ee-0444-4457-9524-64667c94cecc" />
 
 ## Screenshots
 
-| Control Panel | Output Display |
-|--------------|----------------|
-| ![Control](screenshots/control.png) | ![Output](screenshots/output.png) |
-
-| Timer Settings | Messages |
-|---------------|----------|
-| ![Settings](screenshots/settings.png) | ![Messages](screenshots/messages.png) |
+|  |  |
+|:---:|:---:|
+| **Linked Timers** | **Output Display** |
+| <img width="400" alt="Ninja Timer control panel showing linked timer presets with drag and drop reordering" src="https://github.com/user-attachments/assets/639ff2bc-62ee-4ffe-b254-0e0578774130" /> | <img width="400" alt="Ninja Timer fullscreen output display with countdown timer on black background" src="https://github.com/user-attachments/assets/12c55bbe-75b9-4f6a-ba23-859183f7a945" /> |
+| **Timer Settings** | **Messages** |
+| <img width="400" alt="Ninja Timer settings modal with duration, appearance, and sound options" src="https://github.com/user-attachments/assets/56cab9a6-8db0-430d-9c3b-85220ae22e47" /> | <img width="400" alt="Ninja Timer messages panel with formatted text overlays and color options" src="https://github.com/user-attachments/assets/8a895c33-54dc-4cc0-870e-b64ba0c513ea" /> |
 
 ## Features
 
