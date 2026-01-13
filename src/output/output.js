@@ -179,7 +179,8 @@ let cachedShadowKey = '';
 
 /**
  * Fit timer text to reference canvas size
- * Uses max-width reference text to ensure consistent sizing regardless of digits
+ * Uses max-width reference text to ensure consistent WIDTH regardless of digits
+ * Width is fixed, height/size adjusts to fill that width
  */
 function fitTimerContent() {
   // Get current format and mode from canonical state
@@ -187,9 +188,8 @@ function fitTimerContent() {
   const mode = canonicalState?.mode || 'countdown';
   const todFormat = canonicalState?.todFormat || '12h';
 
-  // Target: 95% of reference width, 90% height (or 45% when message visible)
+  // Target: 95% of reference width (width-only constraint for consistent sizing)
   const targetWidth = REF_WIDTH * 0.95;
-  const targetHeight = REF_HEIGHT * (currentMessage ? 0.45 : 0.90);
 
   // Get max-width reference text for consistent sizing
   const refText = getMaxWidthTimerText(format, mode, todFormat);
@@ -206,28 +206,26 @@ function fitTimerContent() {
 
   // Reset to 100px base to measure natural size
   timerEl.style.fontSize = '100px';
+  timerEl.style.minWidth = '';
 
   const naturalWidth = timerEl.scrollWidth;
-  const naturalHeight = timerEl.scrollHeight;
 
   // Restore actual content
   timerEl.innerHTML = currentContent;
 
-  if (naturalWidth > 0 && naturalHeight > 0) {
+  if (naturalWidth > 0) {
+    // Only use width ratio - height adjusts naturally
     const widthRatio = targetWidth / naturalWidth;
-    const heightRatio = targetHeight / naturalHeight;
-    const ratio = Math.min(widthRatio, heightRatio);
 
     // Apply zoom from app settings
     const zoom = timerZoom / 100;
 
-    const newFontSize = Math.max(10, 100 * ratio * zoom);
+    const newFontSize = Math.max(10, 100 * widthRatio * zoom);
     timerEl.style.fontSize = newFontSize + 'px';
 
-    // Set min-width to ensure consistent width regardless of digit count
-    // Scale the natural width by the same ratio as font size
-    const scaledWidth = naturalWidth * (newFontSize / 100);
-    timerEl.style.minWidth = scaledWidth + 'px';
+    // Set fixed width to ensure consistent width regardless of digit count
+    const fixedWidth = naturalWidth * (newFontSize / 100);
+    timerEl.style.minWidth = fixedWidth + 'px';
   }
 }
 
