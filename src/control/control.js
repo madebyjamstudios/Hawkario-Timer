@@ -2893,7 +2893,7 @@ function updatePreviewScale() {
 
 /**
  * Fit preview timer text to reference canvas size
- * Uses binary search to find optimal font size, then fine-tunes with scaleX
+ * Uses reference string (widest possible for format) so all times have same width
  */
 function fitPreviewTimer() {
   if (!els.livePreviewTimer) return;
@@ -2904,14 +2904,23 @@ function fitPreviewTimer() {
   // Check if message is visible to determine available height
   const hasMessage = els.livePreviewCanvas?.classList.contains('with-message');
 
-  // Target dimensions (what we want to fill)
+  // Target dimensions
   const targetWidth = REF_WIDTH * 0.95;
   const targetHeight = REF_HEIGHT * (hasMessage ? 0.45 : 0.90);
+
+  // Reference string based on format (widest possible value)
+  // Use 88s because 8 is typically the widest digit
+  const format = activeTimerConfig?.format || 'MM:SS';
+  const refText = format === 'HH:MM:SS' ? '88:88:88' : '88:88';
+
+  // Save actual content
+  const actualContent = els.livePreviewTimer.innerHTML;
 
   // Reset transform for accurate measurement
   els.livePreviewTimer.style.transform = 'translate(-50%, -50%)';
 
-  // Binary search for optimal font size
+  // Binary search for font size where REFERENCE fits
+  els.livePreviewTimer.textContent = refText;
   const minPx = 10;
   const maxPx = 600;
   let lo = minPx;
@@ -2922,7 +2931,6 @@ function fitPreviewTimer() {
     const mid = (lo + hi) >> 1;
     els.livePreviewTimer.style.fontSize = mid + 'px';
 
-    // Force layout and measure
     const w = els.livePreviewTimer.scrollWidth;
     const h = els.livePreviewTimer.scrollHeight;
 
@@ -2934,13 +2942,20 @@ function fitPreviewTimer() {
     }
   }
 
-  // Apply best size with zoom
+  // Measure reference width at best font size
+  els.livePreviewTimer.style.fontSize = best + 'px';
+  const refWidth = els.livePreviewTimer.scrollWidth;
+
+  // Restore actual content and measure its width
+  els.livePreviewTimer.innerHTML = actualContent;
+  const actualWidth = els.livePreviewTimer.scrollWidth || 1;
+
+  // Apply font size with zoom
   const finalSize = Math.max(minPx, best * zoom);
   els.livePreviewTimer.style.fontSize = finalSize + 'px';
 
-  // Fine-tune with scaleX to fill remaining space (clamped to avoid distortion)
-  const finalW = els.livePreviewTimer.scrollWidth || 1;
-  const scaleX = Math.min(1.05, Math.max(0.95, targetWidth / finalW));
+  // Scale actual content to match reference width (so all times fill same space)
+  const scaleX = refWidth / actualWidth;
   els.livePreviewTimer.style.transform = `translate(-50%, -50%) scaleX(${scaleX})`;
 }
 
