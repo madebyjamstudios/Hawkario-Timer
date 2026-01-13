@@ -175,7 +175,7 @@ function getRefText(format, durationMs) {
 
 /**
  * Fit timer text to timer-section container
- * Scales timer to fill available space while maintaining aspect ratio
+ * PRIORITY: Fill target width. Only scale down if height exceeded.
  */
 function fitTimerContent() {
   const zoom = timerZoom / 100;
@@ -190,23 +190,28 @@ function fitTimerContent() {
   const targetWidth = contentBoxWidth * 0.95 * zoom;
   const targetHeight = sectionHeight * 0.90;
 
-  // Reset and measure at base font size
+  // Step 1: Measure at base font size
   timerEl.style.transform = 'none';
   timerEl.style.fontSize = '100px';
 
-  const naturalWidth = timerEl.scrollWidth;
-  const naturalHeight = timerEl.scrollHeight;
+  const widthAt100 = timerEl.scrollWidth;
+  if (widthAt100 <= 0) return;
 
-  if (naturalWidth <= 0 || naturalHeight <= 0) return;
+  // Step 2: Calculate font size to FILL target width
+  const fontSizeForWidth = 100 * (targetWidth / widthAt100);
+  timerEl.style.fontSize = fontSizeForWidth + 'px';
 
-  // Calculate uniform scale to fit within target bounds
-  const scaleToFitWidth = targetWidth / naturalWidth;
-  const scaleToFitHeight = targetHeight / naturalHeight;
-  const scale = Math.min(scaleToFitWidth, scaleToFitHeight);
+  // Step 3: Check if height fits
+  const heightAtTargetWidth = timerEl.scrollHeight;
 
-  // Apply as font size for crisp rendering
-  const finalFontSize = 100 * scale;
-  timerEl.style.fontSize = finalFontSize + 'px';
+  if (heightAtTargetWidth <= targetHeight) {
+    // Fits! Timer fills the width perfectly
+    return;
+  }
+
+  // Step 4: Too tall - scale down uniformly to fit height
+  const scale = targetHeight / heightAtTargetWidth;
+  timerEl.style.transform = `scale(${scale})`;
 }
 
 /**

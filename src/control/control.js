@@ -2932,7 +2932,7 @@ function updatePreviewScale() {
 
 /**
  * Fit preview timer text to timer-section container
- * All timers have identical width regardless of content
+ * PRIORITY: Fill target width. Only scale down if height exceeded.
  */
 function fitPreviewTimer() {
   if (!els.livePreviewTimer || !els.livePreviewTimerSection) return;
@@ -2950,23 +2950,28 @@ function fitPreviewTimer() {
   const targetWidth = contentBoxWidth * 0.95 * zoom;
   const targetHeight = sectionHeight * 0.90;
 
-  // Reset and measure at base font size
+  // Step 1: Measure at base font size
   els.livePreviewTimer.style.transform = 'none';
   els.livePreviewTimer.style.fontSize = '100px';
 
-  const naturalWidth = els.livePreviewTimer.scrollWidth;
-  const naturalHeight = els.livePreviewTimer.scrollHeight;
+  const widthAt100 = els.livePreviewTimer.scrollWidth;
+  if (widthAt100 <= 0) return;
 
-  if (naturalWidth <= 0 || naturalHeight <= 0) return;
+  // Step 2: Calculate font size to FILL target width
+  const fontSizeForWidth = 100 * (targetWidth / widthAt100);
+  els.livePreviewTimer.style.fontSize = fontSizeForWidth + 'px';
 
-  // Calculate uniform scale to fit within target bounds
-  const scaleToFitWidth = targetWidth / naturalWidth;
-  const scaleToFitHeight = targetHeight / naturalHeight;
-  const scale = Math.min(scaleToFitWidth, scaleToFitHeight);
+  // Step 3: Check if height fits
+  const heightAtTargetWidth = els.livePreviewTimer.scrollHeight;
 
-  // Apply as font size for crisp rendering
-  const finalFontSize = 100 * scale;
-  els.livePreviewTimer.style.fontSize = finalFontSize + 'px';
+  if (heightAtTargetWidth <= targetHeight) {
+    // Fits! Timer fills the width perfectly
+    return;
+  }
+
+  // Step 4: Too tall - scale down uniformly to fit height
+  const scale = targetHeight / heightAtTargetWidth;
+  els.livePreviewTimer.style.transform = `scale(${scale})`;
 }
 
 /**
