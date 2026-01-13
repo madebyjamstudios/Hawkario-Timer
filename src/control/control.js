@@ -2954,16 +2954,17 @@ function fitPreviewTimer() {
   // (shorter text gets larger font)
   const actualFontSize = baseFontSize * (refWidth100 / actualWidth100);
 
-  // Apply font size first
-  els.livePreviewTimer.style.fontSize = actualFontSize + 'px';
-  els.livePreviewTimer.style.transform = 'translate(-50%, -50%)';
+  // Measure reference at baseFontSize (actual target width)
+  els.livePreviewTimer.style.fontSize = baseFontSize + 'px';
+  els.livePreviewTimer.innerHTML = refHTML;
+  const targetRefWidth = els.livePreviewTimer.scrollWidth;
 
-  // Measure actual rendered dimensions
+  // Apply actualFontSize and measure actual
+  els.livePreviewTimer.style.fontSize = actualFontSize + 'px';
+  els.livePreviewTimer.innerHTML = actualContent;
+  els.livePreviewTimer.style.transform = 'translate(-50%, -50%)';
   const renderedWidth = els.livePreviewTimer.scrollWidth;
   const renderedHeight = els.livePreviewTimer.scrollHeight;
-
-  // Target width is what reference would be at baseFontSize
-  const targetRefWidth = (baseFontSize / 100) * refWidth100;
 
   // Fine-tune with scale for pixel-perfect precision
   const scaleX = targetRefWidth / renderedWidth;
