@@ -2937,7 +2937,9 @@ function fitPreviewTimer() {
   els.livePreviewTimer.style.transform = 'translate(-50%, -50%)';
 
   // Step 1: Find font size where REFERENCE fits target (constrained by width & height)
-  els.livePreviewTimer.textContent = refText;
+  // Use innerHTML with same span structure as actual timer content
+  const refHTML = refText.split(':').join('<span class="colon">:</span>');
+  els.livePreviewTimer.innerHTML = refHTML;
   const minPx = 10;
   const maxPx = 600;
   let lo = minPx;

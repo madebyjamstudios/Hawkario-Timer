@@ -49,8 +49,8 @@ html, body {
   -webkit-user-select: none;
   white-space: nowrap;
   overflow: visible;
-  /* Padding to prevent stroke from being clipped at edges */
-  padding: 0.1em 0.15em;
+  /* Fixed px padding - doesn't scale with font, important for measurement */
+  padding: 10px 15px;
   box-sizing: border-box;
   text-align: center;
   /* Draw stroke behind fill to prevent artifacts at intersections */

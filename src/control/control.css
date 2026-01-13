@@ -236,7 +236,7 @@ button:disabled {
 
   white-space: nowrap;
   overflow: visible;
-  padding: 0.1em 0.15em;
+  padding: 10px 15px; /* Fixed px - doesn't scale with font, important for measurement */
   user-select: none;
   -webkit-user-select: none;
   /* Font size set dynamically in JS */
