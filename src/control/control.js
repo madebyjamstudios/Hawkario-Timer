@@ -3672,7 +3672,7 @@ function updateRangeDisplays() {
  */
 function updateVolumeRowVisibility() {
   if (els.volumeRow && els.soundEnd) {
-    els.volumeRow.style.display = els.soundEnd.value !== 'none' ? 'flex' : 'none';
+    els.volumeRow.style.display = els.soundEnd.value !== 'none' ? 'grid' : 'none';
   }
 }
 
