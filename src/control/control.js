@@ -3499,10 +3499,12 @@ function renderLivePreviewInternal() {
 
   // Update display (use innerHTML for ToD line breaks)
   els.livePreviewTimer.innerHTML = displayText;
-  // Only refit when format or mode changes (not when digits change)
-  if (format !== lastPreviewTimerFormat || mode !== lastPreviewTimerMode) {
+  // Refit when format, mode, or text length changes (font scales to fill fixed width)
+  const textLength = displayText.replace(/<[^>]*>/g, '').length;
+  if (format !== lastPreviewTimerFormat || mode !== lastPreviewTimerMode || textLength !== lastPreviewTimerLength) {
     lastPreviewTimerFormat = format;
     lastPreviewTimerMode = mode;
+    lastPreviewTimerLength = textLength;
     fitPreviewTimer();
   }
 

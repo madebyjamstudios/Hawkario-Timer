@@ -146,6 +146,7 @@ let lastTimerText = '';
 let lastMessageText = '';
 let lastTimerFormat = '';
 let lastTimerMode = '';
+let lastTimerLength = 0;
 
 /**
  * Get maximum-width reference text for timer sizing
@@ -179,17 +180,15 @@ let cachedShadowKey = '';
 
 /**
  * Fit timer text to reference canvas size
- * Uses max-width reference text to ensure consistent WIDTH regardless of digits
- * Width is fixed, height/size adjusts to fill that width
+ * Fixed width based on reference text, font scales to fill that width
+ * Shorter text (like "1:00") gets LARGER font to fill same width as "10:00"
  */
 function fitTimerContent() {
   // Get current format and mode from canonical state
   const format = canonicalState?.format || 'MM:SS';
   const mode = canonicalState?.mode || 'countdown';
   const todFormat = canonicalState?.todFormat || '12h';
-
-  // Target: 95% of reference width (width-only constraint for consistent sizing)
-  const targetWidth = REF_WIDTH * 0.95;
+  const zoom = timerZoom / 100;
 
   // Get max-width reference text for consistent sizing
   const refText = getMaxWidthTimerText(format, mode, todFormat);
@@ -197,34 +196,35 @@ function fitTimerContent() {
   // Store current content
   const currentContent = timerEl.innerHTML;
 
-  // Set reference text for measurement (same structure as actual display)
+  // Step 1: Measure reference text to determine fixed width
   if (refText.combined) {
     timerEl.innerHTML = `${refText.timer}<span class="tod-line">${refText.tod}</span>`;
   } else {
     timerEl.innerHTML = refText.timer;
   }
-
-  // Reset to 100px base to measure natural size
   timerEl.style.fontSize = '100px';
   timerEl.style.minWidth = '';
+  timerEl.style.width = '';
 
-  const naturalWidth = timerEl.scrollWidth;
+  const refNaturalWidth = timerEl.scrollWidth;
 
-  // Restore actual content
+  // Calculate the fixed width (95% of canvas, scaled by zoom)
+  const targetWidth = REF_WIDTH * 0.95 * zoom;
+  const fixedWidth = targetWidth;
+
+  // Step 2: Measure actual content to calculate font size
   timerEl.innerHTML = currentContent;
+  timerEl.style.fontSize = '100px';
 
-  if (naturalWidth > 0) {
-    // Only use width ratio - height adjusts naturally
-    const widthRatio = targetWidth / naturalWidth;
+  const actualNaturalWidth = timerEl.scrollWidth;
 
-    // Apply zoom from app settings
-    const zoom = timerZoom / 100;
-
-    const newFontSize = Math.max(10, 100 * widthRatio * zoom);
+  if (actualNaturalWidth > 0 && refNaturalWidth > 0) {
+    // Calculate font size to make actual text fill the fixed width
+    const newFontSize = Math.max(10, 100 * (fixedWidth / actualNaturalWidth));
     timerEl.style.fontSize = newFontSize + 'px';
 
-    // Set fixed width to ensure consistent width regardless of digit count
-    const fixedWidth = naturalWidth * (newFontSize / 100);
+    // Set fixed width based on reference text (ensures consistent width)
+    timerEl.style.width = fixedWidth + 'px';
     timerEl.style.minWidth = fixedWidth + 'px';
   }
 }
@@ -465,12 +465,14 @@ function renderInternal() {
   // Apply display text (use innerHTML for ToD line breaks)
   timerEl.innerHTML = text;
 
-  // Only refit timer when format or mode changes (not when digits change)
+  // Refit when format, mode, or text length changes (font scales to fill fixed width)
   const currentFormat = canonicalState?.format || 'MM:SS';
   const currentMode = canonicalState?.mode || 'countdown';
-  if (currentFormat !== lastTimerFormat || currentMode !== lastTimerMode) {
+  const textLength = text.replace(/<[^>]*>/g, '').length;
+  if (currentFormat !== lastTimerFormat || currentMode !== lastTimerMode || textLength !== lastTimerLength) {
     lastTimerFormat = currentFormat;
     lastTimerMode = currentMode;
+    lastTimerLength = textLength;
     fitTimerContent();
   }
 
