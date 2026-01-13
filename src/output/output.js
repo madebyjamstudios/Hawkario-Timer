@@ -154,7 +154,7 @@ let cachedShadowKey = '';
 
 /**
  * Fit timer text to reference canvas size
- * Simple sizing: fit actual text to available space
+ * Uses binary search to find optimal font size, then fine-tunes with scaleX
  */
 function fitTimerContent() {
   const zoom = timerZoom / 100;
@@ -162,23 +162,44 @@ function fitTimerContent() {
   // Check if message is visible to determine available height
   const hasMessage = virtualCanvasEl?.classList.contains('with-message');
 
-  // Target dimensions
+  // Target dimensions (what we want to fill)
   const targetWidth = REF_WIDTH * 0.95;
   const targetHeight = REF_HEIGHT * (hasMessage ? 0.45 : 0.90);
 
-  // Measure actual content at 100px
-  timerEl.style.fontSize = '100px';
-  const naturalWidth = timerEl.scrollWidth;
-  const naturalHeight = timerEl.scrollHeight;
+  // Reset transform for accurate measurement
+  timerEl.style.transform = 'translate(-50%, -50%)';
 
-  if (naturalWidth > 0 && naturalHeight > 0) {
-    // Size to fit within target, constrained by both width and height
-    const widthRatio = targetWidth / naturalWidth;
-    const heightRatio = targetHeight / naturalHeight;
-    const newFontSize = Math.max(10, 100 * Math.min(widthRatio, heightRatio) * zoom);
+  // Binary search for optimal font size
+  const minPx = 10;
+  const maxPx = 600;
+  let lo = minPx;
+  let hi = maxPx;
+  let best = minPx;
 
-    timerEl.style.fontSize = newFontSize + 'px';
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    timerEl.style.fontSize = mid + 'px';
+
+    // Force layout and measure
+    const w = timerEl.scrollWidth;
+    const h = timerEl.scrollHeight;
+
+    if (w <= targetWidth && h <= targetHeight) {
+      best = mid;
+      lo = mid + 1;
+    } else {
+      hi = mid - 1;
+    }
   }
+
+  // Apply best size with zoom
+  const finalSize = Math.max(minPx, best * zoom);
+  timerEl.style.fontSize = finalSize + 'px';
+
+  // Fine-tune with scaleX to fill remaining space (clamped to avoid distortion)
+  const finalW = timerEl.scrollWidth || 1;
+  const scaleX = Math.min(1.05, Math.max(0.95, targetWidth / finalW));
+  timerEl.style.transform = `translate(-50%, -50%) scaleX(${scaleX})`;
 }
 
 /**
