@@ -5030,7 +5030,7 @@ function renderPresetList() {
     // Mode indicator (clickable to change)
     const modeIndicator = document.createElement('span');
     modeIndicator.className = 'preset-mode';
-    modeIndicator.textContent = getModeLabel(preset.config?.mode || 'countdown');
+    modeIndicator.textContent = getModeLabel(preset.config?.mode || 'countdown') + ' ▾';
     modeIndicator.onclick = (e) => {
       e.stopPropagation();
       showModeDropdown(idx, preset, modeIndicator);
@@ -5361,7 +5361,7 @@ function showModeDropdown(idx, preset, anchorEl) {
     popup.appendChild(option);
   });
 
-  // Position popup near the anchor element
+  // Position popup below the anchor element (always dropdown, never dropup)
   const rect = anchorEl.getBoundingClientRect();
   popup.style.position = 'fixed';
   popup.style.top = `${rect.bottom + 4}px`;
@@ -5369,13 +5369,10 @@ function showModeDropdown(idx, preset, anchorEl) {
 
   document.body.appendChild(popup);
 
-  // Adjust position if off-screen
+  // Adjust horizontal position if off-screen
   const popupRect = popup.getBoundingClientRect();
   if (popupRect.right > window.innerWidth - 10) {
     popup.style.left = `${window.innerWidth - popupRect.width - 10}px`;
-  }
-  if (popupRect.bottom > window.innerHeight - 10) {
-    popup.style.top = `${rect.top - popupRect.height - 4}px`;
   }
 
   // Close on click outside
