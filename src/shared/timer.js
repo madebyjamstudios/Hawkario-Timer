@@ -66,7 +66,7 @@ const COLON_HTML = '<span class="colon">:</span>';
 
 /**
  * Format time as plain text (for inputs and textContent)
- * First segment is not padded (9:00 not 09:00), rest are padded (0:09 not 0:9)
+ * All segments are padded to 2 digits for consistent width (01:00 not 1:00)
  */
 export function formatTimePlain(ms, format = 'MM:SS', roundUp = false) {
   const total = Math.max(0, roundUp ? Math.ceil(ms / 1000) : Math.floor(ms / 1000));
@@ -78,16 +78,16 @@ export function formatTimePlain(ms, format = 'MM:SS', roundUp = false) {
 
   switch (format) {
     case 'HH:MM:SS':
-      return `${h}:${pad(m)}:${pad(s)}`;
+      return `${pad(h)}:${pad(m)}:${pad(s)}`;
     case 'MM:SS':
     default:
-      return `${m + (h * 60)}:${pad(s)}`;
+      return `${pad(m + (h * 60))}:${pad(s)}`;
   }
 }
 
 /**
  * Format time as HTML (with centered colons for display)
- * First segment is not padded (9:00 not 09:00), rest are padded (0:09 not 0:9)
+ * All segments are padded to 2 digits for consistent width (01:00 not 1:00)
  */
 export function formatTime(ms, format = 'MM:SS', roundUp = false) {
   const total = Math.max(0, roundUp ? Math.ceil(ms / 1000) : Math.floor(ms / 1000));
@@ -99,10 +99,10 @@ export function formatTime(ms, format = 'MM:SS', roundUp = false) {
 
   switch (format) {
     case 'HH:MM:SS':
-      return `${h}${COLON_HTML}${pad(m)}${COLON_HTML}${pad(s)}`;
+      return `${pad(h)}${COLON_HTML}${pad(m)}${COLON_HTML}${pad(s)}`;
     case 'MM:SS':
     default:
-      return `${m + (h * 60)}${COLON_HTML}${pad(s)}`;
+      return `${pad(m + (h * 60))}${COLON_HTML}${pad(s)}`;
   }
 }
 
@@ -158,12 +158,15 @@ export function formatTimeOfDay(format = '12h', timezone = 'auto') {
   const s = parts.find(p => p.type === 'second')?.value || '00';
   const period = parts.find(p => p.type === 'dayPeriod')?.value || '';
 
+  // Pad hour for consistent width
+  const paddedH = h.padStart(2, '0');
+
   if (format === '12h') {
-    return `${h}${COLON_HTML}${m}${COLON_HTML}${s} ${period}`;
+    return `${paddedH}${COLON_HTML}${m}${COLON_HTML}${s} ${period}`;
   }
 
   // 24-hour format
-  return `${h}${COLON_HTML}${m}${COLON_HTML}${s}`;
+  return `${paddedH}${COLON_HTML}${m}${COLON_HTML}${s}`;
 }
 
 /**
