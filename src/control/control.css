@@ -1483,7 +1483,6 @@ button:disabled {
 .preset-mode[data-mode="tod"] { color: #f59e0b; }
 .preset-mode[data-mode="countdown-tod"] { color: #4eafff; }
 .preset-mode[data-mode="countup-tod"] { color: #22c55e; }
-.preset-mode[data-mode="hidden"] { color: #666; }
 
 .preset-mode:hover {
   color: #fff !important;
