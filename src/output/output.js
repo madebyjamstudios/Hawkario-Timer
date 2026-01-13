@@ -183,8 +183,8 @@ function fitTimerContent() {
   // Target width: 90% of canvas * 95% padding * zoom
   const targetWidth = REF_WIDTH * 0.90 * 0.95 * zoom;
 
-  // Measure at base font size
-  timerEl.style.transform = 'none';
+  // Measure at base font size (keep centering transform)
+  timerEl.style.transform = 'translate(-50%, -50%)';
   timerEl.style.fontSize = '100px';
 
   const widthAt100 = timerEl.scrollWidth;

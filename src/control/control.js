@@ -287,8 +287,7 @@ function getModeLabel(mode) {
     'countup': 'C/U',
     'tod': 'ToD',
     'countdown-tod': 'C/D+T',
-    'countup-tod': 'C/U+T',
-    'hidden': 'Hide'
+    'countup-tod': 'C/U+T'
   };
   return labels[mode] || mode;
 }
@@ -2943,8 +2942,8 @@ function fitPreviewTimer() {
   // Target width: 90% of canvas * 95% padding * zoom
   const targetWidth = REF_WIDTH * 0.90 * 0.95 * zoom;
 
-  // Measure at base font size
-  els.livePreviewTimer.style.transform = 'none';
+  // Measure at base font size (keep centering transform)
+  els.livePreviewTimer.style.transform = 'translate(-50%, -50%)';
   els.livePreviewTimer.style.fontSize = '100px';
 
   const widthAt100 = els.livePreviewTimer.scrollWidth;
@@ -5316,8 +5315,7 @@ function showModeDropdown(idx, preset, anchorEl) {
     { value: 'countup', label: 'Count Up (C/U)' },
     { value: 'tod', label: 'Time of Day (ToD)' },
     { value: 'countdown-tod', label: 'C/D + Time (C/D+T)' },
-    { value: 'countup-tod', label: 'C/U + Time (C/U+T)' },
-    { value: 'hidden', label: 'Hidden (Hide)' }
+    { value: 'countup-tod', label: 'C/U + Time (C/U+T)' }
   ];
 
   const currentMode = preset.config?.mode || 'countdown';

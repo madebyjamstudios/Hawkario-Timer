@@ -51,9 +51,7 @@ html, body {
 /* Timer section - fills box by default, centered */
 .timer-section {
   flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: relative;
   width: 100%;
   overflow: visible;
 }
@@ -79,8 +77,11 @@ html, body {
 
 /* ============ Timer Element ============ */
 .timer {
-  /* Relative positioning within timer-section */
-  position: relative;
+  /* Absolute centering - works regardless of size/overflow */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 
   /* Tabular numbers: all digits same width */
   font-variant-numeric: tabular-nums lining-nums;
@@ -89,9 +90,6 @@ html, body {
   -webkit-user-select: none;
   white-space: nowrap;
   overflow: visible;
-  /* Fixed px padding - doesn't scale with font, important for measurement */
-  padding: 10px 15px;
-  box-sizing: border-box;
   text-align: center;
   /* Draw stroke behind fill to prevent artifacts at intersections */
   paint-order: stroke fill;
