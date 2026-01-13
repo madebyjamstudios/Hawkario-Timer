@@ -2958,12 +2958,14 @@ function fitPreviewTimer() {
   els.livePreviewTimer.style.fontSize = actualFontSize + 'px';
   els.livePreviewTimer.style.transform = 'translate(-50%, -50%)';
 
-  // Measure actual rendered dimensions
+  // Measure reference at actual font size (padding doesn't scale, so must measure at final size)
+  els.livePreviewTimer.innerHTML = refHTML;
+  const targetRefWidth = els.livePreviewTimer.scrollWidth;
+
+  // Measure actual at same font size
+  els.livePreviewTimer.innerHTML = actualContent;
   const renderedWidth = els.livePreviewTimer.scrollWidth;
   const renderedHeight = els.livePreviewTimer.scrollHeight;
-
-  // Target width is what reference would be at baseFontSize
-  const targetRefWidth = (baseFontSize / 100) * refWidth100;
 
   // Fine-tune with scale for pixel-perfect precision
   const scaleX = targetRefWidth / renderedWidth;

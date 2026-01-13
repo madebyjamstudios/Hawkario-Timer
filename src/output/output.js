@@ -217,12 +217,14 @@ function fitTimerContent() {
   timerEl.style.fontSize = actualFontSize + 'px';
   timerEl.style.transform = 'translate(-50%, -50%)';
 
-  // Measure actual rendered dimensions
+  // Measure reference at actual font size (padding doesn't scale, so must measure at final size)
+  timerEl.innerHTML = refHTML;
+  const targetRefWidth = timerEl.scrollWidth;
+
+  // Measure actual at same font size
+  timerEl.innerHTML = actualContent;
   const renderedWidth = timerEl.scrollWidth;
   const renderedHeight = timerEl.scrollHeight;
-
-  // Target width is what reference would be at baseFontSize
-  const targetRefWidth = (baseFontSize / 100) * refWidth100;
 
   // Fine-tune with scale for pixel-perfect precision
   const scaleX = targetRefWidth / renderedWidth;
