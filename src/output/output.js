@@ -149,26 +149,25 @@ let lastTimerMode = '';
 let lastTimerLength = 0;
 
 /**
- * Get maximum-width reference text for timer sizing
- * Always uses the widest reference (HH:MM:SS) so ALL formats have same width
+ * Calculate width units for a time string (deterministic, no browser measurement)
+ * With tabular-nums, digits have equal width. Colons are narrower.
  */
-function getMaxWidthTimerText(format, mode, todFormat = '12h') {
-  // Always use HH:MM:SS as reference so all formats align to same width
-  // This means "1:00" will have larger font than "22:10:00" but same visual width
-  const timerRef = '88:88:88';
-
-  // ToD reference (12h is wider due to AM/PM)
-  const todRef = todFormat === '24h' ? '88:88:88' : '88:88:88 AM';
-
-  // For combined modes, include both timer and ToD
-  if (mode === 'countdown-tod' || mode === 'countup-tod') {
-    return { timer: timerRef, tod: todRef, combined: true };
+function calculateWidthUnits(text) {
+  const plain = text.replace(/<[^>]*>/g, '');
+  let units = 0;
+  for (const char of plain) {
+    if (/[0-9]/.test(char)) units += 1;        // Digits = 1 unit
+    else if (char === ':') units += 0.55;      // Colons ~55% of digit
+    else if (char === ' ') units += 0.4;       // Spaces
+    else if (char === '+' || char === '-') units += 0.7;
+    else if (/[APMapm]/.test(char)) units += 0.65;
+    else units += 0.5;
   }
-  if (mode === 'tod') {
-    return { timer: todRef, tod: null, combined: false };
-  }
-  return { timer: timerRef, tod: null, combined: false };
+  return units;
 }
+
+// Reference width units: "88:88:88" = 6 digits + 2 colons = 6 + 1.1 = 7.1 units
+const REF_WIDTH_UNITS = 7.1;
 
 // Cache for shadow CSS to avoid recalculating every frame
 let cachedShadowCSS = '';
@@ -176,53 +175,35 @@ let cachedShadowKey = '';
 
 /**
  * Fit timer text to reference canvas size
- * Scales font so actual text has same visual width as reference text
- * Shorter text (like "1:00") gets LARGER font to match width of "10:00"
+ * Uses character-based width calculation (deterministic, not browser measurement)
+ * All times scale to match reference "88:88:88" width
  */
 function fitTimerContent() {
-  const format = canonicalState?.format || 'MM:SS';
-  const mode = canonicalState?.mode || 'countdown';
-  const todFormat = canonicalState?.todFormat || '12h';
   const zoom = timerZoom / 100;
-
-  const refText = getMaxWidthTimerText(format, mode, todFormat);
   const currentContent = timerEl.innerHTML;
 
-  // Clear constraints and padding for accurate measurement
-  // (padding in em units would scale differently at different font sizes)
-  timerEl.style.width = '';
-  timerEl.style.minWidth = '';
-  timerEl.style.padding = '0';
+  // Calculate width units for actual content
+  const actualUnits = calculateWidthUnits(currentContent);
 
-  // Step 1: Measure reference text at 100px
-  if (refText.combined) {
-    timerEl.innerHTML = `${refText.timer}<span class="tod-line">${refText.tod}</span>`;
-  } else {
-    timerEl.innerHTML = refText.timer;
-  }
-  timerEl.style.fontSize = '100px';
-  const refWidth = timerEl.scrollWidth;
-
-  // Step 2: Measure actual text at 100px
-  timerEl.innerHTML = currentContent;
-  timerEl.style.fontSize = '100px';
-  const actualWidth = timerEl.scrollWidth;
-
-  // Restore padding (CSS will apply based on final font size)
-  timerEl.style.padding = '';
-
-  // Step 3: Calculate font size so actual matches reference visual width
+  // Target width in pixels (95% of reference canvas width)
   const targetWidth = REF_WIDTH * 0.95 * zoom;
 
-  if (refWidth > 0 && actualWidth > 0) {
-    // Font size that makes reference fill targetWidth
-    const refFontSize = 100 * (targetWidth / refWidth);
-    // Scale up for actual text to match reference width
-    const newFontSize = Math.max(10, refFontSize * (refWidth / actualWidth));
+  // Measure reference text once to get pixels-per-unit ratio
+  timerEl.style.padding = '0';
+  timerEl.innerHTML = '88:88:88';
+  timerEl.style.fontSize = '100px';
+  const refPixels = timerEl.scrollWidth;
+  const pixelsPerUnit = refPixels / REF_WIDTH_UNITS;
 
+  // Restore actual content
+  timerEl.innerHTML = currentContent;
+  timerEl.style.padding = '';
+
+  if (actualUnits > 0 && pixelsPerUnit > 0) {
+    // Calculate font size: scale so actual content fills targetWidth
+    const newFontSize = Math.max(10, 100 * targetWidth / (actualUnits * pixelsPerUnit));
     timerEl.style.fontSize = newFontSize + 'px';
   }
-  // NO width/minWidth - let text have natural width, centering via CSS transform
 }
 
 /**
