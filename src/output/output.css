@@ -35,12 +35,52 @@ html, body {
   /* Scale applied via JS */
 }
 
-.timer {
-  /* Absolute positioning for precise control */
+/* ============ Content Box System ============ */
+/* The big box - NEVER changes size */
+.content-box {
   position: absolute;
+  width: 90%;
+  height: 64%;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Timer section - fills box by default, centered */
+.timer-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Message section - hidden by default */
+.message-section {
+  display: none;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* When message visible: 34/66 split */
+.content-box.with-message .timer-section {
+  flex: 0 0 34%;
+}
+
+.content-box.with-message .message-section {
+  display: flex;
+  flex: 0 0 66%;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ============ Timer Element ============ */
+.timer {
+  /* Relative positioning within timer-section */
+  position: relative;
 
   /* Tabular numbers: all digits same width */
   font-variant-numeric: tabular-nums lining-nums;
@@ -123,30 +163,12 @@ html, body {
   /* Applied via JS when timer ends */
 }
 
-/* ============ Split Layout (Timer + Message) ============ */
-
-/* When message is visible: timer in top half, message in bottom half */
-.virtual-canvas.with-message .timer {
-  /* Centered in top half (25% from top = center of 0-50%) */
-  top: 25%;
-}
-
-.virtual-canvas.with-message .message-overlay {
-  /* Starts just below middle, horizontally centered */
-  top: 52% !important;  /* Just below middle line */
-  transform: translate(-50%, 0) !important;  /* Only center horizontally */
-}
-
 /* ============ Message Overlay ============ */
 
 .message-overlay {
-  /* Absolute positioning - hidden by default, centered when visible */
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  /* Relative positioning within message-section */
+  position: relative;
 
-  display: none;
   text-align: center;
   font-weight: 600;
   color: #ffffff;
@@ -158,7 +180,6 @@ html, body {
   -webkit-user-select: none;
   padding: 0.1em 0.15em;
   box-sizing: border-box;
-  /* max-width set by JS - FIXED in reference pixels */
   overflow: visible;
   word-wrap: break-word;
   overflow-wrap: break-word;
@@ -166,7 +187,6 @@ html, body {
 }
 
 .message-overlay.visible {
-  display: block;
   opacity: 1;
 }
 

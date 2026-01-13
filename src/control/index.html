@@ -37,8 +37,14 @@
       <div id="previewWrapper" class="live-preview-wrapper">
         <div id="livePreview" class="live-preview">
           <div id="livePreviewCanvas" class="virtual-canvas">
-            <div id="livePreviewTimer" class="timer-preview">10:00</div>
-            <div id="livePreviewMessage" class="message-preview"></div>
+            <div id="livePreviewContentBox" class="content-box">
+              <div class="timer-section">
+                <div id="livePreviewTimer" class="timer-preview">10:00</div>
+              </div>
+              <div class="message-section">
+                <div id="livePreviewMessage" class="message-preview"></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -153,6 +159,10 @@
         <div class="duration-controls" id="durationControls">
           <!-- Hours (hidden when format is MM:SS) -->
           <div class="digit-group hours-group" id="hoursGroup">
+            <div class="digit-col h0-col" id="h0Col">
+              <button type="button" class="digit-btn digit-up" data-digit="h0">▲</button>
+              <button type="button" class="digit-btn digit-down" data-digit="h0">▼</button>
+            </div>
             <div class="digit-col">
               <button type="button" class="digit-btn digit-up" data-digit="h1">▲</button>
               <button type="button" class="digit-btn digit-down" data-digit="h1">▼</button>
@@ -221,7 +231,7 @@
             </div>
             <div class="kv">
               <label for="duration">Duration</label>
-              <input id="duration" type="text" class="time-input duration-input" value="00:10:00" maxlength="8" placeholder="HH:MM:SS" />
+              <input id="duration" type="text" class="time-input duration-input" value="00:10:00" maxlength="10" placeholder="HH:MM:SS" />
             </div>
             <div class="kv" id="allowOvertimeRow">
               <label for="allowOvertime">Overtime</label>

@@ -227,34 +227,64 @@ button:disabled {
   /* Scale applied via JS */
 }
 
-.live-preview .timer-preview {
-  /* Absolute positioning for precise control */
+/* ============ Content Box System ============ */
+/* The big box - NEVER changes size */
+.live-preview .content-box {
   position: absolute;
+  width: 90%;
+  height: 64%;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-
-  white-space: nowrap;
-  overflow: visible;
-  padding: 10px 15px; /* Fixed px - doesn't scale with font, important for measurement */
-  user-select: none;
-  -webkit-user-select: none;
-  /* Font size set dynamically in JS */
+  display: flex;
+  flex-direction: column;
 }
 
-/* Message preview in live preview */
-.live-preview .message-preview {
-  /* Absolute positioning - hidden by default */
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+/* Timer section - fills box by default, centered */
+.live-preview .timer-section {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  overflow: hidden;
+}
 
+/* Message section - hidden by default */
+.live-preview .message-section {
   display: none;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* When message visible: 34/66 split */
+.live-preview .content-box.with-message .timer-section {
+  flex: 0 0 34%;
+}
+
+.live-preview .content-box.with-message .message-section {
+  display: flex;
+  flex: 0 0 66%;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Timer preview element */
+.live-preview .timer-preview {
+  position: relative;
+  white-space: nowrap;
+  overflow: visible;
+  padding: 10px 15px;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Message preview element */
+.live-preview .message-preview {
+  position: relative;
   font-weight: 600;
   color: #ffffff;
   text-align: center;
-  /* max-width set by JS - FIXED in reference pixels */
   overflow: visible;
   word-wrap: break-word;
   overflow-wrap: break-word;
@@ -262,20 +292,11 @@ button:disabled {
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 0, 0, 0.5);
   user-select: none;
   -webkit-user-select: none;
+  opacity: 0;
 }
 
-/* Split layout for timer + message */
-.live-preview .virtual-canvas.with-message .timer-preview {
-  /* Centered in top half (25% from top = center of 0-50%) */
-  top: 25%;
-}
-
-.live-preview .virtual-canvas.with-message .message-preview {
-  /* Starts just below middle, horizontally centered */
-  display: block;
+.live-preview .message-preview.visible {
   opacity: 1;
-  top: 52% !important;  /* Just below middle line */
-  transform: translate(-50%, 0) !important;  /* Only center horizontally */
 }
 
 /* Message formatting classes (shared with output) */
@@ -1405,14 +1426,95 @@ button:disabled {
   white-space: nowrap;
 }
 
+.preset-duration-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+  padding: 0 calc(8px * var(--timer-scale, 1));
+}
+
 .preset-duration {
   color: #888;
   font-size: calc(13px * var(--timer-scale, 1));
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  flex-shrink: 0;
-  padding: 0 calc(8px * var(--timer-scale, 1));
+}
+
+.preset-duration:hover {
+  color: #fff;
+}
+
+.preset-mode {
+  font-size: calc(10px * var(--timer-scale, 1));
+  color: #666;
+  cursor: pointer;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.preset-mode:hover {
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+}
+
+/* Mode dropdown popup */
+.mode-dropdown-popup {
+  position: fixed;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  z-index: 10000;
+  min-width: 150px;
+  overflow: hidden;
+}
+
+.mode-option {
+  padding: 8px 12px;
+  cursor: pointer;
+  color: #ccc;
+  font-size: 13px;
+}
+
+.mode-option:hover {
+  background: #3a3a3a;
+  color: #fff;
+}
+
+.mode-option.selected {
+  background: rgba(78, 175, 255, 0.2);
+  color: #4eafff;
+}
+
+/* Duration edit popup */
+.duration-edit-popup {
+  position: fixed;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  z-index: 10000;
+  padding: 8px;
+}
+
+.duration-edit-input {
+  width: 90px;
+  padding: 6px 8px;
+  font-size: 14px;
+  font-family: 'JetBrains Mono', monospace;
+  background: #1a1a1a;
+  border: 1px solid #555;
+  border-radius: 4px;
+  color: #fff;
+  text-align: center;
+}
+
+.duration-edit-input:focus {
+  outline: none;
+  border-color: #4eafff;
 }
 
 /* Link zone between timers - compact but clickable */
@@ -1924,6 +2026,11 @@ footer small {
   align-items: center;
   min-width: 20px;
   /* Width set dynamically by alignDurationButtons() */
+}
+
+/* Hide hundreds-of-hours column by default (shown via JS when h >= 100) */
+.digit-col.h0-col {
+  display: none;
 }
 
 .digit-btn {

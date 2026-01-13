@@ -41,6 +41,9 @@ function createSafeFallback(tagName = 'div') {
 const timerEl = document.getElementById('timer') || createSafeFallback('div');
 const stageEl = document.querySelector('.stage') || createSafeFallback('div');
 const virtualCanvasEl = document.getElementById('virtualCanvas') || createSafeFallback('div');
+const contentBoxEl = document.getElementById('contentBox') || createSafeFallback('div');
+const timerSectionEl = document.querySelector('.timer-section') || createSafeFallback('div');
+const messageSectionEl = document.querySelector('.message-section') || createSafeFallback('div');
 const fsHintEl = document.getElementById('fsHint') || createSafeFallback('div');
 const messageOverlayEl = document.getElementById('messageOverlay') || createSafeFallback('div');
 const resolutionEl = document.getElementById('resolutionDisplay') || createSafeFallback('span');
@@ -171,93 +174,100 @@ function getRefText(format, durationMs) {
 }
 
 /**
- * Fit timer text to reference canvas size
- * All times of same format have identical width (height can vary)
+ * Fit timer text to timer-section container
+ * All timers have identical width regardless of content
  */
 function fitTimerContent() {
   const zoom = timerZoom / 100;
+  const hasMessage = contentBoxEl.classList.contains('with-message');
 
-  // Check if message is visible to determine available height
-  const hasMessage = virtualCanvasEl?.classList.contains('with-message');
+  // Content box is 90% x 64% of reference canvas
+  // Timer section is 100% of content box (or 34% when message visible)
+  const contentBoxWidth = REF_WIDTH * 0.90;
+  const contentBoxHeight = REF_HEIGHT * 0.64;
+  const sectionHeight = hasMessage ? contentBoxHeight * 0.34 : contentBoxHeight;
 
-  // Target dimensions
-  const targetWidth = REF_WIDTH * 0.95;
-  const targetHeight = REF_HEIGHT * (hasMessage ? 0.45 : 0.90);
+  const targetWidth = contentBoxWidth * 0.95 * zoom;
+  const targetHeight = sectionHeight * 0.90;
 
-  // Reference string based on format AND duration
-  const format = canonicalState?.format || 'MM:SS';
-  const durationMs = canonicalState?.durationMs || 600000;
-  const refText = getRefText(format, durationMs);
-  const refHTML = refText.split(':').join('<span class="colon">:</span>');
+  // Universal reference - ALL timers target same width
+  const refHTML = '88<span class="colon">:</span>88<span class="colon">:</span>88';
 
   // Save actual content
   const actualContent = timerEl.innerHTML;
 
   // Reset transform and set fixed measurement font size
-  timerEl.style.transform = 'translate(-50%, -50%)';
+  timerEl.style.transform = 'none';
   timerEl.style.fontSize = '100px';
 
   // Measure reference width at 100px
   timerEl.innerHTML = refHTML;
   const refWidth100 = timerEl.scrollWidth;
-  const refHeight100 = timerEl.scrollHeight;
 
   // Measure actual width at 100px
   timerEl.innerHTML = actualContent;
   const actualWidth100 = timerEl.scrollWidth;
 
   // Calculate font size where reference would fit target width
-  const baseFontSize = 100 * (targetWidth / refWidth100) * zoom;
+  const baseFontSize = 100 * (targetWidth / refWidth100);
 
   // Calculate font size for actual to have same width as reference
   // (shorter text gets larger font)
   const actualFontSize = baseFontSize * (refWidth100 / actualWidth100);
 
-  // Measure reference at baseFontSize (actual target width)
-  timerEl.style.fontSize = baseFontSize + 'px';
-  timerEl.innerHTML = refHTML;
-  const targetRefWidth = timerEl.scrollWidth;
-
-  // Apply actualFontSize and measure actual
+  // Apply font size and measure
   timerEl.style.fontSize = actualFontSize + 'px';
-  timerEl.innerHTML = actualContent;
-  timerEl.style.transform = 'translate(-50%, -50%)';
   const renderedWidth = timerEl.scrollWidth;
   const renderedHeight = timerEl.scrollHeight;
 
   // Fine-tune with scale for pixel-perfect precision
-  const scaleX = targetRefWidth / renderedWidth;
-  const scaleY = Math.min(targetHeight / renderedHeight, 1); // Don't scale up height, only down if needed
-  timerEl.style.transform = `translate(-50%, -50%) scale(${scaleX}, ${scaleY})`;
+  const scaleX = targetWidth / renderedWidth;
+  const scaleY = Math.min(targetHeight / renderedHeight, 1);
+  timerEl.style.transform = `scale(${scaleX}, ${scaleY})`;
 }
 
 /**
- * Fit message text to reference canvas size
- * Only called when message content changes, NOT on resize
- * No max-width constraint - text flows naturally, transform: scale() handles resizing
+ * Fit message text to message-section container
+ * Multi-line fitting: text wraps and scales to fill section
  */
 function fitMessageContent() {
   if (!currentMessage || !currentMessage.visible) return;
 
-  // Target: 90% of reference width, 45% height (bottom half of 50/50 split)
-  const targetWidth = REF_WIDTH * 0.9;
-  const targetHeight = REF_HEIGHT * 0.45;
+  // Content box is 90% x 64% of reference canvas
+  // Message section is 66% of content box when visible
+  const contentBoxWidth = REF_WIDTH * 0.90;
+  const contentBoxHeight = REF_HEIGHT * 0.64;
+  const sectionHeight = contentBoxHeight * 0.66;
 
-  // No max-width - let text flow naturally
-  messageOverlayEl.style.maxWidth = 'none';
+  const targetWidth = contentBoxWidth * 0.90;
+  const targetHeight = sectionHeight * 0.85;
 
-  // Measure at 100px base to calculate needed font-size
+  // Allow text to wrap
+  messageOverlayEl.style.maxWidth = targetWidth + 'px';
+  messageOverlayEl.style.transform = 'none';
+
+  // Measure at 100px base
   messageOverlayEl.style.fontSize = '100px';
-
   const naturalWidth = messageOverlayEl.scrollWidth;
   const naturalHeight = messageOverlayEl.scrollHeight;
 
   if (naturalWidth > 0 && naturalHeight > 0) {
+    // Scale to fit both width and height
     const widthRatio = targetWidth / naturalWidth;
     const heightRatio = targetHeight / naturalHeight;
     const ratio = Math.min(widthRatio, heightRatio);
     const newFontSize = Math.max(8, 100 * ratio);
     messageOverlayEl.style.fontSize = newFontSize + 'px';
+
+    // Fine-tune with scale if needed
+    const renderedWidth = messageOverlayEl.scrollWidth;
+    const renderedHeight = messageOverlayEl.scrollHeight;
+    const scaleX = Math.min(targetWidth / renderedWidth, 1);
+    const scaleY = Math.min(targetHeight / renderedHeight, 1);
+    const scale = Math.min(scaleX, scaleY);
+    if (scale < 0.99) {
+      messageOverlayEl.style.transform = `scale(${scale})`;
+    }
   }
 }
 
@@ -272,7 +282,7 @@ function handleMessageUpdate(message) {
     currentMessage = null;
     lastMessageText = '';
     messageOverlayEl.classList.remove('visible', 'bold', 'italic', 'uppercase');
-    virtualCanvasEl.classList.remove('with-message');
+    contentBoxEl.classList.remove('with-message');
 
     // Refit timer since it now has full height
     if (wasVisible) {
@@ -288,8 +298,8 @@ function handleMessageUpdate(message) {
   applyMessageStyle(messageOverlayEl, message);
   messageOverlayEl.classList.add('visible');
 
-  // Enable split layout on virtual canvas
-  virtualCanvasEl.classList.add('with-message');
+  // Enable split layout on content box
+  contentBoxEl.classList.add('with-message');
 
   // Fit message content (only when text changes)
   if (message.text !== lastMessageText) {

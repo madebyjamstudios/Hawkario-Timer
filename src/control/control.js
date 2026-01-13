@@ -81,6 +81,9 @@ const els = {
   livePreviewContainer: document.querySelector('.live-preview-wrapper'),
   livePreview: document.getElementById('livePreview'),
   livePreviewCanvas: document.getElementById('livePreviewCanvas'),
+  livePreviewContentBox: document.getElementById('livePreviewContentBox'),
+  livePreviewTimerSection: document.querySelector('.live-preview .timer-section'),
+  livePreviewMessageSection: document.querySelector('.live-preview .message-section'),
   livePreviewTimer: document.getElementById('livePreviewTimer'),
   livePreviewMessage: document.getElementById('livePreviewMessage'),
 
@@ -217,13 +220,14 @@ function safeguardElements() {
 // Run safeguarding immediately
 safeguardElements();
 
-// Helper functions for unified time input (HH:MM:SS)
+// Helper functions for unified time input (HH:MM:SS or HHH:MM:SS)
 function formatTimeValue(h, m, s) {
-  const pad = n => String(Math.max(0, n)).padStart(2, '0');
-  const hh = Math.min(99, Math.max(0, h));
+  const hh = Math.min(999, Math.max(0, h));
   const mm = Math.min(59, Math.max(0, m));
   const ss = Math.min(59, Math.max(0, s));
-  return `${pad(hh)}:${pad(mm)}:${pad(ss)}`;
+  // Pad hours to 2 digits minimum, but allow 3 for 100+ hours
+  const hhStr = hh >= 100 ? String(hh) : String(hh).padStart(2, '0');
+  return `${hhStr}:${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
 }
 
 function parseTimeValue(val) {
@@ -249,7 +253,12 @@ function setDurationInputs(totalSeconds) {
 
 // Update duration display (now using unified input field)
 function updateDurationDigitDisplay() {
-  // Duration is now shown in the unified input field - no individual digit displays to update
+  // Show/hide h0 (hundreds of hours) column based on current duration
+  const h0Col = document.getElementById('h0Col');
+  if (h0Col) {
+    const { h } = parseTimeValue(els.duration.value);
+    h0Col.style.display = h >= 100 ? '' : 'none';
+  }
 }
 
 // Show/hide hours group based on format selection
@@ -269,6 +278,19 @@ function updateOvertimeVisibility() {
   const mode = els.mode?.value;
   const showOvertime = mode === 'countdown' || mode === 'countdown-tod';
   els.allowOvertimeRow.style.display = showOvertime ? '' : 'none';
+}
+
+// Get short mode label for display in timer rows
+function getModeLabel(mode) {
+  const labels = {
+    'countdown': 'C/D',
+    'countup': 'C/U',
+    'tod': 'ToD',
+    'countdown-tod': 'C/D+T',
+    'countup-tod': 'C/U+T',
+    'hidden': 'Hide'
+  };
+  return labels[mode] || mode;
 }
 
 function getDefaultDurationSeconds() {
@@ -2039,12 +2061,12 @@ function updateMessageField(messageId, field, value) {
  * Uses virtual canvas for identical rendering with output
  */
 function updateLivePreviewMessage(message) {
-  if (!els.livePreviewMessage || !els.livePreviewCanvas) return;
+  if (!els.livePreviewMessage || !els.livePreviewContentBox) return;
 
-  const wasVisible = els.livePreviewCanvas.classList.contains('with-message');
+  const wasVisible = els.livePreviewContentBox.classList.contains('with-message');
 
   if (!message || !message.visible) {
-    els.livePreviewCanvas.classList.remove('with-message');
+    els.livePreviewContentBox.classList.remove('with-message');
     els.livePreviewMessage.classList.remove('bold', 'italic', 'uppercase');
     lastPreviewMessageText = '';
 
@@ -2057,7 +2079,7 @@ function updateLivePreviewMessage(message) {
 
   // Use shared module for styling (identical to output)
   applyMessageStyle(els.livePreviewMessage, message);
-  els.livePreviewCanvas.classList.add('with-message');
+  els.livePreviewContentBox.classList.add('with-message');
 
   // Fit message content (only when text changes)
   if (message.text !== lastPreviewMessageText) {
@@ -2909,96 +2931,103 @@ function updatePreviewScale() {
 }
 
 /**
- * Fit preview timer text to reference canvas size
- * All times of same format have identical width (height can vary)
+ * Fit preview timer text to timer-section container
+ * All timers have identical width regardless of content
  */
 function fitPreviewTimer() {
-  if (!els.livePreviewTimer) return;
+  if (!els.livePreviewTimer || !els.livePreviewTimerSection) return;
 
   const appSettings = loadAppSettings();
   const zoom = (appSettings.timerZoom ?? 100) / 100;
+  const hasMessage = els.livePreviewContentBox?.classList.contains('with-message');
 
-  // Check if message is visible to determine available height
-  const hasMessage = els.livePreviewCanvas?.classList.contains('with-message');
+  // Content box is 90% x 64% of reference canvas
+  // Timer section is 100% of content box (or 34% when message visible)
+  const contentBoxWidth = REF_WIDTH * 0.90;
+  const contentBoxHeight = REF_HEIGHT * 0.64;
+  const sectionHeight = hasMessage ? contentBoxHeight * 0.34 : contentBoxHeight;
 
-  // Target dimensions
-  const targetWidth = REF_WIDTH * 0.95;
-  const targetHeight = REF_HEIGHT * (hasMessage ? 0.45 : 0.90);
+  const targetWidth = contentBoxWidth * 0.95 * zoom;
+  const targetHeight = sectionHeight * 0.90;
 
-  // Reference string based on format AND duration (widest value this timer will show)
-  const format = activeTimerConfig?.format || 'MM:SS';
-  const durationSec = activeTimerConfig?.durationSec || 600;
-  const refText = getRefText(format, durationSec);
-  const refHTML = refText.split(':').join('<span class="colon">:</span>');
+  // Universal reference - ALL timers target same width
+  const refHTML = '88<span class="colon">:</span>88<span class="colon">:</span>88';
 
   // Save actual content
   const actualContent = els.livePreviewTimer.innerHTML;
 
   // Reset transform and set fixed measurement font size
-  els.livePreviewTimer.style.transform = 'translate(-50%, -50%)';
+  els.livePreviewTimer.style.transform = 'none';
   els.livePreviewTimer.style.fontSize = '100px';
 
   // Measure reference width at 100px
   els.livePreviewTimer.innerHTML = refHTML;
   const refWidth100 = els.livePreviewTimer.scrollWidth;
-  const refHeight100 = els.livePreviewTimer.scrollHeight;
 
   // Measure actual width at 100px
   els.livePreviewTimer.innerHTML = actualContent;
   const actualWidth100 = els.livePreviewTimer.scrollWidth;
 
   // Calculate font size where reference would fit target width
-  const baseFontSize = 100 * (targetWidth / refWidth100) * zoom;
+  const baseFontSize = 100 * (targetWidth / refWidth100);
 
   // Calculate font size for actual to have same width as reference
   // (shorter text gets larger font)
   const actualFontSize = baseFontSize * (refWidth100 / actualWidth100);
 
-  // Measure reference at baseFontSize (actual target width)
-  els.livePreviewTimer.style.fontSize = baseFontSize + 'px';
-  els.livePreviewTimer.innerHTML = refHTML;
-  const targetRefWidth = els.livePreviewTimer.scrollWidth;
-
-  // Apply actualFontSize and measure actual
+  // Apply font size and measure
   els.livePreviewTimer.style.fontSize = actualFontSize + 'px';
-  els.livePreviewTimer.innerHTML = actualContent;
-  els.livePreviewTimer.style.transform = 'translate(-50%, -50%)';
   const renderedWidth = els.livePreviewTimer.scrollWidth;
   const renderedHeight = els.livePreviewTimer.scrollHeight;
 
   // Fine-tune with scale for pixel-perfect precision
-  const scaleX = targetRefWidth / renderedWidth;
-  const scaleY = Math.min(targetHeight / renderedHeight, 1); // Don't scale up height, only down if needed
-  els.livePreviewTimer.style.transform = `translate(-50%, -50%) scale(${scaleX}, ${scaleY})`;
+  const scaleX = targetWidth / renderedWidth;
+  const scaleY = Math.min(targetHeight / renderedHeight, 1);
+  els.livePreviewTimer.style.transform = `scale(${scaleX}, ${scaleY})`;
 }
 
 /**
- * Fit preview message text to reference canvas size
- * Only called when message content changes, NOT on resize
- * No max-width constraint - text flows naturally, transform: scale() handles resizing
+ * Fit preview message text to message-section container
+ * Multi-line fitting: text wraps and scales to fill section
  */
 function fitPreviewMessage() {
-  if (!els.livePreviewMessage) return;
+  if (!els.livePreviewMessage || !els.livePreviewMessageSection) return;
 
-  // Target: 90% of reference width, 45% height (bottom half of 50/50 split)
-  const targetWidth = REF_WIDTH * 0.9;
-  const targetHeight = REF_HEIGHT * 0.45;
+  // Content box is 90% x 64% of reference canvas
+  // Message section is 66% of content box when visible
+  const contentBoxWidth = REF_WIDTH * 0.90;
+  const contentBoxHeight = REF_HEIGHT * 0.64;
+  const sectionHeight = contentBoxHeight * 0.66;
 
-  // No max-width - let text flow naturally
-  els.livePreviewMessage.style.maxWidth = 'none';
+  const targetWidth = contentBoxWidth * 0.90;
+  const targetHeight = sectionHeight * 0.85;
 
-  // Measure at 100px base to calculate needed font-size
+  // Allow text to wrap
+  els.livePreviewMessage.style.maxWidth = targetWidth + 'px';
+  els.livePreviewMessage.style.transform = 'none';
+
+  // Measure at 100px base
   els.livePreviewMessage.style.fontSize = '100px';
-
   const naturalWidth = els.livePreviewMessage.scrollWidth;
   const naturalHeight = els.livePreviewMessage.scrollHeight;
 
   if (naturalWidth > 0 && naturalHeight > 0) {
+    // Scale to fit both width and height
     const widthRatio = targetWidth / naturalWidth;
     const heightRatio = targetHeight / naturalHeight;
     const ratio = Math.min(widthRatio, heightRatio);
     const newFontSize = Math.max(8, 100 * ratio);
     els.livePreviewMessage.style.fontSize = newFontSize + 'px';
+
+    // Fine-tune with scale if needed
+    const renderedWidth = els.livePreviewMessage.scrollWidth;
+    const renderedHeight = els.livePreviewMessage.scrollHeight;
+    const scaleX = Math.min(targetWidth / renderedWidth, 1);
+    const scaleY = Math.min(targetHeight / renderedHeight, 1);
+    const scale = Math.min(scaleX, scaleY);
+    if (scale < 0.99) {
+      els.livePreviewMessage.style.transform = `scale(${scale})`;
+    }
   }
 }
 
@@ -3081,9 +3110,9 @@ function autoFitText(textEl, containerEl, targetPercent = 0.9) {
   const containerHeight = containerEl.offsetHeight;
   const targetWidth = containerWidth * targetPercent;
 
-  // Use 45% height when message is visible (50/50 split), otherwise 85%
+  // Use 34% height when message is visible (34/66 split), otherwise 85%
   const hasMessage = containerEl.classList.contains('with-message');
-  const targetHeight = containerHeight * (hasMessage ? 0.45 : 0.85);
+  const targetHeight = containerHeight * (hasMessage ? 0.34 : 0.85);
 
   const naturalWidth = textEl.scrollWidth;
   const naturalHeight = textEl.scrollHeight;
@@ -4984,10 +5013,30 @@ function renderPresetList() {
 
     name.append(nameText, editIcon);
 
-    // Duration display
-    const duration = document.createElement('div');
+    // Duration container with duration text and mode indicator
+    const durationContainer = document.createElement('div');
+    durationContainer.className = 'preset-duration-container';
+
+    // Duration text (clickable to edit)
+    const duration = document.createElement('span');
     duration.className = 'preset-duration';
     duration.textContent = secondsToHMS(preset.config?.durationSec || 0);
+    duration.style.cursor = 'pointer';
+    duration.onclick = (e) => {
+      e.stopPropagation();
+      showDurationEditPopup(idx, preset, duration);
+    };
+
+    // Mode indicator (clickable to change)
+    const modeIndicator = document.createElement('span');
+    modeIndicator.className = 'preset-mode';
+    modeIndicator.textContent = getModeLabel(preset.config?.mode || 'countdown');
+    modeIndicator.onclick = (e) => {
+      e.stopPropagation();
+      showModeDropdown(idx, preset, modeIndicator);
+    };
+
+    durationContainer.append(duration, modeIndicator);
 
     const actions = document.createElement('div');
     actions.className = 'preset-actions';
@@ -5077,7 +5126,7 @@ function renderPresetList() {
     });
 
     actions.append(selectResetBtn, editBtn, playBtn, moreBtn);
-    row.append(dragHandle, name, duration, actions);
+    row.append(dragHandle, name, durationContainer, actions);
     els.presetList.appendChild(row);
 
     // Add link zone between timers (except after last one)
@@ -5271,6 +5320,148 @@ function showQuickEditPopup(idx, preset, anchorEl) {
   // Close on click outside
   const closePopup = (e) => {
     if (!popup.contains(e.target) && e.target !== anchorEl && !anchorEl.contains(e.target)) {
+      popup.remove();
+      document.removeEventListener('click', closePopup);
+    }
+  };
+  setTimeout(() => document.addEventListener('click', closePopup), 0);
+}
+
+function showModeDropdown(idx, preset, anchorEl) {
+  // Remove any existing popup
+  const existing = document.querySelector('.mode-dropdown-popup');
+  if (existing) existing.remove();
+
+  const popup = document.createElement('div');
+  popup.className = 'mode-dropdown-popup';
+
+  const modes = [
+    { value: 'countdown', label: 'Countdown (C/D)' },
+    { value: 'countup', label: 'Count Up (C/U)' },
+    { value: 'tod', label: 'Time of Day (ToD)' },
+    { value: 'countdown-tod', label: 'C/D + Time (C/D+T)' },
+    { value: 'countup-tod', label: 'C/U + Time (C/U+T)' },
+    { value: 'hidden', label: 'Hidden (Hide)' }
+  ];
+
+  const currentMode = preset.config?.mode || 'countdown';
+
+  modes.forEach(({ value, label }) => {
+    const option = document.createElement('div');
+    option.className = 'mode-option' + (value === currentMode ? ' selected' : '');
+    option.textContent = label;
+    option.onclick = () => {
+      saveUndoState();
+      const presets = loadPresets();
+      presets[idx].config.mode = value;
+      savePresets(presets);
+      renderPresetList();
+      popup.remove();
+    };
+    popup.appendChild(option);
+  });
+
+  // Position popup near the anchor element
+  const rect = anchorEl.getBoundingClientRect();
+  popup.style.position = 'fixed';
+  popup.style.top = `${rect.bottom + 4}px`;
+  popup.style.left = `${rect.left}px`;
+
+  document.body.appendChild(popup);
+
+  // Adjust position if off-screen
+  const popupRect = popup.getBoundingClientRect();
+  if (popupRect.right > window.innerWidth - 10) {
+    popup.style.left = `${window.innerWidth - popupRect.width - 10}px`;
+  }
+  if (popupRect.bottom > window.innerHeight - 10) {
+    popup.style.top = `${rect.top - popupRect.height - 4}px`;
+  }
+
+  // Close on click outside
+  const closePopup = (e) => {
+    if (!popup.contains(e.target) && e.target !== anchorEl) {
+      popup.remove();
+      document.removeEventListener('click', closePopup);
+    }
+  };
+  setTimeout(() => document.addEventListener('click', closePopup), 0);
+
+  // Close on Escape
+  const handleKeydown = (e) => {
+    if (e.key === 'Escape') {
+      popup.remove();
+      document.removeEventListener('keydown', handleKeydown);
+    }
+  };
+  document.addEventListener('keydown', handleKeydown);
+}
+
+function showDurationEditPopup(idx, preset, anchorEl) {
+  // Remove any existing popup
+  const existing = document.querySelector('.duration-edit-popup');
+  if (existing) existing.remove();
+
+  const popup = document.createElement('div');
+  popup.className = 'duration-edit-popup';
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'duration-edit-input';
+  input.value = secondsToHMS(preset.config?.durationSec || 0);
+  input.placeholder = 'HH:MM:SS';
+  input.maxLength = 10;
+
+  popup.appendChild(input);
+
+  // Position popup near the anchor element
+  const rect = anchorEl.getBoundingClientRect();
+  popup.style.position = 'fixed';
+  popup.style.top = `${rect.bottom + 4}px`;
+  popup.style.left = `${rect.left}px`;
+
+  document.body.appendChild(popup);
+
+  // Adjust position if off-screen
+  const popupRect = popup.getBoundingClientRect();
+  if (popupRect.right > window.innerWidth - 10) {
+    popup.style.left = `${window.innerWidth - popupRect.width - 10}px`;
+  }
+  if (popupRect.bottom > window.innerHeight - 10) {
+    popup.style.top = `${rect.top - popupRect.height - 4}px`;
+  }
+
+  // Focus and select
+  input.focus();
+  input.select();
+
+  const saveDuration = () => {
+    const { h, m, s } = parseTimeValue(input.value);
+    const totalSec = h * 3600 + m * 60 + s;
+    if (totalSec > 0) {
+      saveUndoState();
+      const presets = loadPresets();
+      presets[idx].config.durationSec = totalSec;
+      savePresets(presets);
+      renderPresetList();
+    }
+    popup.remove();
+  };
+
+  // Save on Enter, cancel on Escape
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      saveDuration();
+    }
+    if (e.key === 'Escape') {
+      popup.remove();
+    }
+  });
+
+  // Close on click outside
+  const closePopup = (e) => {
+    if (!popup.contains(e.target) && e.target !== anchorEl) {
       popup.remove();
       document.removeEventListener('click', closePopup);
     }
@@ -5472,21 +5663,23 @@ function setupEventListeners() {
   initTimeInputMS(els.warnYellowSec);
   initTimeInputMS(els.warnOrangeSec);
 
-  // Duration control buttons - per-digit (h1, h2, m1, m2, s1, s2)
+  // Duration control buttons - per-digit (h0, h1, h2, m1, m2, s1, s2)
   document.querySelectorAll('.digit-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const digit = btn.dataset.digit;
       const isUp = btn.classList.contains('digit-up');
       const { h, m, s } = parseTimeValue(els.duration.value);
 
-      // Split into individual digits
-      let h1 = Math.floor(h / 10), h2 = h % 10;
+      // Split into individual digits (3 for hours now: h0=hundreds, h1=tens, h2=ones)
+      let h0 = Math.floor(h / 100);
+      let h1 = Math.floor((h % 100) / 10), h2 = h % 10;
       let m1 = Math.floor(m / 10), m2 = m % 10;
       let s1 = Math.floor(s / 10), s2 = s % 10;
 
       // Increment/decrement the specific digit
       const delta = isUp ? 1 : -1;
       switch (digit) {
+        case 'h0': h0 = (h0 + delta + 10) % 10; break;  // 0-9 for hundreds of hours
         case 'h1': h1 = (h1 + delta + 10) % 10; break;
         case 'h2': h2 = (h2 + delta + 10) % 10; break;
         case 'm1': m1 = (m1 + delta + 6) % 6; break;  // 0-5 for tens of minutes
@@ -5496,7 +5689,7 @@ function setupEventListeners() {
       }
 
       // Rebuild duration values
-      const newH = h1 * 10 + h2;
+      const newH = h0 * 100 + h1 * 10 + h2;
       const newM = m1 * 10 + m2;
       const newS = s1 * 10 + s2;
 
