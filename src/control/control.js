@@ -2968,6 +2968,11 @@ function fitPreviewTimer() {
 
     const newFontSize = Math.max(10, 100 * ratio * zoom);
     els.livePreviewTimer.style.fontSize = newFontSize + 'px';
+
+    // Set min-width to ensure consistent width regardless of digit count
+    // Scale the natural width by the same ratio as font size
+    const scaledWidth = naturalWidth * (newFontSize / 100);
+    els.livePreviewTimer.style.minWidth = scaledWidth + 'px';
   }
 }
 
