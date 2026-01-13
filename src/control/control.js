@@ -2878,6 +2878,23 @@ let lastPreviewTimerMode = '';
 let lastPreviewTimerLength = 0;
 
 /**
+ * Get reference text for timer sizing based on format and duration
+ * Uses 8s because 8 is typically the widest digit
+ */
+function getRefText(format, durationSec) {
+  if (format === 'HH:MM:SS') {
+    const hours = Math.floor(durationSec / 3600);
+    if (hours >= 10) return '88:88:88';
+    return '8:88:88';
+  }
+  // MM:SS format
+  const minutes = Math.floor(durationSec / 60);
+  if (minutes >= 100) return '888:88';
+  if (minutes >= 10) return '88:88';
+  return '8:88';
+}
+
+/**
  * Update preview virtual canvas scale based on container size
  * This is the ONLY thing that changes on resize - no font recalculation
  */
@@ -2908,9 +2925,10 @@ function fitPreviewTimer() {
   const targetWidth = REF_WIDTH * 0.95;
   const targetHeight = REF_HEIGHT * (hasMessage ? 0.45 : 0.90);
 
-  // Reference string based on format (widest possible value)
+  // Reference string based on format AND duration (widest value this timer will show)
   const format = activeTimerConfig?.format || 'MM:SS';
-  const refText = format === 'HH:MM:SS' ? '88:88:88' : '88:88';
+  const durationSec = activeTimerConfig?.durationSec || 600;
+  const refText = getRefText(format, durationSec);
 
   // Save actual content
   const actualContent = els.livePreviewTimer.innerHTML;

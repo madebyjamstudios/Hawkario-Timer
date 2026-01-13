@@ -153,6 +153,24 @@ let cachedShadowCSS = '';
 let cachedShadowKey = '';
 
 /**
+ * Get reference text for timer sizing based on format and duration
+ * Uses 8s because 8 is typically the widest digit
+ */
+function getRefText(format, durationMs) {
+  const durationSec = Math.floor(durationMs / 1000);
+  if (format === 'HH:MM:SS') {
+    const hours = Math.floor(durationSec / 3600);
+    if (hours >= 10) return '88:88:88';
+    return '8:88:88';
+  }
+  // MM:SS format
+  const minutes = Math.floor(durationSec / 60);
+  if (minutes >= 100) return '888:88';
+  if (minutes >= 10) return '88:88';
+  return '8:88';
+}
+
+/**
  * Fit timer text to reference canvas size
  * All times of same format have identical width (height can vary)
  */
@@ -166,9 +184,10 @@ function fitTimerContent() {
   const targetWidth = REF_WIDTH * 0.95;
   const targetHeight = REF_HEIGHT * (hasMessage ? 0.45 : 0.90);
 
-  // Reference string based on format (widest possible value)
+  // Reference string based on format AND duration
   const format = canonicalState?.format || 'MM:SS';
-  const refText = format === 'HH:MM:SS' ? '88:88:88' : '88:88';
+  const durationMs = canonicalState?.durationMs || 600000;
+  const refText = getRefText(format, durationMs);
 
   // Save actual content
   const actualContent = timerEl.innerHTML;
