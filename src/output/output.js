@@ -175,7 +175,7 @@ function getRefText(format, durationMs) {
 
 /**
  * Fit timer text to timer-section container
- * All timers have identical width regardless of content
+ * Scales timer to fill available space while maintaining aspect ratio
  */
 function fitTimerContent() {
   const zoom = timerZoom / 100;
@@ -190,41 +190,23 @@ function fitTimerContent() {
   const targetWidth = contentBoxWidth * 0.95 * zoom;
   const targetHeight = sectionHeight * 0.90;
 
-  // Universal reference - ALL timers target same width
-  const refHTML = '88<span class="colon">:</span>88<span class="colon">:</span>88';
-
-  // Save actual content
-  const actualContent = timerEl.innerHTML;
-
-  // Reset transform and set fixed measurement font size
+  // Reset and measure at base font size
   timerEl.style.transform = 'none';
   timerEl.style.fontSize = '100px';
 
-  // Measure reference width at 100px
-  timerEl.innerHTML = refHTML;
-  const refWidth100 = timerEl.scrollWidth;
+  const naturalWidth = timerEl.scrollWidth;
+  const naturalHeight = timerEl.scrollHeight;
 
-  // Measure actual width at 100px
-  timerEl.innerHTML = actualContent;
-  const actualWidth100 = timerEl.scrollWidth;
+  if (naturalWidth <= 0 || naturalHeight <= 0) return;
 
-  // Calculate font size where reference would fit target width
-  const baseFontSize = 100 * (targetWidth / refWidth100);
-
-  // Calculate font size for actual to have same width as reference
-  // (shorter text gets larger font)
-  const actualFontSize = baseFontSize * (refWidth100 / actualWidth100);
-
-  // Apply font size and measure
-  timerEl.style.fontSize = actualFontSize + 'px';
-  const renderedWidth = timerEl.scrollWidth;
-  const renderedHeight = timerEl.scrollHeight;
-
-  // Use UNIFORM scaling to avoid distortion and keep centered
-  const scaleToFitWidth = targetWidth / renderedWidth;
-  const scaleToFitHeight = targetHeight / renderedHeight;
+  // Calculate uniform scale to fit within target bounds
+  const scaleToFitWidth = targetWidth / naturalWidth;
+  const scaleToFitHeight = targetHeight / naturalHeight;
   const scale = Math.min(scaleToFitWidth, scaleToFitHeight);
-  timerEl.style.transform = `scale(${scale})`;
+
+  // Apply as font size for crisp rendering
+  const finalFontSize = 100 * scale;
+  timerEl.style.fontSize = finalFontSize + 'px';
 }
 
 /**

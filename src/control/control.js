@@ -2950,41 +2950,23 @@ function fitPreviewTimer() {
   const targetWidth = contentBoxWidth * 0.95 * zoom;
   const targetHeight = sectionHeight * 0.90;
 
-  // Universal reference - ALL timers target same width
-  const refHTML = '88<span class="colon">:</span>88<span class="colon">:</span>88';
-
-  // Save actual content
-  const actualContent = els.livePreviewTimer.innerHTML;
-
-  // Reset transform and set fixed measurement font size
+  // Reset and measure at base font size
   els.livePreviewTimer.style.transform = 'none';
   els.livePreviewTimer.style.fontSize = '100px';
 
-  // Measure reference width at 100px
-  els.livePreviewTimer.innerHTML = refHTML;
-  const refWidth100 = els.livePreviewTimer.scrollWidth;
+  const naturalWidth = els.livePreviewTimer.scrollWidth;
+  const naturalHeight = els.livePreviewTimer.scrollHeight;
 
-  // Measure actual width at 100px
-  els.livePreviewTimer.innerHTML = actualContent;
-  const actualWidth100 = els.livePreviewTimer.scrollWidth;
+  if (naturalWidth <= 0 || naturalHeight <= 0) return;
 
-  // Calculate font size where reference would fit target width
-  const baseFontSize = 100 * (targetWidth / refWidth100);
-
-  // Calculate font size for actual to have same width as reference
-  // (shorter text gets larger font)
-  const actualFontSize = baseFontSize * (refWidth100 / actualWidth100);
-
-  // Apply font size and measure
-  els.livePreviewTimer.style.fontSize = actualFontSize + 'px';
-  const renderedWidth = els.livePreviewTimer.scrollWidth;
-  const renderedHeight = els.livePreviewTimer.scrollHeight;
-
-  // Use UNIFORM scaling to avoid distortion and keep centered
-  const scaleToFitWidth = targetWidth / renderedWidth;
-  const scaleToFitHeight = targetHeight / renderedHeight;
+  // Calculate uniform scale to fit within target bounds
+  const scaleToFitWidth = targetWidth / naturalWidth;
+  const scaleToFitHeight = targetHeight / naturalHeight;
   const scale = Math.min(scaleToFitWidth, scaleToFitHeight);
-  els.livePreviewTimer.style.transform = `scale(${scale})`;
+
+  // Apply as font size for crisp rendering
+  const finalFontSize = 100 * scale;
+  els.livePreviewTimer.style.fontSize = finalFontSize + 'px';
 }
 
 /**

@@ -1471,6 +1471,7 @@ button:disabled {
   min-width: 150px;
   max-height: 200px;
   overflow-y: auto;
+  animation: popup-in 0.15s ease-out;
 }
 
 .mode-option {
