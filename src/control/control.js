@@ -2931,8 +2931,10 @@ function updatePreviewScale() {
 
 /**
  * Fit preview timer text to timer-section container
- * Uses reference width so all timers of same format have consistent size
- * Caps height to stay within content box (64% of canvas)
+ * Uses format-appropriate reference so:
+ * - 10:00 and 9:59 stay same size (same timer, uses "88:88")
+ * - 1:00 timer fills width bigger (uses "8:88")
+ * Caps height to stay within content box
  */
 function fitPreviewTimer() {
   if (!els.livePreviewTimer) return;
@@ -2947,8 +2949,12 @@ function fitPreviewTimer() {
   const targetWidth = contentBoxWidth * 0.95 * zoom;
   const targetHeight = contentBoxHeight * 0.90; // 10% padding top/bottom
 
-  // Reference for consistent sizing: widest possible timer "88:88:88"
-  const refHTML = '88<span class="colon">:</span>88<span class="colon">:</span>88';
+  // Get format-appropriate reference from active timer config
+  const format = activeTimerConfig?.format || 'MM:SS';
+  const durationSec = activeTimerConfig?.durationSec || 600;
+  const refText = getRefText(format, durationSec);
+  const refHTML = refText.replace(/:/g, '<span class="colon">:</span>');
+
   const actualContent = els.livePreviewTimer.innerHTML;
 
   // Measure reference at base font size

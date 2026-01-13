@@ -175,8 +175,10 @@ function getRefText(format, durationMs) {
 
 /**
  * Fit timer text to timer-section container
- * Uses reference width so all timers of same format have consistent size
- * Caps height to stay within content box (64% of canvas)
+ * Uses format-appropriate reference so:
+ * - 10:00 and 9:59 stay same size (same timer, uses "88:88")
+ * - 1:00 timer fills width bigger (uses "8:88")
+ * Caps height to stay within content box
  */
 function fitTimerContent() {
   const zoom = timerZoom / 100;
@@ -188,8 +190,12 @@ function fitTimerContent() {
   const targetWidth = contentBoxWidth * 0.95 * zoom;
   const targetHeight = contentBoxHeight * 0.90; // 10% padding top/bottom
 
-  // Reference for consistent sizing: widest possible timer "88:88:88"
-  const refHTML = '88<span class="colon">:</span>88<span class="colon">:</span>88';
+  // Get format-appropriate reference from timer state
+  const format = canonicalState?.format || 'MM:SS';
+  const durationMs = canonicalState?.durationMs || 600000;
+  const refText = getRefText(format, durationMs);
+  const refHTML = refText.replace(/:/g, '<span class="colon">:</span>');
+
   const actualContent = timerEl.innerHTML;
 
   // Measure reference at base font size
