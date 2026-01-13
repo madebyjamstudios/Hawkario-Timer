@@ -378,8 +378,9 @@ button:disabled {
 }
 
 .sound-select-row .preview-btn {
-  padding: 4px 6px;
-  min-width: 28px;
+  padding: 3px 5px;
+  min-width: 24px;
+  font-size: 12px;
 }
 
 /* Range slider with value display */
