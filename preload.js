@@ -151,6 +151,22 @@ contextBridge.exposeInMainWorld('ninja', {
     ipcRenderer.on('message:request-state', () => callback());
   },
 
+  // ============ OSC Integration ============
+
+  // Get OSC settings
+  oscGetSettings: () => ipcRenderer.invoke('osc:get-settings'),
+
+  // Update OSC settings
+  oscSetSettings: (settings) => ipcRenderer.invoke('osc:set-settings', settings),
+
+  // Send OSC feedback message
+  oscSendFeedback: (address, args) => ipcRenderer.invoke('osc:send-feedback', { address, args }),
+
+  // Listen for OSC commands (control window receives)
+  onOSCCommand: (callback) => {
+    ipcRenderer.on('osc:command', (_event, data) => callback(data));
+  },
+
   // Cleanup listeners (call when window closes)
   removeAllListeners: () => {
     ipcRenderer.removeAllListeners('timer:state');
@@ -163,5 +179,6 @@ contextBridge.exposeInMainWorld('ninja', {
     ipcRenderer.removeAllListeners('blackout:toggle');
     ipcRenderer.removeAllListeners('blackout:state');
     ipcRenderer.removeAllListeners('message:update');
+    ipcRenderer.removeAllListeners('osc:command');
   }
 });

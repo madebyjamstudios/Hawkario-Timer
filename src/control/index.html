@@ -433,6 +433,39 @@
           </div>
         </div>
 
+        <!-- OSC Integration Section -->
+        <div class="settings-section">
+          <h3 class="settings-section-title">OSC Integration</h3>
+          <p class="settings-hint">Control Ninja Timer from Companion, Millumin, etc.</p>
+          <div class="kv">
+            <label for="oscEnabled">OSC Control</label>
+            <select id="oscEnabled">
+              <option value="off">Disabled</option>
+              <option value="on">Enabled</option>
+            </select>
+          </div>
+          <div class="kv" id="oscListenPortRow">
+            <label for="oscListenPort">Listen Port</label>
+            <input id="oscListenPort" type="number" min="1024" max="65535" value="8000" class="number-input" />
+          </div>
+          <div class="kv">
+            <label for="oscFeedbackEnabled">Send Feedback</label>
+            <select id="oscFeedbackEnabled">
+              <option value="off">Disabled</option>
+              <option value="on">Enabled</option>
+            </select>
+          </div>
+          <div class="kv" id="oscFeedbackHostRow">
+            <label for="oscFeedbackHost">Feedback Host</label>
+            <input id="oscFeedbackHost" type="text" value="127.0.0.1" class="text-input" />
+          </div>
+          <div class="kv" id="oscFeedbackPortRow">
+            <label for="oscFeedbackPort">Feedback Port</label>
+            <input id="oscFeedbackPort" type="number" min="1024" max="65535" value="9000" class="number-input" />
+          </div>
+          <div id="oscStatus" class="osc-status"></div>
+        </div>
+
         <!-- Updates Section -->
         <div class="settings-section">
           <h3 id="updatesSectionTitle" class="settings-section-title">Updates</h3>

@@ -5,6 +5,7 @@
 
 const { app, BrowserWindow, Menu, ipcMain, screen, dialog, nativeImage } = require('electron');
 const path = require('path');
+const { Server: OSCServer, Client: OSCClient } = require('node-osc');
 
 // Enable hot reload in development (soft reload for src/ files only)
 try {
@@ -28,6 +29,18 @@ let lastTimerConfig = null;
 // Window settings
 let outputAlwaysOnTop = true;  // Default: output stays on top
 let controlAlwaysOnTop = false; // Default: control window normal
+
+// ============ OSC Integration ============
+
+let oscServer = null;
+let oscClient = null;
+let oscSettings = {
+  enabled: false,
+  listenPort: 8000,
+  feedbackEnabled: false,
+  feedbackHost: '127.0.0.1',
+  feedbackPort: 9000
+};
 
 // ============ Safe IPC Helpers (Production Safety) ============
 
@@ -62,6 +75,107 @@ function safeToMain(channel, data) {
  */
 function safeToOutput(channel, data) {
   return safeSend(outputWindow, channel, data);
+}
+
+// ============ OSC Server/Client Management ============
+
+/**
+ * Start OSC server to receive commands
+ */
+function startOSCServer() {
+  stopOSCServer(); // Clean up any existing server
+
+  try {
+    oscServer = new OSCServer(oscSettings.listenPort, '0.0.0.0');
+
+    oscServer.on('message', (msg) => {
+      const [address, ...args] = msg;
+      console.log(`[OSC] Received: ${address}`, args);
+      // Forward to control window for handling
+      safeToMain('osc:command', { address, args });
+    });
+
+    oscServer.on('error', (err) => {
+      console.error('[OSC] Server error:', err);
+    });
+
+    console.log(`[OSC] Server listening on port ${oscSettings.listenPort}`);
+  } catch (err) {
+    console.error('[OSC] Failed to start server:', err);
+  }
+}
+
+/**
+ * Stop OSC server
+ */
+function stopOSCServer() {
+  if (oscServer) {
+    try {
+      oscServer.close();
+    } catch (err) {
+      console.error('[OSC] Error closing server:', err);
+    }
+    oscServer = null;
+    console.log('[OSC] Server stopped');
+  }
+}
+
+/**
+ * Start OSC client for sending feedback
+ */
+function startOSCClient() {
+  stopOSCClient(); // Clean up any existing client
+
+  try {
+    oscClient = new OSCClient(oscSettings.feedbackHost, oscSettings.feedbackPort);
+    console.log(`[OSC] Feedback client ready -> ${oscSettings.feedbackHost}:${oscSettings.feedbackPort}`);
+  } catch (err) {
+    console.error('[OSC] Failed to start client:', err);
+  }
+}
+
+/**
+ * Stop OSC client
+ */
+function stopOSCClient() {
+  if (oscClient) {
+    try {
+      oscClient.close();
+    } catch (err) {
+      // Client may not have close method in all versions
+    }
+    oscClient = null;
+  }
+}
+
+/**
+ * Send OSC feedback message
+ */
+function sendOSCFeedback(address, ...args) {
+  if (!oscClient || !oscSettings.feedbackEnabled) return;
+
+  try {
+    oscClient.send(address, ...args);
+  } catch (err) {
+    console.error('[OSC] Feedback send error:', err);
+  }
+}
+
+/**
+ * Apply OSC settings (start/stop server/client as needed)
+ */
+function applyOSCSettings() {
+  if (oscSettings.enabled) {
+    startOSCServer();
+  } else {
+    stopOSCServer();
+  }
+
+  if (oscSettings.feedbackEnabled) {
+    startOSCClient();
+  } else {
+    stopOSCClient();
+  }
 }
 
 function createMainWindow() {
@@ -270,6 +384,36 @@ ipcMain.on('blackout:toggle', () => {
 ipcMain.on('sound:play', (_event, soundType) => {
   // Will implement in Phase 5
   console.log('Sound requested:', soundType);
+});
+
+// ============ OSC IPC Handlers ============
+
+// Get OSC settings
+ipcMain.handle('osc:get-settings', () => {
+  return { ...oscSettings };
+});
+
+// Update OSC settings
+ipcMain.handle('osc:set-settings', (_event, newSettings) => {
+  try {
+    oscSettings = { ...oscSettings, ...newSettings };
+    applyOSCSettings();
+    console.log('[OSC] Settings updated:', oscSettings);
+    return { success: true };
+  } catch (err) {
+    console.error('[OSC] Failed to update settings:', err);
+    return { success: false, error: err.message };
+  }
+});
+
+// Send OSC feedback message (called from renderer)
+ipcMain.handle('osc:send-feedback', (_event, { address, args }) => {
+  if (!oscClient || !oscSettings.feedbackEnabled) return;
+  try {
+    oscClient.send(address, ...args);
+  } catch (err) {
+    console.error('[OSC] Feedback send error:', err);
+  }
 });
 
 // App version

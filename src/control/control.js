@@ -959,6 +959,14 @@ const DEFAULT_APP_SETTINGS = {
     durationSec: 600,
     format: 'MM:SS',
     soundType: 'none'
+  },
+  // OSC Integration
+  osc: {
+    enabled: false,
+    listenPort: 8000,
+    feedbackEnabled: false,
+    feedbackHost: '127.0.0.1',
+    feedbackPort: 9000
   }
 };
 
@@ -967,7 +975,12 @@ function loadAppSettings() {
     const saved = localStorage.getItem(APP_SETTINGS_KEY);
     if (saved) {
       const parsed = JSON.parse(saved);
-      return { ...DEFAULT_APP_SETTINGS, ...parsed, defaults: { ...DEFAULT_APP_SETTINGS.defaults, ...parsed.defaults } };
+      return {
+        ...DEFAULT_APP_SETTINGS,
+        ...parsed,
+        defaults: { ...DEFAULT_APP_SETTINGS.defaults, ...parsed.defaults },
+        osc: { ...DEFAULT_APP_SETTINGS.osc, ...(parsed.osc || {}) }
+      };
     }
   } catch (e) {
     console.error('Failed to load app settings:', e);
@@ -3468,6 +3481,7 @@ let highlightProfileId = null;
 let profileDragState = {
   isDragging: false,
   dragActivated: false, // True only after mouse moves 5px+
+  dragEndTime: 0,       // Timestamp when drag ended (to prevent click after drag)
   fromIndex: null,
   currentSlot: null,
   draggedEl: null,
@@ -3685,9 +3699,11 @@ function showProfileDropdown(forceRefresh = false) {
       showProfileColorPicker(profile.id, colorDot);
     });
 
-    // Click to switch profile (but not if drag is active)
+    // Click to switch profile (but not if drag is active or just ended)
     item.addEventListener('click', (e) => {
       if (profileDragState.isDragging) return;
+      // Ignore clicks within 100ms of drag ending (prevents accidental close)
+      if (Date.now() - profileDragState.dragEndTime < 100) return;
       switchProfile(profile.id);
       hideProfileDropdown();
     });
@@ -3806,6 +3822,7 @@ function showProfileDropdown(forceRefresh = false) {
     if (!profileDragState.dragActivated) {
       profileDragState.isDragging = false;
       profileDragState.dragActivated = false;
+      profileDragState.dragEndTime = Date.now();
       profileDragState.fromIndex = null;
       profileDragState.currentSlot = null;
       profileDragState.draggedEl = null;
@@ -3836,6 +3853,7 @@ function showProfileDropdown(forceRefresh = false) {
     // Reset drag state first
     profileDragState.isDragging = false;
     profileDragState.dragActivated = false;
+    profileDragState.dragEndTime = Date.now();
     profileDragState.fromIndex = null;
     profileDragState.currentSlot = null;
     profileDragState.draggedEl = null;
