@@ -2980,10 +2980,11 @@ function fitPreviewTimer() {
   const renderedWidth = els.livePreviewTimer.scrollWidth;
   const renderedHeight = els.livePreviewTimer.scrollHeight;
 
-  // Fine-tune with scale for pixel-perfect precision
-  const scaleX = targetWidth / renderedWidth;
-  const scaleY = Math.min(targetHeight / renderedHeight, 1);
-  els.livePreviewTimer.style.transform = `scale(${scaleX}, ${scaleY})`;
+  // Use UNIFORM scaling to avoid distortion and keep centered
+  const scaleToFitWidth = targetWidth / renderedWidth;
+  const scaleToFitHeight = targetHeight / renderedHeight;
+  const scale = Math.min(scaleToFitWidth, scaleToFitHeight);
+  els.livePreviewTimer.style.transform = `scale(${scale})`;
 }
 
 /**

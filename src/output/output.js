@@ -220,10 +220,11 @@ function fitTimerContent() {
   const renderedWidth = timerEl.scrollWidth;
   const renderedHeight = timerEl.scrollHeight;
 
-  // Fine-tune with scale for pixel-perfect precision
-  const scaleX = targetWidth / renderedWidth;
-  const scaleY = Math.min(targetHeight / renderedHeight, 1);
-  timerEl.style.transform = `scale(${scaleX}, ${scaleY})`;
+  // Use UNIFORM scaling to avoid distortion and keep centered
+  const scaleToFitWidth = targetWidth / renderedWidth;
+  const scaleToFitHeight = targetHeight / renderedHeight;
+  const scale = Math.min(scaleToFitWidth, scaleToFitHeight);
+  timerEl.style.transform = `scale(${scale})`;
 }
 
 /**
