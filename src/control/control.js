@@ -3705,6 +3705,12 @@ function showProfileDropdown(forceRefresh = false) {
       profileDragState.listSection = listSection;
       profileDragState.startX = e.clientX;
       profileDragState.startY = e.clientY;
+
+      // Register handlers fresh for each drag attempt
+      profileDragMoveHandler = handleProfileDragMove;
+      profileDragEndHandler = handleProfileDragEnd;
+      document.addEventListener('mousemove', profileDragMoveHandler);
+      document.addEventListener('mouseup', profileDragEndHandler);
     });
 
     listSection.appendChild(item);
@@ -3799,10 +3805,13 @@ function showProfileDropdown(forceRefresh = false) {
       profileDragState.items = [];
       profileDragState.listSection = null;
       profileDragState.initialScrollTop = 0;
-      document.removeEventListener('mousemove', profileDragMoveHandler);
-      document.removeEventListener('mouseup', profileDragEndHandler);
+      // Capture handlers before nulling to ensure correct removal
+      const moveHandler = profileDragMoveHandler;
+      const endHandler = profileDragEndHandler;
       profileDragMoveHandler = null;
       profileDragEndHandler = null;
+      document.removeEventListener('mousemove', moveHandler);
+      document.removeEventListener('mouseup', endHandler);
       return;
     }
 
@@ -3817,16 +3826,7 @@ function showProfileDropdown(forceRefresh = false) {
     draggedEl?.classList.remove('dragging');
     section?.classList.remove('has-drag');
 
-    // Commit the reorder if position changed
-    if (fromIndex !== currentSlot) {
-      reorderProfiles(fromIndex, currentSlot);
-
-      // Re-render the dropdown to reflect new order
-      hideProfileDropdown();
-      showProfileDropdown();
-    }
-
-    // Reset drag state
+    // Reset drag state first
     profileDragState.isDragging = false;
     profileDragState.dragActivated = false;
     profileDragState.fromIndex = null;
@@ -3836,18 +3836,45 @@ function showProfileDropdown(forceRefresh = false) {
     profileDragState.listSection = null;
     profileDragState.initialScrollTop = 0;
 
-    document.removeEventListener('mousemove', profileDragMoveHandler);
-    document.removeEventListener('mouseup', profileDragEndHandler);
+    // Remove these specific handler instances before potential dropdown recreation
+    const moveHandler = profileDragMoveHandler;
+    const endHandler = profileDragEndHandler;
     profileDragMoveHandler = null;
     profileDragEndHandler = null;
+    document.removeEventListener('mousemove', moveHandler);
+    document.removeEventListener('mouseup', endHandler);
+
+    // Commit the reorder if position changed
+    if (fromIndex !== currentSlot) {
+      reorderProfiles(fromIndex, currentSlot);
+
+      // Reorder DOM elements in place (no flicker)
+      if (section) {
+        const profileItems = Array.from(section.querySelectorAll('.profile-item'));
+        // Sort items to match new profiles order and update shortcut numbers
+        profiles.forEach((profile, newIdx) => {
+          const item = profileItems.find(el => el.dataset.profileId === profile.id);
+          if (item) {
+            section.appendChild(item); // Move to end in correct order
+            // Update shortcut number
+            const shortcut = item.querySelector('.profile-shortcut');
+            if (shortcut) {
+              shortcut.textContent = newIdx < 9 ? (newIdx + 1) : '';
+            } else if (newIdx < 9) {
+              // Add shortcut if now in first 9
+              const nameEl = item.querySelector('.profile-name');
+              if (nameEl) {
+                const span = document.createElement('span');
+                span.className = 'profile-shortcut';
+                span.textContent = newIdx + 1;
+                nameEl.parentNode.insertBefore(span, nameEl.nextSibling);
+              }
+            }
+          }
+        });
+      }
+    }
   };
-
-  // Store handler references for cleanup
-  profileDragMoveHandler = handleProfileDragMove;
-  profileDragEndHandler = handleProfileDragEnd;
-
-  document.addEventListener('mousemove', profileDragMoveHandler);
-  document.addEventListener('mouseup', profileDragEndHandler);
 
   // New profile section (at top)
   const newSection = document.createElement('div');
@@ -5126,7 +5153,10 @@ function setupEventListeners() {
   });
 
   // Profile dropdown button
-  els.profileBtn.addEventListener('click', showProfileDropdown);
+  els.profileBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    showProfileDropdown();
+  });
 
   // Output button - opens window if not open, toggles fullscreen if already open
   els.openOutput.addEventListener('click', () => {
