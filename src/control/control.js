@@ -5357,16 +5357,27 @@ function showModeDropdown(idx, preset, anchorEl) {
     popup.appendChild(option);
   });
 
-  // Position popup below the anchor element (always dropdown, never dropup)
+  // Position popup near the anchor element
   const rect = anchorEl.getBoundingClientRect();
   popup.style.position = 'fixed';
-  popup.style.top = `${rect.bottom + 4}px`;
   popup.style.left = `${rect.left}px`;
 
   document.body.appendChild(popup);
 
-  // Adjust horizontal position if off-screen
+  // Smart positioning: dropdown by default, dropup if not enough space below
   const popupRect = popup.getBoundingClientRect();
+  const spaceBelow = window.innerHeight - rect.bottom - 10;
+  const spaceAbove = rect.top - 10;
+
+  if (spaceBelow >= popupRect.height || spaceBelow >= spaceAbove) {
+    // Dropdown - enough space below or more space below than above
+    popup.style.top = `${rect.bottom + 4}px`;
+  } else {
+    // Dropup - more space above
+    popup.style.top = `${rect.top - popupRect.height - 4}px`;
+  }
+
+  // Adjust horizontal position if off-screen
   if (popupRect.right > window.innerWidth - 10) {
     popup.style.left = `${window.innerWidth - popupRect.width - 10}px`;
   }
@@ -5416,18 +5427,24 @@ function showDurationEditPopup(idx, preset, anchorEl) {
   // Position popup near the anchor element
   const rect = anchorEl.getBoundingClientRect();
   popup.style.position = 'fixed';
-  popup.style.top = `${rect.bottom + 4}px`;
   popup.style.left = `${rect.left}px`;
 
   document.body.appendChild(popup);
 
-  // Adjust position if off-screen
+  // Smart positioning: dropdown by default, dropup if not enough space below
   const popupRect = popup.getBoundingClientRect();
+  const spaceBelow = window.innerHeight - rect.bottom - 10;
+  const spaceAbove = rect.top - 10;
+
+  if (spaceBelow >= popupRect.height || spaceBelow >= spaceAbove) {
+    popup.style.top = `${rect.bottom + 4}px`;
+  } else {
+    popup.style.top = `${rect.top - popupRect.height - 4}px`;
+  }
+
+  // Adjust horizontal position if off-screen
   if (popupRect.right > window.innerWidth - 10) {
     popup.style.left = `${window.innerWidth - popupRect.width - 10}px`;
-  }
-  if (popupRect.bottom > window.innerHeight - 10) {
-    popup.style.top = `${rect.top - popupRect.height - 4}px`;
   }
 
   // Focus and select
