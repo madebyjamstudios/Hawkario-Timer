@@ -40,7 +40,6 @@ function createSafeFallback(tagName = 'div') {
 // DOM Elements with safe fallbacks
 const timerEl = document.getElementById('timer') || createSafeFallback('div');
 const stageEl = document.querySelector('.stage') || createSafeFallback('div');
-const virtualCanvasEl = document.getElementById('virtualCanvas') || createSafeFallback('div');
 const contentBoxEl = document.getElementById('contentBox') || createSafeFallback('div');
 const timerSectionEl = document.querySelector('.timer-section') || createSafeFallback('div');
 const messageSectionEl = document.querySelector('.message-section') || createSafeFallback('div');
@@ -52,7 +51,6 @@ const resolutionEl = document.getElementById('resolutionDisplay') || createSafeF
 const missingEls = [];
 if (!document.getElementById('timer')) missingEls.push('timer');
 if (!document.querySelector('.stage')) missingEls.push('.stage');
-if (!document.getElementById('virtualCanvas')) missingEls.push('virtualCanvas');
 if (!document.getElementById('fsHint')) missingEls.push('fsHint');
 if (!document.getElementById('messageOverlay')) missingEls.push('messageOverlay');
 if (!document.getElementById('resolutionDisplay')) missingEls.push('resolutionDisplay');
@@ -161,35 +159,26 @@ function getRefText(format, durationMs) {
 }
 
 /**
- * Fit timer to fill content box as much as possible
- * Must stay WITHIN the box (both width and height)
- * Uses actual window dimensions (content box is 90% × 64% of window)
+ * Fit timer to fill content box WIDTH
+ * Directly measures content box and scales font to fill it
  */
 function fitTimerContent() {
+  // Get actual content box width
+  const boxWidth = contentBoxEl.offsetWidth;
+  if (boxWidth <= 0) return;
+
   const zoom = timerZoom / 100;
+  const targetWidth = boxWidth * zoom;
 
-  // Content box is 90% width, 64% height of WINDOW
-  const boxWidth = window.innerWidth * 0.90;
-  const boxHeight = window.innerHeight * 0.64;
-
-  // Target area with small padding
-  const targetWidth = boxWidth * 0.95 * zoom;
-  const targetHeight = boxHeight * 0.90;
-
-  // Measure at base font size
-  timerEl.style.transform = 'translate(-50%, -50%)';
+  // Reset font size to measure natural width
   timerEl.style.fontSize = '100px';
 
+  // Get natural width at 100px
   const naturalWidth = timerEl.scrollWidth;
-  const naturalHeight = timerEl.scrollHeight;
-  if (naturalWidth <= 0 || naturalHeight <= 0) return;
+  if (naturalWidth <= 0) return;
 
-  // Scale to fit WITHIN box (use smaller scale to fit both dimensions)
-  const scaleW = targetWidth / naturalWidth;
-  const scaleH = targetHeight / naturalHeight;
-  const scale = Math.min(scaleW, scaleH);
-
-  const fontSize = 100 * scale;
+  // Scale font to fill target width
+  const fontSize = 100 * (targetWidth / naturalWidth);
   timerEl.style.fontSize = fontSize + 'px';
 }
 
@@ -316,7 +305,6 @@ function applyStyle(style) {
   const bg = style.background || style.bgColor || '#000000';
   document.body.style.background = bg;
   stageEl.style.background = bg;
-  virtualCanvasEl.style.background = bg;
 }
 
 /**

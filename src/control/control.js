@@ -80,7 +80,6 @@ const els = {
   previewWrapper: document.getElementById('previewWrapper'),
   livePreviewContainer: document.querySelector('.live-preview-wrapper'),
   livePreview: document.getElementById('livePreview'),
-  livePreviewCanvas: document.getElementById('livePreviewCanvas'),
   livePreviewContentBox: document.getElementById('livePreviewContentBox'),
   livePreviewTimerSection: document.querySelector('.live-preview .timer-section'),
   livePreviewMessageSection: document.querySelector('.live-preview .message-section'),
@@ -2900,38 +2899,29 @@ function getRefText(format, durationSec) {
 }
 
 /**
- * Fit preview timer to fill content box as much as possible
- * Must stay WITHIN the box (both width and height)
+ * Fit preview timer to fill content box WIDTH
+ * Directly measures content box and scales font to fill it
  */
 function fitPreviewTimer() {
   if (!els.livePreviewTimer || !els.livePreviewContentBox) return;
 
+  // Get actual content box width
+  const boxWidth = els.livePreviewContentBox.offsetWidth;
+  if (boxWidth <= 0) return;
+
   const appSettings = loadAppSettings();
   const zoom = (appSettings.timerZoom ?? 100) / 100;
+  const targetWidth = boxWidth * zoom;
 
-  // Get actual content box dimensions
-  const boxRect = els.livePreviewContentBox.getBoundingClientRect();
-  const boxWidth = boxRect.width;
-  const boxHeight = boxRect.height;
-
-  // Target area with small padding
-  const targetWidth = boxWidth * 0.95 * zoom;
-  const targetHeight = boxHeight * 0.90;
-
-  // Measure at base font size
-  els.livePreviewTimer.style.transform = 'translate(-50%, -50%)';
+  // Reset font size to measure natural width
   els.livePreviewTimer.style.fontSize = '100px';
 
+  // Get natural width at 100px
   const naturalWidth = els.livePreviewTimer.scrollWidth;
-  const naturalHeight = els.livePreviewTimer.scrollHeight;
-  if (naturalWidth <= 0 || naturalHeight <= 0) return;
+  if (naturalWidth <= 0) return;
 
-  // Scale to fit WITHIN box (use smaller scale to fit both dimensions)
-  const scaleW = targetWidth / naturalWidth;
-  const scaleH = targetHeight / naturalHeight;
-  const scale = Math.min(scaleW, scaleH);
-
-  const fontSize = 100 * scale;
+  // Scale font to fill target width
+  const fontSize = 100 * (targetWidth / naturalWidth);
   els.livePreviewTimer.style.fontSize = fontSize + 'px';
 }
 
@@ -3144,9 +3134,6 @@ function applyLivePreviewStyle() {
   const shadowColor = els.shadowColor.value || '#000000';
 
   els.livePreview.style.background = els.bgColor.value;
-  if (els.livePreviewCanvas) {
-    els.livePreviewCanvas.style.background = els.bgColor.value;
-  }
   els.livePreviewTimer.style.fontFamily = FIXED_STYLE.fontFamily;
   els.livePreviewTimer.style.fontWeight = FIXED_STYLE.fontWeight;
   els.livePreviewTimer.style.letterSpacing = FIXED_STYLE.letterSpacing + 'em';
@@ -3311,7 +3298,6 @@ function renderLivePreviewInternal() {
       els.livePreviewTimer.style.color = fontColor;
       els.livePreviewTimer.style.opacity = FIXED_STYLE.opacity;
     }
-    els.livePreviewCanvas.classList.remove('warning');
 
     // Update row progress bar for ToD mode (internal timer still runs)
     if (activePresetIndex !== null && isRunning && timerState.startedAt) {

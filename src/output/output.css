@@ -23,12 +23,9 @@ html, body {
   justify-content: center;
   background: transparent;
   overflow: hidden;
-}
-
-/* ============ Virtual Canvas ============ */
-/* No longer used for layout - content box is position: fixed to window */
-.virtual-canvas {
-  display: none;
+  box-sizing: border-box;
+  /* DEBUG */
+  border: 3px solid blue;
 }
 
 /* ============ Content Box System ============ */
@@ -49,8 +46,9 @@ html, body {
 /* Timer section - fills box by default, centered */
 .timer-section {
   flex: 1;
-  position: relative;
   width: 100%;
+  display: flex;
+  align-items: center;  /* Vertical center only */
   overflow: visible;
 }
 
@@ -75,20 +73,17 @@ html, body {
 
 /* ============ Timer Element ============ */
 .timer {
-  /* Absolute centering - works regardless of size/overflow */
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  /* Width 100% for fitty to measure parent, text centered */
+  width: 100%;
+  white-space: nowrap;
+  text-align: center;
 
   /* Tabular numbers: all digits same width */
   font-variant-numeric: tabular-nums lining-nums;
   font-feature-settings: "tnum" 1, "lnum" 1;
   user-select: none;
   -webkit-user-select: none;
-  white-space: nowrap;
   overflow: visible;
-  text-align: center;
   /* Draw stroke behind fill to prevent artifacts at intersections */
   paint-order: stroke fill;
 }
