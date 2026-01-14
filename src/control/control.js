@@ -3516,10 +3516,10 @@ function renderLivePreviewInternal() {
   // Update timer display
   els.livePreviewTimer.innerHTML = displayText;
 
-  // Update ToD display (separate element)
+  // Update ToD display (separate element, uses innerHTML for colon spans)
   if (showToD) {
     const todText = formatTimeOfDay(todFormat, timezone);
-    els.livePreviewToD.textContent = todText;
+    els.livePreviewToD.innerHTML = todText;
     els.livePreviewToD.style.visibility = 'visible';
   } else {
     els.livePreviewToD.style.visibility = 'hidden';

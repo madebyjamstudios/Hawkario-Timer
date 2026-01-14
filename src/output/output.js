@@ -493,9 +493,9 @@ function renderInternal() {
   // Apply timer text
   timerEl.innerHTML = text;
 
-  // Apply ToD text (separate element)
+  // Apply ToD text (separate element, uses innerHTML for colon spans)
   if (showToD && todText) {
-    todEl.textContent = todText;
+    todEl.innerHTML = todText;
     todEl.style.visibility = 'visible';
     todEl.style.color = color;
   } else {
