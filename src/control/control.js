@@ -2905,6 +2905,7 @@ function getRefText(format, durationSec) {
  * Fit preview timer to fill its container (timer-box)
  * Timer-only: timer-box is 100% of timer-section
  * Timer+ToD: timer-box is 75% of timer-section
+ * Constrained by both width and height to stay within box
  */
 function fitPreviewTimer() {
   if (!els.livePreviewTimer || !els.livePreviewTimerBox) return;
@@ -2917,6 +2918,7 @@ function fitPreviewTimer() {
   const appSettings = loadAppSettings();
   const zoom = (appSettings.timerZoom ?? 100) / 100;
   const targetWidth = boxWidth * zoom;
+  const targetHeight = boxHeight * 0.95; // 95% height for padding
 
   // Reset font size to measure natural dimensions
   els.livePreviewTimer.style.fontSize = '100px';
@@ -2926,8 +2928,10 @@ function fitPreviewTimer() {
   const naturalHeight = els.livePreviewTimer.scrollHeight;
   if (naturalWidth <= 0 || naturalHeight <= 0) return;
 
-  // Scale to fill width
-  const scale = targetWidth / naturalWidth;
+  // Scale to fit within both width and height
+  const scaleW = targetWidth / naturalWidth;
+  const scaleH = targetHeight / naturalHeight;
+  const scale = Math.min(scaleW, scaleH);
 
   // Keep base font size, apply scale via transform (keeps bounding box small)
   els.livePreviewTimer.style.fontSize = '100px';
