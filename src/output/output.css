@@ -26,19 +26,13 @@ html, body {
 }
 
 /* ============ Virtual Canvas ============ */
-/* Fixed reference size - scaled via CSS transform on resize */
+/* No longer used for layout - content box is position: fixed to window */
 .virtual-canvas {
-  width: 1920px;
-  height: 1080px;
-  position: relative;
-  transform-origin: center center;
-  /* Scale applied via JS */
-  /* DEBUG */
-  outline: 3px solid blue;
+  display: none;
 }
 
 /* ============ Content Box System ============ */
-/* The big box - positioned relative to STAGE (full window), not virtual canvas */
+/* The big box - 90% × 64% of WINDOW (not virtual canvas) */
 .content-box {
   position: fixed;
   width: 90%;

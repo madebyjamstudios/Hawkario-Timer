@@ -280,18 +280,6 @@ function updateOvertimeVisibility() {
   els.allowOvertimeRow.style.display = showOvertime ? '' : 'none';
 }
 
-// Get short mode label for display in timer rows
-function getModeLabel(mode) {
-  const labels = {
-    'countdown': 'C/D',
-    'countup': 'C/U',
-    'tod': 'ToD',
-    'countdown-tod': 'C/D+T',
-    'countup-tod': 'C/U+T'
-  };
-  return labels[mode] || mode;
-}
-
 function getDefaultDurationSeconds() {
   const { h, m, s } = parseTimeValue(els.defaultDuration.value);
   return h * 3600 + m * 60 + s;
@@ -2972,13 +2960,12 @@ function fitPreviewTimer() {
 function fitPreviewMessage() {
   if (!els.livePreviewMessage || !els.livePreviewMessageSection) return;
 
-  // Content box is 90% x 64% of reference canvas
+  // Get actual content box dimensions
+  const boxRect = els.livePreviewContentBox.getBoundingClientRect();
   // Message section is 66% of content box when visible
-  const contentBoxWidth = REF_WIDTH * 0.90;
-  const contentBoxHeight = REF_HEIGHT * 0.64;
-  const sectionHeight = contentBoxHeight * 0.66;
+  const sectionHeight = boxRect.height * 0.66;
 
-  const targetWidth = contentBoxWidth * 0.90;
+  const targetWidth = boxRect.width * 0.90;
   const targetHeight = sectionHeight * 0.85;
 
   // Allow text to wrap
@@ -3036,8 +3023,9 @@ function doResize(e) {
   const newWidth = Math.max(150, Math.min(containerWidth, startWidth + widthDelta));
   els.previewWrapper.style.width = newWidth + 'px';
 
-  // Update virtual canvas scale (no font recalculation)
-  updatePreviewScale();
+  // Refit timer when preview is resized
+  fitPreviewTimer();
+  fitPreviewMessage();
 }
 
 function stopResize() {
@@ -3065,10 +3053,10 @@ function restorePreviewWidth() {
       els.previewWrapper.style.width = containerWidth + 'px';
     }
   }
-  // Apply virtual canvas scale and fit timer content
+  // Fit timer content
   requestAnimationFrame(() => {
-    updatePreviewScale();
     fitPreviewTimer();
+    fitPreviewMessage();
   });
 }
 
@@ -5007,19 +4995,7 @@ function renderPresetList() {
       showDurationEditPopup(idx, preset, duration);
     };
 
-    // Mode indicator (clickable to change)
-    const mode = preset.config?.mode || 'countdown';
-    const modeIndicator = document.createElement('span');
-    modeIndicator.className = 'preset-mode';
-    modeIndicator.dataset.mode = mode;
-    modeIndicator.textContent = getModeLabel(mode) + ' ▾';
-    modeIndicator.title = 'Click to change mode';
-    modeIndicator.onclick = (e) => {
-      e.stopPropagation();
-      showModeDropdown(idx, preset, modeIndicator);
-    };
-
-    durationContainer.append(duration, modeIndicator);
+    durationContainer.append(duration);
 
     const actions = document.createElement('div');
     actions.className = 'preset-actions';
@@ -5310,105 +5286,6 @@ function showQuickEditPopup(idx, preset, anchorEl) {
   setTimeout(() => document.addEventListener('click', closePopup), 0);
 }
 
-function showModeDropdown(idx, preset, anchorEl) {
-  // Toggle: if already open for this element, close it
-  const existing = document.querySelector('.mode-dropdown-popup');
-  if (existing) {
-    existing.remove();
-    if (anchorEl.classList.contains('editing')) {
-      anchorEl.classList.remove('editing');
-      return; // Was already open, just close
-    }
-  }
-
-  // Add editing highlight
-  anchorEl.classList.add('editing');
-
-  const popup = document.createElement('div');
-  popup.className = 'mode-dropdown-popup';
-
-  const modes = [
-    { value: 'countdown', label: 'Countdown (C/D)' },
-    { value: 'countup', label: 'Count Up (C/U)' },
-    { value: 'tod', label: 'Time of Day (ToD)' },
-    { value: 'countdown-tod', label: 'C/D + Time (C/D+T)' },
-    { value: 'countup-tod', label: 'C/U + Time (C/U+T)' }
-  ];
-
-  const currentMode = preset.config?.mode || 'countdown';
-
-  const removeEditing = () => anchorEl.classList.remove('editing');
-
-  modes.forEach(({ value, label }) => {
-    const option = document.createElement('div');
-    option.className = 'mode-option' + (value === currentMode ? ' selected' : '');
-    option.textContent = label;
-    option.onclick = () => {
-      saveUndoState();
-      const presets = loadPresets();
-      presets[idx].config.mode = value;
-      savePresets(presets);
-      removeEditing();
-      renderPresetList();
-      // Flash success on the new mode indicator
-      setTimeout(() => {
-        const newModeEl = document.querySelector(`.preset-item[data-index="${idx}"] .preset-mode`);
-        if (newModeEl) {
-          newModeEl.classList.add('save-success');
-          setTimeout(() => newModeEl.classList.remove('save-success'), 400);
-        }
-      }, 10);
-      popup.remove();
-    };
-    popup.appendChild(option);
-  });
-
-  // Position popup near the anchor element
-  const rect = anchorEl.getBoundingClientRect();
-  popup.style.position = 'fixed';
-  popup.style.left = `${rect.left}px`;
-
-  document.body.appendChild(popup);
-
-  // Smart positioning: dropdown by default, dropup if not enough space below
-  const popupRect = popup.getBoundingClientRect();
-  const spaceBelow = window.innerHeight - rect.bottom - 10;
-  const spaceAbove = rect.top - 10;
-
-  if (spaceBelow >= popupRect.height || spaceBelow >= spaceAbove) {
-    // Dropdown - enough space below or more space below than above
-    popup.style.top = `${rect.bottom + 4}px`;
-  } else {
-    // Dropup - more space above
-    popup.style.top = `${rect.top - popupRect.height - 4}px`;
-  }
-
-  // Adjust horizontal position if off-screen
-  if (popupRect.right > window.innerWidth - 10) {
-    popup.style.left = `${window.innerWidth - popupRect.width - 10}px`;
-  }
-
-  // Close on click outside
-  const closePopup = (e) => {
-    if (!popup.contains(e.target) && e.target !== anchorEl) {
-      removeEditing();
-      popup.remove();
-      document.removeEventListener('click', closePopup);
-    }
-  };
-  setTimeout(() => document.addEventListener('click', closePopup), 0);
-
-  // Close on Escape
-  const handleKeydown = (e) => {
-    if (e.key === 'Escape') {
-      removeEditing();
-      popup.remove();
-      document.removeEventListener('keydown', handleKeydown);
-    }
-  };
-  document.addEventListener('keydown', handleKeydown);
-}
-
 function showDurationEditPopup(idx, preset, anchorEl) {
   // Toggle: if already open for this element, close it
   const existing = document.querySelector('.duration-edit-popup');
@@ -5467,21 +5344,19 @@ function showDurationEditPopup(idx, preset, anchorEl) {
     const { h, m, s } = parseTimeValue(input.value);
     const totalSec = h * 3600 + m * 60 + s;
     removeEditing();
-    if (totalSec > 0) {
-      saveUndoState();
-      const presets = loadPresets();
-      presets[idx].config.durationSec = totalSec;
-      savePresets(presets);
-      renderPresetList();
-      // Flash success on the new duration
-      setTimeout(() => {
-        const newDurationEl = document.querySelector(`.preset-item[data-index="${idx}"] .preset-duration`);
-        if (newDurationEl) {
-          newDurationEl.classList.add('save-success');
-          setTimeout(() => newDurationEl.classList.remove('save-success'), 400);
-        }
-      }, 10);
-    }
+    saveUndoState();
+    const presets = loadPresets();
+    presets[idx].config.durationSec = totalSec;
+    savePresets(presets);
+    renderPresetList();
+    // Flash success on the new duration
+    setTimeout(() => {
+      const newDurationEl = document.querySelector(`.preset-item[data-index="${idx}"] .preset-duration`);
+      if (newDurationEl) {
+        newDurationEl.classList.add('save-success');
+        setTimeout(() => newDurationEl.classList.remove('save-success'), 400);
+      }
+    }, 10);
     popup.remove();
   };
 

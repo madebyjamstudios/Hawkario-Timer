@@ -60,10 +60,6 @@ if (missingEls.length > 0) {
   console.warn('[DOM Safety] Missing output elements (using fallbacks):', missingEls.join(', '));
 }
 
-// Virtual canvas reference dimensions
-const REF_WIDTH = 1920;
-const REF_HEIGHT = 1080;
-
 // Update resolution display
 function updateResolution() {
   if (resolutionEl) {
@@ -71,22 +67,12 @@ function updateResolution() {
   }
 }
 
-/**
- * Update virtual canvas scale based on window size
- * This is the ONLY thing that changes on resize - no font recalculation
- */
-function updateCanvasScale() {
-  const scale = Math.min(window.innerWidth / REF_WIDTH, window.innerHeight / REF_HEIGHT);
-  virtualCanvasEl.style.transform = `scale(${scale})`;
-}
-
 window.addEventListener('resize', () => {
   updateResolution();
-  updateCanvasScale();
   fitTimerContent();
+  fitMessageContent();
 });
 updateResolution();
-updateCanvasScale();
 
 // Canonical timer state from control window
 let canonicalState = null;
@@ -177,11 +163,12 @@ function getRefText(format, durationMs) {
 /**
  * Fit timer to fill content box as much as possible
  * Must stay WITHIN the box (both width and height)
+ * Uses actual window dimensions (content box is 90% × 64% of window)
  */
 function fitTimerContent() {
   const zoom = timerZoom / 100;
 
-  // Content box is 90% width, 64% height of WINDOW (position: fixed)
+  // Content box is 90% width, 64% height of WINDOW
   const boxWidth = window.innerWidth * 0.90;
   const boxHeight = window.innerHeight * 0.64;
 
@@ -213,10 +200,10 @@ function fitTimerContent() {
 function fitMessageContent() {
   if (!currentMessage || !currentMessage.visible) return;
 
-  // Content box is 90% x 64% of reference canvas
+  // Content box is 90% × 64% of WINDOW
   // Message section is 66% of content box when visible
-  const contentBoxWidth = REF_WIDTH * 0.90;
-  const contentBoxHeight = REF_HEIGHT * 0.64;
+  const contentBoxWidth = window.innerWidth * 0.90;
+  const contentBoxHeight = window.innerHeight * 0.64;
   const sectionHeight = contentBoxHeight * 0.66;
 
   const targetWidth = contentBoxWidth * 0.90;
