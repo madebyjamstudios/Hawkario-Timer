@@ -2875,10 +2875,6 @@ let isResizing = false;
 let startY = 0;
 let startWidth = 0;
 
-// Virtual canvas reference dimensions (same as output)
-const REF_WIDTH = 1920;
-const REF_HEIGHT = 1080;
-
 // Track last rendered text/format/mode to only refit when needed
 let lastPreviewTimerText = '';
 let lastPreviewMessageText = '';
@@ -2901,20 +2897,6 @@ function getRefText(format, durationSec) {
   if (minutes >= 100) return '888:88';
   if (minutes >= 10) return '88:88';
   return '8:88';
-}
-
-/**
- * Update preview virtual canvas scale based on container size
- * This is the ONLY thing that changes on resize - no font recalculation
- */
-function updatePreviewScale() {
-  if (!els.livePreviewCanvas || !els.livePreview) return;
-  const containerWidth = els.livePreview.offsetWidth;
-  const containerHeight = els.livePreview.offsetHeight;
-  if (containerWidth <= 0 || containerHeight <= 0) return;
-
-  const scale = Math.min(containerWidth / REF_WIDTH, containerHeight / REF_HEIGHT);
-  els.livePreviewCanvas.style.transform = `scale(${scale})`;
 }
 
 /**
@@ -5304,6 +5286,14 @@ function showDurationEditPopup(idx, preset, anchorEl) {
   const popup = document.createElement('div');
   popup.className = 'duration-edit-popup';
 
+  // Input row with label
+  const inputRow = document.createElement('div');
+  inputRow.className = 'duration-edit-input-row';
+
+  const label = document.createElement('label');
+  label.textContent = 'Duration:';
+  label.className = 'duration-edit-label';
+
   const input = document.createElement('input');
   input.type = 'text';
   input.className = 'duration-edit-input';
@@ -5311,7 +5301,48 @@ function showDurationEditPopup(idx, preset, anchorEl) {
   input.placeholder = 'HH:MM:SS';
   input.maxLength = 10;
 
-  popup.appendChild(input);
+  inputRow.append(label, input);
+
+  // Buttons row
+  const buttons = document.createElement('div');
+  buttons.className = 'duration-edit-buttons';
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'cancel-btn';
+  cancelBtn.textContent = 'Cancel';
+  cancelBtn.onclick = () => {
+    removeEditing();
+    popup.remove();
+  };
+
+  const saveBtn = document.createElement('button');
+  saveBtn.className = 'save-btn';
+  saveBtn.textContent = 'Save';
+
+  const saveDuration = () => {
+    const { h, m, s } = parseTimeValue(input.value);
+    const totalSec = h * 3600 + m * 60 + s;
+    removeEditing();
+    saveUndoState();
+    const presets = loadPresets();
+    presets[idx].config.durationSec = totalSec;
+    savePresets(presets);
+    renderPresetList();
+    // Flash success on the new duration
+    setTimeout(() => {
+      const newDurationEl = document.querySelector(`.preset-item[data-index="${idx}"] .preset-duration`);
+      if (newDurationEl) {
+        newDurationEl.classList.add('save-success');
+        setTimeout(() => newDurationEl.classList.remove('save-success'), 400);
+      }
+    }, 10);
+    popup.remove();
+  };
+
+  saveBtn.onclick = saveDuration;
+
+  buttons.append(cancelBtn, saveBtn);
+  popup.append(inputRow, buttons);
 
   // Position popup near the anchor element
   const rect = anchorEl.getBoundingClientRect();
@@ -5339,26 +5370,6 @@ function showDurationEditPopup(idx, preset, anchorEl) {
   // Focus and select
   input.focus();
   input.select();
-
-  const saveDuration = () => {
-    const { h, m, s } = parseTimeValue(input.value);
-    const totalSec = h * 3600 + m * 60 + s;
-    removeEditing();
-    saveUndoState();
-    const presets = loadPresets();
-    presets[idx].config.durationSec = totalSec;
-    savePresets(presets);
-    renderPresetList();
-    // Flash success on the new duration
-    setTimeout(() => {
-      const newDurationEl = document.querySelector(`.preset-item[data-index="${idx}"] .preset-duration`);
-      if (newDurationEl) {
-        newDurationEl.classList.add('save-success');
-        setTimeout(() => newDurationEl.classList.remove('save-success'), 400);
-      }
-    }, 10);
-    popup.remove();
-  };
 
   // Save on Enter, cancel on Escape
   input.addEventListener('keydown', (e) => {
@@ -6724,7 +6735,8 @@ function init() {
     if (currentWidth > containerWidth && containerWidth >= 150) {
       els.previewWrapper.style.width = containerWidth + 'px';
     }
-    updatePreviewScale();
+    fitPreviewTimer();
+    fitPreviewMessage();
   });
 
   // Setup custom confirm dialog
