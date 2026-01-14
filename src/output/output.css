@@ -58,8 +58,6 @@ html, body {
 /* Timer box - wraps timer text exactly (inline-block) */
 .timer-box {
   display: inline-block;
-  /* DEBUG */
-  outline: 2px dashed cyan;
 }
 
 /* ToD box - hidden by default */
@@ -87,8 +85,6 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* DEBUG */
-  outline: 2px dashed cyan;
 }
 
 .timer-section.with-tod .tod-box {
@@ -146,6 +142,8 @@ html, body {
   overflow: visible;
   /* Draw stroke behind fill to prevent artifacts at intersections */
   paint-order: stroke fill;
+  /* DEBUG */
+  outline: 2px dashed cyan;
 }
 
 /* Vertically centered colon for time display */
