@@ -241,6 +241,8 @@ button:disabled {
   width: 100%;
   position: relative;
   overflow: visible;
+  /* DEBUG */
+  outline: 2px solid lime;
 }
 
 /* Message section - hidden by default */
@@ -273,8 +275,6 @@ button:disabled {
   overflow: visible;
   user-select: none;
   -webkit-user-select: none;
-  /* DEBUG */
-  outline: 2px solid lime;
 }
 
 /* Message preview element */

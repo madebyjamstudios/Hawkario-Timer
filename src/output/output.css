@@ -49,6 +49,8 @@ html, body {
   width: 100%;
   position: relative;
   overflow: visible;
+  /* DEBUG */
+  outline: 2px solid lime;
 }
 
 /* Message section - hidden by default */
@@ -87,8 +89,6 @@ html, body {
   overflow: visible;
   /* Draw stroke behind fill to prevent artifacts at intersections */
   paint-order: stroke fill;
-  /* DEBUG */
-  outline: 2px solid lime;
 }
 
 /* Vertically centered colon for time display */
