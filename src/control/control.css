@@ -264,11 +264,11 @@ button:disabled {
 
 /* Timer preview element */
 .live-preview .timer-preview {
-  /* Absolute centering - always centered regardless of size */
+  /* Absolute centering - JS handles transform for centering + scale */
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  /* transform set by JS: translate(-50%, -50%) scale(X) */
   white-space: nowrap;
   overflow: visible;
   user-select: none;

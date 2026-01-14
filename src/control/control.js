@@ -2935,8 +2935,9 @@ function fitPreviewTimer() {
   const hasToD = els.livePreviewTimer.querySelector('.tod-line') !== null;
   const scale = hasToD ? Math.min(scaleW, scaleH) : scaleW;
 
-  const fontSize = 100 * scale;
-  els.livePreviewTimer.style.fontSize = fontSize + 'px';
+  // Keep base font size, apply scale via transform (keeps bounding box small)
+  els.livePreviewTimer.style.fontSize = '100px';
+  els.livePreviewTimer.style.transform = `translate(-50%, -50%) scale(${scale})`;
 }
 
 /**

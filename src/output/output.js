@@ -192,8 +192,9 @@ function fitTimerContent() {
   const hasToD = timerEl.querySelector('.tod-line') !== null;
   const scale = hasToD ? Math.min(scaleW, scaleH) : scaleW;
 
-  const fontSize = 100 * scale;
-  timerEl.style.fontSize = fontSize + 'px';
+  // Keep base font size, apply scale via transform (keeps bounding box small)
+  timerEl.style.fontSize = '100px';
+  timerEl.style.transform = `translate(-50%, -50%) scale(${scale})`;
 }
 
 /**
