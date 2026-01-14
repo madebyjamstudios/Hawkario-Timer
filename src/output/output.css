@@ -43,13 +43,11 @@ html, body {
   outline: 3px solid red;
 }
 
-/* Timer section - fills box by default, centered */
+/* Timer section - fills box by default */
 .timer-section {
   flex: 1;
   width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: relative;
   overflow: visible;
 }
 
@@ -74,8 +72,11 @@ html, body {
 
 /* ============ Timer Element ============ */
 .timer {
-  /* Inline-block to measure natural text width */
-  display: inline-block;
+  /* Absolute centering - always centered regardless of size */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   white-space: nowrap;
 
   /* Tabular numbers: all digits same width */
