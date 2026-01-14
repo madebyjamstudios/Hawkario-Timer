@@ -2931,8 +2931,9 @@ function fitPreviewTimer() {
   const scaleW = targetWidth / naturalWidth;
   const scaleH = (targetHeight * 0.95) / naturalHeight;  // 95% height to add padding
 
-  // Use minimum scale to fit within both (fitty-style)
-  const scale = Math.min(scaleW, scaleH);
+  // Timer-only: fill width; Timer+ToD: fit within both
+  const hasToD = els.livePreviewTimer.querySelector('.tod-line') !== null;
+  const scale = hasToD ? Math.min(scaleW, scaleH) : scaleW;
 
   const fontSize = 100 * scale;
   els.livePreviewTimer.style.fontSize = fontSize + 'px';
