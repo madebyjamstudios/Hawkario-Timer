@@ -327,23 +327,14 @@ export class FlashAnimator {
       const cyclePosition = elapsed % this.cycleDuration;
       const phase = cyclePosition < this.greyDuration ? 'grey' : 'glow';
 
-      // Check if this is the final glow (last cycle, glow phase)
-      const cycleNumber = Math.floor(elapsed / this.cycleDuration);
-      const isFinalGlow = phase === 'glow' && cycleNumber === this.maxFlashes - 1;
-
       // Only update DOM if phase changed (performance)
-      if (phase !== this.lastPhase || (isFinalGlow && this.lastPhase !== 'final-glow')) {
-        if (isFinalGlow) {
-          // Final glow uses original color instead of white for smooth transition
-          this.applyFinalGlow();
-          this.lastPhase = 'final-glow';
-        } else if (phase === 'glow') {
+      if (phase !== this.lastPhase) {
+        if (phase === 'glow') {
           this.applyGlow();
-          this.lastPhase = phase;
         } else {
           this.applyGrey();
-          this.lastPhase = phase;
         }
+        this.lastPhase = phase;
       }
     } catch (err) {
       console.error('[FlashAnimator] Tick error (stopping):', err);
@@ -360,12 +351,6 @@ export class FlashAnimator {
 
     this.timerEl.style.color = '#ffffff';
     this.timerEl.style.textShadow = glowCSS;
-  }
-
-  applyFinalGlow() {
-    // Final glow uses original color instead of white for smooth ending
-    this.timerEl.style.color = this.originalColor;
-    this.timerEl.style.textShadow = this.originalShadow;
   }
 
   applyGrey() {
