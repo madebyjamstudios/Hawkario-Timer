@@ -199,7 +199,11 @@ function fitTimerContent() {
     containerHeight = contentBoxEl.offsetHeight;
   }
 
-  if (containerWidth <= 0 || containerHeight <= 0) return;
+  // If layout not ready, retry after short delay
+  if (containerWidth <= 0 || containerHeight <= 0) {
+    setTimeout(fitTimerContent, 50);
+    return;
+  }
 
   const zoom = timerZoom / 100;
   const maxWidth = containerWidth * zoom;
@@ -231,7 +235,12 @@ function fitToDContent() {
 
   const containerWidth = todBoxEl.offsetWidth;
   const containerHeight = todBoxEl.offsetHeight;
-  if (containerWidth <= 0 || containerHeight <= 0) return;
+
+  // If layout not ready, retry after short delay
+  if (containerWidth <= 0 || containerHeight <= 0) {
+    setTimeout(fitToDContent, 50);
+    return;
+  }
 
   const zoom = timerZoom / 100;
   const maxWidth = containerWidth * zoom;
