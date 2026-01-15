@@ -2,22 +2,6 @@
  * Ninja Timer - Control Window Styles
  */
 
-@font-face {
-  font-family: 'JetBrains Mono';
-  src: url('../assets/fonts/JetBrainsMono-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'JetBrains Mono';
-  src: url('../assets/fonts/JetBrainsMono-Bold.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
 /* Base layout */
 html, body {
   height: 100%;
@@ -345,7 +329,6 @@ button:disabled {
   display: inline-block;
   white-space: nowrap;
   line-height: 0.75;
-  font-family: 'JetBrains Mono', monospace;
   overflow: visible;
   user-select: none;
   -webkit-user-select: none;
@@ -387,7 +370,6 @@ button:disabled {
   display: inline-block;
   white-space: nowrap;
   line-height: 0.75;
-  font-family: 'JetBrains Mono', monospace;
   font-weight: 600;
   font-variant-numeric: tabular-nums lining-nums;
   font-feature-settings: "tnum" 1, "lnum" 1;
