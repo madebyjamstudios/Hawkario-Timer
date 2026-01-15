@@ -3457,18 +3457,33 @@ function fitPreviewTimer() {
  * Fit preview ToD to fill its container (tod-box, 25% of content-box)
  * Scale until tod-box touches edge
  */
+let fitPreviewToDRetries = 0;
 function fitPreviewToD() {
   if (!els.livePreviewToD || !els.livePreviewToDBox) return;
-  if (!els.livePreviewTimerSection?.classList.contains('with-tod')) return;
+
+  // If with-tod class not set yet, retry (render loop may not have run)
+  if (!els.livePreviewTimerSection?.classList.contains('with-tod')) {
+    if (fitPreviewToDRetries < 5) {
+      fitPreviewToDRetries++;
+      setTimeout(fitPreviewToD, 50);
+    }
+    return;
+  }
 
   const containerWidth = els.livePreviewToDBox.offsetWidth;
   const containerHeight = els.livePreviewToDBox.offsetHeight;
 
   // If layout not ready, retry after short delay (matches output behavior)
   if (containerWidth <= 0 || containerHeight <= 0) {
-    setTimeout(fitPreviewToD, 50);
+    if (fitPreviewToDRetries < 10) {
+      fitPreviewToDRetries++;
+      setTimeout(fitPreviewToD, 50);
+    }
     return;
   }
+
+  // Reset retry counter on success
+  fitPreviewToDRetries = 0;
 
   const appSettings = loadAppSettings();
   const zoom = (appSettings.timerZoom ?? 100) / 100;
