@@ -3425,7 +3425,11 @@ function fitPreviewTimer() {
     containerHeight = els.livePreviewContentBox.offsetHeight;
   }
 
-  if (containerWidth <= 0 || containerHeight <= 0) return;
+  // If layout not ready, retry after short delay (matches output behavior)
+  if (containerWidth <= 0 || containerHeight <= 0) {
+    setTimeout(fitPreviewTimer, 50);
+    return;
+  }
 
   const appSettings = loadAppSettings();
   const zoom = (appSettings.timerZoom ?? 100) / 100;
@@ -3459,7 +3463,12 @@ function fitPreviewToD() {
 
   const containerWidth = els.livePreviewToDBox.offsetWidth;
   const containerHeight = els.livePreviewToDBox.offsetHeight;
-  if (containerWidth <= 0 || containerHeight <= 0) return;
+
+  // If layout not ready, retry after short delay (matches output behavior)
+  if (containerWidth <= 0 || containerHeight <= 0) {
+    setTimeout(fitPreviewToD, 50);
+    return;
+  }
 
   const appSettings = loadAppSettings();
   const zoom = (appSettings.timerZoom ?? 100) / 100;
