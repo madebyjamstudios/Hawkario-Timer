@@ -157,6 +157,7 @@ html, body {
   /* Inline-block so parent wraps it exactly */
   display: inline-block;
   white-space: nowrap;
+  line-height: 0.75;
 
   /* Tabular numbers: all digits same width */
   font-variant-numeric: tabular-nums lining-nums;
