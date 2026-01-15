@@ -7371,6 +7371,13 @@ function init() {
   // Start live preview render loop
   renderLivePreview();
 
+  // Initial fit after layout settles (handles first open sizing)
+  setTimeout(() => {
+    fitPreviewTimer();
+    fitPreviewToD();
+    fitPreviewMessage();
+  }, 100);
+
   // Start crash recovery state saving
   startCrashRecoverySaving();
 
