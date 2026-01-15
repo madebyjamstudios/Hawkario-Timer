@@ -80,9 +80,8 @@ const resizeObserver = new ResizeObserver(() => {
     requestAnimationFrame(() => {
       fitTimerContent();
       fitToDContent();
-      // Debounce message fit to avoid jitter during continuous resize
-      clearTimeout(messageResizeTimeout);
-      messageResizeTimeout = setTimeout(fitMessageContent, 100);
+      // Fit message immediately for real-time updates during resize
+      fitMessageContent();
     });
   });
 });
@@ -288,31 +287,47 @@ function fitMessageContent() {
   const targetWidth = containerWidth * 0.95;
   const targetHeight = containerHeight * 0.95;
 
-  // Set maxWidth to container width - text wraps at container boundary
-  messageOverlayEl.style.maxWidth = targetWidth + 'px';
+  // Try multiple maxWidth values to find optimal layout
+  // Narrower widths force more wrapping which can allow larger fonts
+  const widthPercentages = [1.0, 0.85, 0.7, 0.55, 0.4];
+  let bestFontSize = 8;
+  let bestMaxWidth = targetWidth;
 
-  // Binary search for largest font that fits (textFit algorithm)
-  let min = 8;
-  let max = 500;
-  let bestFit = min;
+  for (const pct of widthPercentages) {
+    const testMaxWidth = targetWidth * pct;
+    messageOverlayEl.style.maxWidth = testMaxWidth + 'px';
 
-  while (min <= max) {
-    const mid = Math.floor((min + max) / 2);
-    messageOverlayEl.style.fontSize = mid + 'px';
-    void messageOverlayEl.offsetWidth; // Force reflow
+    // Binary search for largest font that fits at this maxWidth
+    let min = 8;
+    let max = 500;
+    let fontForThisWidth = min;
 
-    const textHeight = messageOverlayEl.scrollHeight;
-    const textWidth = messageOverlayEl.scrollWidth;
+    while (min <= max) {
+      const mid = Math.floor((min + max) / 2);
+      messageOverlayEl.style.fontSize = mid + 'px';
+      void messageOverlayEl.offsetWidth; // Force reflow
 
-    if (textHeight <= targetHeight && textWidth <= targetWidth) {
-      bestFit = mid;
-      min = mid + 1; // Try larger
-    } else {
-      max = mid - 1; // Too big, try smaller
+      const textHeight = messageOverlayEl.scrollHeight;
+      const textWidth = messageOverlayEl.scrollWidth;
+
+      if (textHeight <= targetHeight && textWidth <= targetWidth) {
+        fontForThisWidth = mid;
+        min = mid + 1; // Try larger
+      } else {
+        max = mid - 1; // Too big, try smaller
+      }
+    }
+
+    // Keep the configuration that yields the largest font
+    if (fontForThisWidth > bestFontSize) {
+      bestFontSize = fontForThisWidth;
+      bestMaxWidth = testMaxWidth;
     }
   }
 
-  messageOverlayEl.style.fontSize = bestFit + 'px';
+  // Apply the best configuration
+  messageOverlayEl.style.maxWidth = bestMaxWidth + 'px';
+  messageOverlayEl.style.fontSize = bestFontSize + 'px';
 }
 
 /**
