@@ -3402,11 +3402,23 @@ function getRefText(format, durationSec) {
  * Fit preview timer to fill its container - scale until box touches edge
  * Respects message mode (34% height) and ToD mode (75% of that)
  */
+let fitPreviewTimerRetries = 0;
 function fitPreviewTimer() {
   if (!els.livePreviewTimer || !els.livePreviewTimerBox || !els.livePreviewContentBox) return;
 
   const hasToD = els.livePreviewTimerSection?.classList.contains('with-tod');
   const hasMessage = els.livePreviewContentBox?.classList.contains('with-message');
+
+  // Check if ToD should be active but class not set yet (render loop hasn't run)
+  const todShouldBeActive = els.livePreviewToD?.innerHTML && els.livePreviewToD?.style.visibility !== 'hidden';
+  if (todShouldBeActive && !hasToD) {
+    // Retry - wait for render loop to set with-tod class
+    if (fitPreviewTimerRetries < 5) {
+      fitPreviewTimerRetries++;
+      setTimeout(fitPreviewTimer, 50);
+    }
+    return;
+  }
 
   // Container width is always timer-section width
   const containerWidth = els.livePreviewTimerSection?.offsetWidth || 0;
@@ -3427,9 +3439,15 @@ function fitPreviewTimer() {
 
   // If layout not ready, retry after short delay (matches output behavior)
   if (containerWidth <= 0 || containerHeight <= 0) {
-    setTimeout(fitPreviewTimer, 50);
+    if (fitPreviewTimerRetries < 10) {
+      fitPreviewTimerRetries++;
+      setTimeout(fitPreviewTimer, 50);
+    }
     return;
   }
+
+  // Reset retry counter on success
+  fitPreviewTimerRetries = 0;
 
   const appSettings = loadAppSettings();
   const zoom = (appSettings.timerZoom ?? 100) / 100;
