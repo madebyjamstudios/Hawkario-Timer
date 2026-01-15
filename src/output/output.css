@@ -148,6 +148,8 @@ html, body {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  /* DEBUG */
+  outline: 2px dashed magenta;
 }
 
 /* ============ Timer Element ============ */

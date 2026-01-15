@@ -265,7 +265,7 @@ function fitToDContent() {
 
 /**
  * Fit message text to message-section container
- * Fitty-style: finds optimal word-wrap point to maximize text size
+ * Simple scale-to-fit (same approach as timer/ToD)
  */
 function fitMessageContent() {
   if (!currentMessage || !currentMessage.visible) return;
@@ -279,47 +279,28 @@ function fitMessageContent() {
     return;
   }
 
+  // Target 95% of container (small padding)
   const targetWidth = containerWidth * 0.95;
-  const targetHeight = containerHeight * 0.90;
+  const targetHeight = containerHeight * 0.95;
 
-  // Try different maxWidth values to find optimal word-wrap point
-  let bestFontSize = 0;
-  let bestMaxWidth = targetWidth;
-
-  // Width ratios to try (100% down to 25% of container)
-  const widthSteps = [1.0, 0.85, 0.7, 0.6, 0.5, 0.4, 0.33, 0.25];
-
-  for (const widthRatio of widthSteps) {
-    const testMaxWidth = targetWidth * widthRatio;
-
-    // Measure at base size with this maxWidth
-    messageOverlayEl.style.fontSize = '100px';
-    messageOverlayEl.style.maxWidth = testMaxWidth + 'px';
-    messageOverlayEl.style.transform = 'none';
-
-    // Force reflow and measure
-    void messageOverlayEl.offsetWidth;
-    const textWidth = messageOverlayEl.scrollWidth;
-    const textHeight = messageOverlayEl.scrollHeight;
-
-    if (textWidth <= 0 || textHeight <= 0) continue;
-
-    // Calculate scale to fit container
-    const scaleW = targetWidth / textWidth;
-    const scaleH = targetHeight / textHeight;
-    const scale = Math.min(scaleW, scaleH);
-    const fontSize = 100 * scale;
-
-    if (fontSize > bestFontSize) {
-      bestFontSize = fontSize;
-      bestMaxWidth = testMaxWidth;
-    }
-  }
-
-  // Apply best result
-  messageOverlayEl.style.maxWidth = bestMaxWidth + 'px';
-  messageOverlayEl.style.fontSize = Math.max(8, bestFontSize) + 'px';
+  // Measure at 100px base font
+  messageOverlayEl.style.fontSize = '100px';
+  messageOverlayEl.style.maxWidth = targetWidth + 'px';
   messageOverlayEl.style.transform = 'none';
+
+  void messageOverlayEl.offsetWidth;
+  const textWidth = messageOverlayEl.scrollWidth;
+  const textHeight = messageOverlayEl.scrollHeight;
+
+  if (textWidth <= 0 || textHeight <= 0) return;
+
+  // Scale to fit (constrained by smaller ratio)
+  const scaleW = targetWidth / textWidth;
+  const scaleH = targetHeight / textHeight;
+  const scale = Math.min(scaleW, scaleH);
+
+  const fontSize = Math.max(8, Math.floor(100 * scale));
+  messageOverlayEl.style.fontSize = fontSize + 'px';
 }
 
 /**
