@@ -2291,6 +2291,15 @@ h3 {
   letter-spacing: 0;
 }
 
+.settings-subsection-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #888;
+  margin: 16px 0 10px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .settings-hint {
   font-size: 11px;
   color: #666;

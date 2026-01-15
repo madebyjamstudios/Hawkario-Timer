@@ -142,6 +142,19 @@ const els = {
   defaultFormat: document.getElementById('defaultFormat'),
   defaultSound: document.getElementById('defaultSound'),
   defaultAllowOvertime: document.getElementById('defaultAllowOvertime'),
+  defaultSoundVolume: document.getElementById('defaultSoundVolume'),
+  // Appearance defaults
+  defaultColor: document.getElementById('defaultColor'),
+  defaultStrokeWidth: document.getElementById('defaultStrokeWidth'),
+  defaultStrokeWidthValue: document.getElementById('defaultStrokeWidthValue'),
+  defaultStrokeColor: document.getElementById('defaultStrokeColor'),
+  defaultShadowSize: document.getElementById('defaultShadowSize'),
+  defaultShadowSizeValue: document.getElementById('defaultShadowSizeValue'),
+  defaultShadowColor: document.getElementById('defaultShadowColor'),
+  defaultBgColor: document.getElementById('defaultBgColor'),
+  // Warning defaults
+  defaultWarnYellow: document.getElementById('defaultWarnYellow'),
+  defaultWarnOrange: document.getElementById('defaultWarnOrange'),
   timerZoom: document.getElementById('timerZoom'),
   outputOnTop: document.getElementById('outputOnTop'),
   controlOnTop: document.getElementById('controlOnTop'),
@@ -748,6 +761,7 @@ function setActiveTimerConfig(config) {
     mode: config.mode || 'countdown',
     durationSec: config.durationSec || 600,
     format: config.format || 'MM:SS',
+    allowOvertime: config.allowOvertime !== false,
     style: {
       color: config.style?.color || '#ffffff',
       strokeWidth: config.style?.strokeWidth ?? 0,
@@ -755,6 +769,10 @@ function setActiveTimerConfig(config) {
       shadowSize: config.style?.shadowSize ?? 0,
       shadowColor: config.style?.shadowColor || '#000000',
       bgColor: config.style?.bgColor || '#000000'
+    },
+    sound: {
+      endType: config.sound?.endType || 'none',
+      volume: config.sound?.volume ?? 0.7
     },
     warnYellowSec: config.warnYellowSec ?? 60,
     warnOrangeSec: config.warnOrangeSec ?? 15
@@ -994,7 +1012,18 @@ const DEFAULT_APP_SETTINGS = {
     durationSec: 600,
     format: 'MM:SS',
     soundType: 'none',
-    allowOvertime: true
+    soundVolume: 0.7,
+    allowOvertime: true,
+    // Appearance defaults
+    color: '#ffffff',
+    strokeWidth: 0,
+    strokeColor: '#000000',
+    shadowSize: 0,
+    shadowColor: '#000000',
+    bgColor: '#000000',
+    // Warning defaults
+    warnYellowSec: 60,
+    warnOrangeSec: 15
   },
   // OSC Integration
   osc: {
@@ -1291,6 +1320,45 @@ function openAppSettings() {
     els.defaultAllowOvertime.value = settings.defaults.allowOvertime !== false ? 'on' : 'off';
   }
 
+  // Load sound volume
+  if (els.defaultSoundVolume) {
+    els.defaultSoundVolume.value = settings.defaults.soundVolume ?? 0.7;
+  }
+
+  // Load appearance defaults
+  if (els.defaultColor) {
+    els.defaultColor.value = settings.defaults.color || '#ffffff';
+  }
+  if (els.defaultStrokeWidth) {
+    els.defaultStrokeWidth.value = settings.defaults.strokeWidth ?? 0;
+    if (els.defaultStrokeWidthValue) {
+      els.defaultStrokeWidthValue.textContent = els.defaultStrokeWidth.value + 'px';
+    }
+  }
+  if (els.defaultStrokeColor) {
+    els.defaultStrokeColor.value = settings.defaults.strokeColor || '#000000';
+  }
+  if (els.defaultShadowSize) {
+    els.defaultShadowSize.value = settings.defaults.shadowSize ?? 0;
+    if (els.defaultShadowSizeValue) {
+      els.defaultShadowSizeValue.textContent = els.defaultShadowSize.value + 'px';
+    }
+  }
+  if (els.defaultShadowColor) {
+    els.defaultShadowColor.value = settings.defaults.shadowColor || '#000000';
+  }
+  if (els.defaultBgColor) {
+    els.defaultBgColor.value = settings.defaults.bgColor || '#000000';
+  }
+
+  // Load warning defaults (convert seconds to MM:SS)
+  if (els.defaultWarnYellow) {
+    setMSInput(els.defaultWarnYellow, settings.defaults.warnYellowSec ?? 60);
+  }
+  if (els.defaultWarnOrange) {
+    setMSInput(els.defaultWarnOrange, settings.defaults.warnOrangeSec ?? 15);
+  }
+
   // Load timer zoom setting
   if (els.timerZoom) {
     els.timerZoom.value = settings.timerZoom ?? 100;
@@ -1365,7 +1433,18 @@ function saveAppSettingsFromForm() {
       durationSec: getDefaultDurationSeconds(),
       format: els.defaultFormat.value,
       soundType: els.defaultSound.value || 'none',
-      allowOvertime: els.defaultAllowOvertime?.value === 'on'
+      soundVolume: parseFloat(els.defaultSoundVolume?.value) || 0.7,
+      allowOvertime: els.defaultAllowOvertime?.value === 'on',
+      // Appearance defaults
+      color: els.defaultColor?.value || '#ffffff',
+      strokeWidth: parseInt(els.defaultStrokeWidth?.value, 10) || 0,
+      strokeColor: els.defaultStrokeColor?.value || '#000000',
+      shadowSize: parseInt(els.defaultShadowSize?.value, 10) || 0,
+      shadowColor: els.defaultShadowColor?.value || '#000000',
+      bgColor: els.defaultBgColor?.value || '#000000',
+      // Warning defaults
+      warnYellowSec: getMSSeconds(els.defaultWarnYellow) || 60,
+      warnOrangeSec: getMSSeconds(els.defaultWarnOrange) || 15
     },
     osc: oscSettings
   };
@@ -2250,22 +2329,24 @@ function getDefaultTimerConfig() {
   const d = settings.defaults;
 
   return {
-    mode: d.mode,
-    durationSec: d.durationSec,
-    format: d.format,
+    mode: d.mode || 'countdown',
+    durationSec: d.durationSec || 600,
+    format: d.format || 'MM:SS',
     allowOvertime: d.allowOvertime !== false,
     style: {
-      color: '#ffffff',
-      strokeWidth: 0,
-      strokeColor: '#000000',
-      shadowSize: 0,
-      shadowColor: '#000000',
-      bgColor: '#000000'
+      color: d.color || '#ffffff',
+      strokeWidth: d.strokeWidth ?? 0,
+      strokeColor: d.strokeColor || '#000000',
+      shadowSize: d.shadowSize ?? 0,
+      shadowColor: d.shadowColor || '#000000',
+      bgColor: d.bgColor || '#000000'
     },
     sound: {
-      endEnabled: d.soundEnabled || false,
-      volume: 0.7
-    }
+      endType: d.soundType || 'none',
+      volume: d.soundVolume ?? 0.7
+    },
+    warnYellowSec: d.warnYellowSec ?? 60,
+    warnOrangeSec: d.warnOrangeSec ?? 15
   };
 }
 
@@ -5717,6 +5798,22 @@ function setupEventListeners() {
   }
   if (els.shadowSize) {
     els.shadowSize.addEventListener('input', updateRangeDisplays);
+  }
+
+  // Default range slider value display updates (App Settings)
+  if (els.defaultStrokeWidth) {
+    els.defaultStrokeWidth.addEventListener('input', () => {
+      if (els.defaultStrokeWidthValue) {
+        els.defaultStrokeWidthValue.textContent = els.defaultStrokeWidth.value + 'px';
+      }
+    });
+  }
+  if (els.defaultShadowSize) {
+    els.defaultShadowSize.addEventListener('input', () => {
+      if (els.defaultShadowSizeValue) {
+        els.defaultShadowSizeValue.textContent = els.defaultShadowSize.value + 'px';
+      }
+    });
   }
 
   // Sound selection - show/hide volume row

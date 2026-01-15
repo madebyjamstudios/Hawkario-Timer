@@ -444,6 +444,48 @@
               <option value="off">Off</option>
             </select>
           </div>
+          <div class="kv">
+            <label for="defaultSoundVolume">Sound Volume</label>
+            <input id="defaultSoundVolume" type="range" min="0" max="1" step="0.1" value="0.7" />
+          </div>
+
+          <h4 class="settings-subsection-title">Appearance</h4>
+          <div class="kv">
+            <label for="defaultColor">Text Color</label>
+            <input id="defaultColor" type="color" value="#ffffff" />
+          </div>
+          <div class="kv">
+            <label for="defaultStrokeWidth">Stroke Width</label>
+            <input id="defaultStrokeWidth" type="range" min="0" max="20" value="0" />
+            <span id="defaultStrokeWidthValue" class="range-value">0px</span>
+          </div>
+          <div class="kv">
+            <label for="defaultStrokeColor">Stroke Color</label>
+            <input id="defaultStrokeColor" type="color" value="#000000" />
+          </div>
+          <div class="kv">
+            <label for="defaultShadowSize">Shadow Size</label>
+            <input id="defaultShadowSize" type="range" min="0" max="50" value="0" />
+            <span id="defaultShadowSizeValue" class="range-value">0px</span>
+          </div>
+          <div class="kv">
+            <label for="defaultShadowColor">Shadow Color</label>
+            <input id="defaultShadowColor" type="color" value="#000000" />
+          </div>
+          <div class="kv">
+            <label for="defaultBgColor">Background</label>
+            <input id="defaultBgColor" type="color" value="#000000" />
+          </div>
+
+          <h4 class="settings-subsection-title">Warning Colors</h4>
+          <div class="kv">
+            <label class="warn-label"><span class="warn-dot warn-dot-yellow"></span> Yellow at</label>
+            <input id="defaultWarnYellow" type="text" class="time-input time-input-ms" value="01:00" maxlength="5" placeholder="MM:SS" />
+          </div>
+          <div class="kv">
+            <label class="warn-label"><span class="warn-dot warn-dot-orange"></span> Orange at</label>
+            <input id="defaultWarnOrange" type="text" class="time-input time-input-ms" value="00:15" maxlength="5" placeholder="MM:SS" />
+          </div>
         </div>
 
         <!-- Display Section -->
