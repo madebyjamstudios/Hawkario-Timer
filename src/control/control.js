@@ -2545,12 +2545,9 @@ function updateLivePreviewMessage(message) {
     lastPreviewMessageText = '';
 
     // Refit timer and ToD since they now have full height
-    // Staggered fits to ensure layout settles
     if (wasVisible) {
       fitPreviewTimer();
       fitPreviewToD();
-      setTimeout(() => { fitPreviewTimer(); fitPreviewToD(); }, 100);
-      setTimeout(() => { fitPreviewTimer(); fitPreviewToD(); }, 250);
     }
     return;
   }
@@ -2569,12 +2566,9 @@ function updateLivePreviewMessage(message) {
     }
 
     // Refit timer and ToD if message just became visible (area changed)
-    // Staggered fits to ensure layout settles
     if (!wasVisible) {
       fitPreviewTimer();
       fitPreviewToD();
-      setTimeout(() => { fitPreviewTimer(); fitPreviewToD(); }, 100);
-      setTimeout(() => { fitPreviewTimer(); fitPreviewToD(); }, 250);
     }
   });
 }
