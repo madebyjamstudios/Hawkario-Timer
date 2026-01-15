@@ -284,8 +284,8 @@ function fitMessageContent() {
   const targetHeight = containerHeight * 0.95;
 
   // Use fixed maxWidth at base size - this controls wrapping behavior
-  // Text will wrap at ~800px wide when measured at 100px font
-  const baseMaxWidth = 800;
+  // Text will wrap at ~1600px wide when measured at 100px font
+  const baseMaxWidth = 1600;
 
   // Measure at 100px base font with fixed maxWidth
   messageOverlayEl.style.fontSize = '100px';
