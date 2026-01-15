@@ -243,7 +243,6 @@ button:disabled {
   align-items: center;
   justify-content: center;
   overflow: visible;
-  transition: height 0.2s ease-out;
   /* DEBUG */
   outline: 2px solid lime;
 }
@@ -251,7 +250,6 @@ button:disabled {
 /* Timer box - wraps timer text exactly (inline-block) */
 .live-preview .timer-box {
   display: inline-block;
-  transition: flex 0.2s ease-out;
   /* DEBUG */
   outline: 2px dashed cyan;
 }
@@ -261,7 +259,6 @@ button:disabled {
   display: none;
   width: 100%;
   position: relative;
-  transition: flex 0.2s ease-out;
 }
 
 /* When ToD enabled: fill content-box and use 75/25 split */
@@ -360,7 +357,6 @@ button:disabled {
   overflow: visible;
   user-select: none;
   -webkit-user-select: none;
-  transition: font-size 0.15s ease-out;
 }
 
 /* Message preview element */
@@ -405,7 +401,6 @@ button:disabled {
   user-select: none;
   -webkit-user-select: none;
   overflow: visible;
-  transition: font-size 0.15s ease-out;
 }
 
 .live-preview::before {

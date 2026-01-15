@@ -51,7 +51,6 @@ html, body {
   align-items: center;
   justify-content: center;
   overflow: visible;
-  transition: height 0.2s ease-out;
   /* DEBUG */
   outline: 2px solid lime;
 }
@@ -59,7 +58,6 @@ html, body {
 /* Timer box - wraps timer text exactly (inline-block) */
 .timer-box {
   display: inline-block;
-  transition: flex 0.2s ease-out;
 }
 
 /* ToD box - hidden by default */
@@ -67,7 +65,6 @@ html, body {
   display: none;
   width: 100%;
   position: relative;
-  transition: flex 0.2s ease-out;
 }
 
 /* When ToD enabled: fill content-box and use 75/25 split */
@@ -170,7 +167,6 @@ html, body {
   overflow: visible;
   /* Draw stroke behind fill to prevent artifacts at intersections */
   paint-order: stroke fill;
-  transition: font-size 0.15s ease-out;
   /* DEBUG */
   outline: 2px dashed cyan;
 }
@@ -192,7 +188,6 @@ html, body {
   user-select: none;
   -webkit-user-select: none;
   overflow: visible;
-  transition: font-size 0.15s ease-out;
 }
 
 /* Overtime state - red color when timer has passed */

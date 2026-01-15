@@ -2539,15 +2539,6 @@ function updateLivePreviewMessage(message) {
 
   const wasVisible = els.livePreviewContentBox.classList.contains('with-message');
 
-  // Helper to ensure with-tod class matches current mode before fitting
-  const ensureToDClass = () => {
-    const mode = timerState?.mode || '';
-    const showToD = mode === 'countdown-tod' || mode === 'countup-tod';
-    if (showToD) {
-      els.livePreviewTimerSection?.classList.add('with-tod');
-    }
-  };
-
   if (!message || !message.visible) {
     els.livePreviewContentBox.classList.remove('with-message');
     els.livePreviewMessage.classList.remove('visible', 'bold', 'italic', 'uppercase');
@@ -2555,7 +2546,6 @@ function updateLivePreviewMessage(message) {
 
     // Refit timer and ToD since they now have full height
     if (wasVisible) {
-      ensureToDClass();
       fitPreviewTimer();
       fitPreviewToD();
     }
@@ -2577,7 +2567,6 @@ function updateLivePreviewMessage(message) {
 
     // Refit timer and ToD if message just became visible (area changed)
     if (!wasVisible) {
-      ensureToDClass();
       fitPreviewTimer();
       fitPreviewToD();
     }
