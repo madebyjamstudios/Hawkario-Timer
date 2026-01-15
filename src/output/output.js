@@ -72,30 +72,25 @@ function updateResolution() {
 // Debounce timer for message fitting during resize
 let messageResizeTimeout = null;
 
-// Track last known dimensions for change detection
-let lastWidth = window.innerWidth;
-let lastHeight = window.innerHeight;
+// ResizeObserver for reliable resize detection (works with window snapping)
+const resizeObserver = new ResizeObserver(() => {
+  updateResolution();
+  // Double RAF to ensure all layouts have recalculated
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      fitTimerContent();
+      fitToDContent();
+      // Debounce message fit to avoid jitter during continuous resize
+      clearTimeout(messageResizeTimeout);
+      messageResizeTimeout = setTimeout(fitMessageContent, 100);
+    });
+  });
+});
+// Observe stage element (outermost) to catch all resize events
+resizeObserver.observe(stageEl);
 
-// Continuous RAF loop to detect size changes (more reliable than events during drag)
-function checkSizeLoop() {
-  const w = window.innerWidth;
-  const h = window.innerHeight;
-
-  if (w !== lastWidth || h !== lastHeight) {
-    lastWidth = w;
-    lastHeight = h;
-    updateResolution();
-    fitTimerContent();
-    fitToDContent();
-    // Debounce message fit to avoid jitter
-    clearTimeout(messageResizeTimeout);
-    messageResizeTimeout = setTimeout(fitMessageContent, 100);
-  }
-
-  requestAnimationFrame(checkSizeLoop);
-}
-// Start the size check loop
-requestAnimationFrame(checkSizeLoop);
+// Also listen to window resize for resolution display
+window.addEventListener('resize', updateResolution);
 updateResolution();
 
 // Canonical timer state from control window
@@ -192,28 +187,21 @@ function fitTimerContent() {
   const hasToD = timerSectionEl.classList.contains('with-tod');
   const hasMessage = contentBoxEl.classList.contains('with-message');
 
-  // Calculate container dimensions from window size (more reliable during drag)
-  // Content-box is 90% width × 64% height of window
-  const contentBoxWidth = window.innerWidth * 0.9;
-  const contentBoxHeight = window.innerHeight * 0.64;
-
-  // Container width is always content-box width (timer-section fills it)
-  const containerWidth = contentBoxWidth;
+  // Container width is always timer-section width
+  const containerWidth = timerSectionEl.offsetWidth;
 
   // Container height depends on mode:
-  // - Timer only (no message): content-box height (64% of window)
-  // - Timer only (with message): timer-section height (34% of content-box)
-  // - Timer+ToD (no message): timer-box height (75% of content-box)
-  // - Timer+ToD (with message): timer-box height (75% of 34% of content-box)
+  // - Timer only (no message): content-box height
+  // - Timer only (with message): timer-section height (34%)
+  // - Timer+ToD (no message): timer-box height (75%)
+  // - Timer+ToD (with message): timer-box height (75% of 34%)
   let containerHeight;
-  if (hasToD && hasMessage) {
-    containerHeight = contentBoxHeight * 0.34 * 0.75;
-  } else if (hasToD) {
-    containerHeight = contentBoxHeight * 0.75;
+  if (hasToD) {
+    containerHeight = timerBoxEl.offsetHeight;
   } else if (hasMessage) {
-    containerHeight = contentBoxHeight * 0.34;
+    containerHeight = timerSectionEl.offsetHeight;
   } else {
-    containerHeight = contentBoxHeight;
+    containerHeight = contentBoxEl.offsetHeight;
   }
 
   // If layout not ready, retry after short delay
@@ -241,8 +229,6 @@ function fitTimerContent() {
 
   const fontSize = Math.floor(100 * scale);
   timerEl.style.fontSize = fontSize + 'px';
-  // Force repaint (helps with Electron/macOS resize rendering)
-  void timerEl.offsetWidth;
 }
 
 /**
@@ -252,18 +238,8 @@ function fitTimerContent() {
 function fitToDContent() {
   if (!timerSectionEl.classList.contains('with-tod')) return;
 
-  const hasMessage = contentBoxEl.classList.contains('with-message');
-
-  // Calculate container dimensions from window size (more reliable during drag)
-  // Content-box is 90% width × 64% height of window
-  // ToD-box is 25% of content-box height (or 25% of 34% if message is visible)
-  const contentBoxWidth = window.innerWidth * 0.9;
-  const contentBoxHeight = window.innerHeight * 0.64;
-
-  const containerWidth = contentBoxWidth;
-  const containerHeight = hasMessage
-    ? contentBoxHeight * 0.34 * 0.25
-    : contentBoxHeight * 0.25;
+  const containerWidth = todBoxEl.offsetWidth;
+  const containerHeight = todBoxEl.offsetHeight;
 
   // If layout not ready, retry after short delay
   if (containerWidth <= 0 || containerHeight <= 0) {
