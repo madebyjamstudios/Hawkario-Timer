@@ -3512,47 +3512,31 @@ function fitPreviewMessage() {
   const targetWidth = containerWidth * 0.95;
   const targetHeight = containerHeight * 0.95;
 
-  // Try multiple maxWidth values to find optimal layout
-  // Narrower widths force more wrapping which can allow larger fonts
-  const widthPercentages = [1.0, 0.85, 0.7, 0.55, 0.4];
-  let bestFontSize = 8;
-  let bestMaxWidth = targetWidth;
+  // Set maxWidth to container width - text wraps at container boundary
+  els.livePreviewMessage.style.maxWidth = targetWidth + 'px';
 
-  for (const pct of widthPercentages) {
-    const testMaxWidth = targetWidth * pct;
-    els.livePreviewMessage.style.maxWidth = testMaxWidth + 'px';
+  // Binary search for largest font that fits (textFit algorithm)
+  let min = 8;
+  let max = 500;
+  let bestFit = min;
 
-    // Binary search for largest font that fits at this maxWidth
-    let min = 8;
-    let max = 500;
-    let fontForThisWidth = min;
+  while (min <= max) {
+    const mid = Math.floor((min + max) / 2);
+    els.livePreviewMessage.style.fontSize = mid + 'px';
+    void els.livePreviewMessage.offsetWidth; // Force reflow
 
-    while (min <= max) {
-      const mid = Math.floor((min + max) / 2);
-      els.livePreviewMessage.style.fontSize = mid + 'px';
-      void els.livePreviewMessage.offsetWidth; // Force reflow
+    const textHeight = els.livePreviewMessage.scrollHeight;
+    const textWidth = els.livePreviewMessage.scrollWidth;
 
-      const textHeight = els.livePreviewMessage.scrollHeight;
-      const textWidth = els.livePreviewMessage.scrollWidth;
-
-      if (textHeight <= targetHeight && textWidth <= targetWidth) {
-        fontForThisWidth = mid;
-        min = mid + 1; // Try larger
-      } else {
-        max = mid - 1; // Too big, try smaller
-      }
-    }
-
-    // Keep the configuration that yields the largest font
-    if (fontForThisWidth > bestFontSize) {
-      bestFontSize = fontForThisWidth;
-      bestMaxWidth = testMaxWidth;
+    if (textHeight <= targetHeight && textWidth <= targetWidth) {
+      bestFit = mid;
+      min = mid + 1; // Try larger
+    } else {
+      max = mid - 1; // Too big, try smaller
     }
   }
 
-  // Apply the best configuration
-  els.livePreviewMessage.style.maxWidth = bestMaxWidth + 'px';
-  els.livePreviewMessage.style.fontSize = bestFontSize + 'px';
+  els.livePreviewMessage.style.fontSize = bestFit + 'px';
 }
 
 function setupPreviewResize() {
@@ -7368,8 +7352,9 @@ function init() {
         }
         fitPreviewTimer();
         fitPreviewToD();
-        // Fit message immediately for real-time updates during resize
-        fitPreviewMessage();
+        // Debounce message fit to avoid jitter during continuous resize
+        clearTimeout(previewMessageResizeTimeout);
+        previewMessageResizeTimeout = setTimeout(fitPreviewMessage, 100);
       });
     });
   });
