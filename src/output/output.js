@@ -70,11 +70,13 @@ function updateResolution() {
 }
 
 // ResizeObserver for reliable resize detection (works with window snapping)
-const resizeObserver = new ResizeObserver(() => {
+const resizeObserver = new ResizeObserver((entries) => {
+  console.log('[ResizeObserver] Fired, stage size:', stageEl.offsetWidth, 'x', stageEl.offsetHeight);
   updateResolution();
   // Double RAF to ensure all layouts have recalculated
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
+      console.log('[ResizeObserver] Calling fit functions');
       fitTimerContent();
       fitToDContent();
       fitMessageContent();
@@ -83,6 +85,7 @@ const resizeObserver = new ResizeObserver(() => {
 });
 // Observe stage element (outermost) to catch all resize events
 resizeObserver.observe(stageEl);
+console.log('[ResizeObserver] Observing stage element');
 
 // Also listen to window resize for resolution display
 window.addEventListener('resize', updateResolution);
@@ -231,13 +234,18 @@ function fitTimerContent() {
  * Scale until tod-box touches edge
  */
 function fitToDContent() {
-  if (!timerSectionEl.classList.contains('with-tod')) return;
+  if (!timerSectionEl.classList.contains('with-tod')) {
+    console.log('[fitToDContent] Skipped - no with-tod class');
+    return;
+  }
 
   const containerWidth = todBoxEl.offsetWidth;
   const containerHeight = todBoxEl.offsetHeight;
+  console.log('[fitToDContent] todBox dimensions:', containerWidth, 'x', containerHeight);
 
   // If layout not ready, retry after short delay
   if (containerWidth <= 0 || containerHeight <= 0) {
+    console.log('[fitToDContent] Layout not ready, retrying in 50ms');
     setTimeout(fitToDContent, 50);
     return;
   }
