@@ -346,18 +346,18 @@ function handleMessageUpdate(message) {
   // Enable split layout on content box
   contentBoxEl.classList.add('with-message');
 
-  // Wait for layout to update, then fit content
+  // Immediately refit timer (before next paint) to prevent big→small flash
+  if (!wasVisible) {
+    fitTimerContent();
+    fitToDContent();
+  }
+
+  // Wait for layout to update, then fit message
   requestAnimationFrame(() => {
     // Fit message content (when text changes or message just became visible)
     if (message.text !== lastMessageText || !wasVisible) {
       lastMessageText = message.text;
       fitMessageContent();
-    }
-
-    // Refit timer and ToD if message just became visible (area changed)
-    if (!wasVisible) {
-      fitTimerContent();
-      fitToDContent();
     }
   });
 }
