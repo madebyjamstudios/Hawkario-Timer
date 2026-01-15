@@ -72,24 +72,30 @@ function updateResolution() {
 // Debounce timer for message fitting during resize
 let messageResizeTimeout = null;
 
-// Immediate resize handler for responsive timer scaling
-function handleResize() {
-  updateResolution();
-  // Fit timer and ToD immediately (no RAF delay)
-  fitTimerContent();
-  fitToDContent();
-  // Debounce message fit to avoid jitter during continuous resize
-  clearTimeout(messageResizeTimeout);
-  messageResizeTimeout = setTimeout(fitMessageContent, 100);
+// Track last known dimensions for change detection
+let lastWidth = window.innerWidth;
+let lastHeight = window.innerHeight;
+
+// Continuous RAF loop to detect size changes (more reliable than events during drag)
+function checkSizeLoop() {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+
+  if (w !== lastWidth || h !== lastHeight) {
+    lastWidth = w;
+    lastHeight = h;
+    updateResolution();
+    fitTimerContent();
+    fitToDContent();
+    // Debounce message fit to avoid jitter
+    clearTimeout(messageResizeTimeout);
+    messageResizeTimeout = setTimeout(fitMessageContent, 100);
+  }
+
+  requestAnimationFrame(checkSizeLoop);
 }
-
-// ResizeObserver for reliable resize detection (works with window snapping)
-const resizeObserver = new ResizeObserver(handleResize);
-// Observe stage element (outermost) to catch all resize events
-resizeObserver.observe(stageEl);
-
-// Also listen to window resize for continuous updates during drag
-window.addEventListener('resize', handleResize);
+// Start the size check loop
+requestAnimationFrame(checkSizeLoop);
 updateResolution();
 
 // Canonical timer state from control window
