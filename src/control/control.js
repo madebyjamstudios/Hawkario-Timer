@@ -2135,7 +2135,7 @@ function updateLivePreviewMessage(message) {
 
   if (!message || !message.visible) {
     els.livePreviewContentBox.classList.remove('with-message');
-    els.livePreviewMessage.classList.remove('bold', 'italic', 'uppercase');
+    els.livePreviewMessage.classList.remove('visible', 'bold', 'italic', 'uppercase');
     lastPreviewMessageText = '';
 
     // Refit timer since it now has full height
@@ -2147,6 +2147,7 @@ function updateLivePreviewMessage(message) {
 
   // Use shared module for styling (identical to output)
   applyMessageStyle(els.livePreviewMessage, message);
+  els.livePreviewMessage.classList.add('visible');
   els.livePreviewContentBox.classList.add('with-message');
 
   // Fit message content (only when text changes)
