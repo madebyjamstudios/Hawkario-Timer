@@ -283,28 +283,31 @@ function fitMessageContent() {
   const targetWidth = containerWidth * 0.95;
   const targetHeight = containerHeight * 0.95;
 
-  // Use fixed maxWidth at base size - this controls wrapping behavior
-  // Text will wrap at ~1600px wide when measured at 100px font
-  const baseMaxWidth = 1600;
+  // Set maxWidth to container width - text wraps at container boundary
+  messageOverlayEl.style.maxWidth = targetWidth + 'px';
 
-  // Measure at 100px base font with fixed maxWidth
-  messageOverlayEl.style.fontSize = '100px';
-  messageOverlayEl.style.maxWidth = baseMaxWidth + 'px';
-  void messageOverlayEl.offsetWidth;
+  // Binary search for largest font that fits (textFit algorithm)
+  let min = 8;
+  let max = 500;
+  let bestFit = min;
 
-  const textWidth = messageOverlayEl.scrollWidth;
-  const textHeight = messageOverlayEl.scrollHeight;
-  if (textWidth <= 0 || textHeight <= 0) return;
+  while (min <= max) {
+    const mid = Math.floor((min + max) / 2);
+    messageOverlayEl.style.fontSize = mid + 'px';
+    void messageOverlayEl.offsetWidth; // Force reflow
 
-  // Scale to fit container (both width and height)
-  const scaleW = targetWidth / textWidth;
-  const scaleH = targetHeight / textHeight;
-  const scale = Math.min(scaleW, scaleH);
+    const textHeight = messageOverlayEl.scrollHeight;
+    const textWidth = messageOverlayEl.scrollWidth;
 
-  // Apply scaled font size and scaled maxWidth
-  const fontSize = Math.max(8, Math.floor(100 * scale));
-  messageOverlayEl.style.fontSize = fontSize + 'px';
-  messageOverlayEl.style.maxWidth = (baseMaxWidth * scale) + 'px';
+    if (textHeight <= targetHeight && textWidth <= targetWidth) {
+      bestFit = mid;
+      min = mid + 1; // Try larger
+    } else {
+      max = mid - 1; // Too big, try smaller
+    }
+  }
+
+  messageOverlayEl.style.fontSize = bestFit + 'px';
 }
 
 /**

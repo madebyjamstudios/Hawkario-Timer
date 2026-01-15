@@ -3501,28 +3501,31 @@ function fitPreviewMessage() {
   const targetWidth = containerWidth * 0.95;
   const targetHeight = containerHeight * 0.95;
 
-  // Use fixed maxWidth at base size - this controls wrapping behavior
-  // Text will wrap at ~1600px wide when measured at 100px font
-  const baseMaxWidth = 1600;
+  // Set maxWidth to container width - text wraps at container boundary
+  els.livePreviewMessage.style.maxWidth = targetWidth + 'px';
 
-  // Measure at 100px base font with fixed maxWidth
-  els.livePreviewMessage.style.fontSize = '100px';
-  els.livePreviewMessage.style.maxWidth = baseMaxWidth + 'px';
-  void els.livePreviewMessage.offsetWidth;
+  // Binary search for largest font that fits (textFit algorithm)
+  let min = 8;
+  let max = 500;
+  let bestFit = min;
 
-  const textWidth = els.livePreviewMessage.scrollWidth;
-  const textHeight = els.livePreviewMessage.scrollHeight;
-  if (textWidth <= 0 || textHeight <= 0) return;
+  while (min <= max) {
+    const mid = Math.floor((min + max) / 2);
+    els.livePreviewMessage.style.fontSize = mid + 'px';
+    void els.livePreviewMessage.offsetWidth; // Force reflow
 
-  // Scale to fit container (both width and height)
-  const scaleW = targetWidth / textWidth;
-  const scaleH = targetHeight / textHeight;
-  const scale = Math.min(scaleW, scaleH);
+    const textHeight = els.livePreviewMessage.scrollHeight;
+    const textWidth = els.livePreviewMessage.scrollWidth;
 
-  // Apply scaled font size and scaled maxWidth
-  const fontSize = Math.max(8, Math.floor(100 * scale));
-  els.livePreviewMessage.style.fontSize = fontSize + 'px';
-  els.livePreviewMessage.style.maxWidth = (baseMaxWidth * scale) + 'px';
+    if (textHeight <= targetHeight && textWidth <= targetWidth) {
+      bestFit = mid;
+      min = mid + 1; // Try larger
+    } else {
+      max = mid - 1; // Too big, try smaller
+    }
+  }
+
+  els.livePreviewMessage.style.fontSize = bestFit + 'px';
 }
 
 function setupPreviewResize() {
