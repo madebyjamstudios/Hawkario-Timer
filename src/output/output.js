@@ -265,47 +265,61 @@ function fitToDContent() {
 
 /**
  * Fit message text to message-section container
- * Multi-line fitting: text wraps and scales to fill section
+ * Fitty-style: finds optimal word-wrap point to maximize text size
  */
 function fitMessageContent() {
   if (!currentMessage || !currentMessage.visible) return;
 
-  // Content box is 90% × 64% of WINDOW
-  // Message section is 66% of content box when visible
-  const contentBoxWidth = window.innerWidth * 0.90;
-  const contentBoxHeight = window.innerHeight * 0.64;
-  const sectionHeight = contentBoxHeight * 0.66;
+  const containerWidth = messageSectionEl.offsetWidth;
+  const containerHeight = messageSectionEl.offsetHeight;
 
-  const targetWidth = contentBoxWidth * 0.90;
-  const targetHeight = sectionHeight * 0.85;
+  // If layout not ready, retry after short delay
+  if (containerWidth <= 0 || containerHeight <= 0) {
+    setTimeout(fitMessageContent, 50);
+    return;
+  }
 
-  // Allow text to wrap
-  messageOverlayEl.style.maxWidth = targetWidth + 'px';
-  messageOverlayEl.style.transform = 'none';
+  const targetWidth = containerWidth * 0.95;
+  const targetHeight = containerHeight * 0.90;
 
-  // Measure at 100px base
-  messageOverlayEl.style.fontSize = '100px';
-  const naturalWidth = messageOverlayEl.scrollWidth;
-  const naturalHeight = messageOverlayEl.scrollHeight;
+  // Try different maxWidth values to find optimal word-wrap point
+  let bestFontSize = 0;
+  let bestMaxWidth = targetWidth;
 
-  if (naturalWidth > 0 && naturalHeight > 0) {
-    // Scale to fit both width and height
-    const widthRatio = targetWidth / naturalWidth;
-    const heightRatio = targetHeight / naturalHeight;
-    const ratio = Math.min(widthRatio, heightRatio);
-    const newFontSize = Math.max(8, 100 * ratio);
-    messageOverlayEl.style.fontSize = newFontSize + 'px';
+  // Width ratios to try (100% down to 25% of container)
+  const widthSteps = [1.0, 0.85, 0.7, 0.6, 0.5, 0.4, 0.33, 0.25];
 
-    // Fine-tune with scale if needed
-    const renderedWidth = messageOverlayEl.scrollWidth;
-    const renderedHeight = messageOverlayEl.scrollHeight;
-    const scaleX = Math.min(targetWidth / renderedWidth, 1);
-    const scaleY = Math.min(targetHeight / renderedHeight, 1);
-    const scale = Math.min(scaleX, scaleY);
-    if (scale < 0.99) {
-      messageOverlayEl.style.transform = `scale(${scale})`;
+  for (const widthRatio of widthSteps) {
+    const testMaxWidth = targetWidth * widthRatio;
+
+    // Measure at base size with this maxWidth
+    messageOverlayEl.style.fontSize = '100px';
+    messageOverlayEl.style.maxWidth = testMaxWidth + 'px';
+    messageOverlayEl.style.transform = 'none';
+
+    // Force reflow and measure
+    void messageOverlayEl.offsetWidth;
+    const textWidth = messageOverlayEl.scrollWidth;
+    const textHeight = messageOverlayEl.scrollHeight;
+
+    if (textWidth <= 0 || textHeight <= 0) continue;
+
+    // Calculate scale to fit container
+    const scaleW = targetWidth / textWidth;
+    const scaleH = targetHeight / textHeight;
+    const scale = Math.min(scaleW, scaleH);
+    const fontSize = 100 * scale;
+
+    if (fontSize > bestFontSize) {
+      bestFontSize = fontSize;
+      bestMaxWidth = testMaxWidth;
     }
   }
+
+  // Apply best result
+  messageOverlayEl.style.maxWidth = bestMaxWidth + 'px';
+  messageOverlayEl.style.fontSize = Math.max(8, bestFontSize) + 'px';
+  messageOverlayEl.style.transform = 'none';
 }
 
 /**

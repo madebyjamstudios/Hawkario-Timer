@@ -3480,46 +3480,61 @@ function fitPreviewToD() {
 
 /**
  * Fit preview message text to message-section container
- * Multi-line fitting: text wraps and scales to fill section
+ * Fitty-style: finds optimal word-wrap point to maximize text size
  */
 function fitPreviewMessage() {
   if (!els.livePreviewMessage || !els.livePreviewMessageSection) return;
 
-  // Get actual content box dimensions
-  const boxRect = els.livePreviewContentBox.getBoundingClientRect();
-  // Message section is 66% of content box when visible
-  const sectionHeight = boxRect.height * 0.66;
+  const containerWidth = els.livePreviewMessageSection.offsetWidth;
+  const containerHeight = els.livePreviewMessageSection.offsetHeight;
 
-  const targetWidth = boxRect.width * 0.90;
-  const targetHeight = sectionHeight * 0.85;
+  // If layout not ready, retry after short delay
+  if (containerWidth <= 0 || containerHeight <= 0) {
+    setTimeout(fitPreviewMessage, 50);
+    return;
+  }
 
-  // Allow text to wrap
-  els.livePreviewMessage.style.maxWidth = targetWidth + 'px';
-  els.livePreviewMessage.style.transform = 'none';
+  const targetWidth = containerWidth * 0.95;
+  const targetHeight = containerHeight * 0.90;
 
-  // Measure at 100px base
-  els.livePreviewMessage.style.fontSize = '100px';
-  const naturalWidth = els.livePreviewMessage.scrollWidth;
-  const naturalHeight = els.livePreviewMessage.scrollHeight;
+  // Try different maxWidth values to find optimal word-wrap point
+  let bestFontSize = 0;
+  let bestMaxWidth = targetWidth;
 
-  if (naturalWidth > 0 && naturalHeight > 0) {
-    // Scale to fit both width and height
-    const widthRatio = targetWidth / naturalWidth;
-    const heightRatio = targetHeight / naturalHeight;
-    const ratio = Math.min(widthRatio, heightRatio);
-    const newFontSize = Math.max(8, 100 * ratio);
-    els.livePreviewMessage.style.fontSize = newFontSize + 'px';
+  // Width ratios to try (100% down to 25% of container)
+  const widthSteps = [1.0, 0.85, 0.7, 0.6, 0.5, 0.4, 0.33, 0.25];
 
-    // Fine-tune with scale if needed
-    const renderedWidth = els.livePreviewMessage.scrollWidth;
-    const renderedHeight = els.livePreviewMessage.scrollHeight;
-    const scaleX = Math.min(targetWidth / renderedWidth, 1);
-    const scaleY = Math.min(targetHeight / renderedHeight, 1);
-    const scale = Math.min(scaleX, scaleY);
-    if (scale < 0.99) {
-      els.livePreviewMessage.style.transform = `scale(${scale})`;
+  for (const widthRatio of widthSteps) {
+    const testMaxWidth = targetWidth * widthRatio;
+
+    // Measure at base size with this maxWidth
+    els.livePreviewMessage.style.fontSize = '100px';
+    els.livePreviewMessage.style.maxWidth = testMaxWidth + 'px';
+    els.livePreviewMessage.style.transform = 'none';
+
+    // Force reflow and measure
+    void els.livePreviewMessage.offsetWidth;
+    const textWidth = els.livePreviewMessage.scrollWidth;
+    const textHeight = els.livePreviewMessage.scrollHeight;
+
+    if (textWidth <= 0 || textHeight <= 0) continue;
+
+    // Calculate scale to fit container
+    const scaleW = targetWidth / textWidth;
+    const scaleH = targetHeight / textHeight;
+    const scale = Math.min(scaleW, scaleH);
+    const fontSize = 100 * scale;
+
+    if (fontSize > bestFontSize) {
+      bestFontSize = fontSize;
+      bestMaxWidth = testMaxWidth;
     }
   }
+
+  // Apply best result
+  els.livePreviewMessage.style.maxWidth = bestMaxWidth + 'px';
+  els.livePreviewMessage.style.fontSize = Math.max(8, bestFontSize) + 'px';
+  els.livePreviewMessage.style.transform = 'none';
 }
 
 function setupPreviewResize() {
