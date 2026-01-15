@@ -69,26 +69,19 @@ function updateResolution() {
   }
 }
 
-// Debounced resize handler - wait for window to settle after snap/resize
-let resizeTimeout = null;
-window.addEventListener('resize', () => {
+// ResizeObserver for reliable resize detection (works with window snapping)
+const resizeObserver = new ResizeObserver(() => {
   updateResolution();
-  // Immediate fit attempt
   requestAnimationFrame(() => {
     fitTimerContent();
     fitToDContent();
     fitMessageContent();
   });
-  // Delayed fit for window snapping (gives time for window manager to finalize)
-  clearTimeout(resizeTimeout);
-  resizeTimeout = setTimeout(() => {
-    requestAnimationFrame(() => {
-      fitTimerContent();
-      fitToDContent();
-      fitMessageContent();
-    });
-  }, 100);
 });
+resizeObserver.observe(contentBoxEl);
+
+// Also listen to window resize for resolution display
+window.addEventListener('resize', updateResolution);
 updateResolution();
 
 // Canonical timer state from control window

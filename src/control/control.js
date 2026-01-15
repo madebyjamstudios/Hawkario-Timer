@@ -7149,10 +7149,9 @@ function init() {
   setupPreviewResize();
   restorePreviewWidth();
 
-  // Update preview scale on window resize, clamping width to fit container
-  let previewResizeTimeout = null;
-  window.addEventListener('resize', () => {
-    const doFit = () => {
+  // ResizeObserver for reliable resize detection (works with window snapping)
+  const previewResizeObserver = new ResizeObserver(() => {
+    requestAnimationFrame(() => {
       const containerWidth = els.previewSection.offsetWidth;
       const currentWidth = els.previewWrapper.offsetWidth;
       // Shrink preview if it exceeds available space (min 150px)
@@ -7162,13 +7161,15 @@ function init() {
       fitPreviewTimer();
       fitPreviewToD();
       fitPreviewMessage();
-    };
-    // Immediate fit attempt
-    requestAnimationFrame(doFit);
-    // Delayed fit for window snapping (gives time for window manager to finalize)
-    clearTimeout(previewResizeTimeout);
-    previewResizeTimeout = setTimeout(() => requestAnimationFrame(doFit), 100);
+    });
   });
+  if (els.livePreviewContentBox) {
+    previewResizeObserver.observe(els.livePreviewContentBox);
+  }
+  // Also observe previewSection for container width changes
+  if (els.previewSection) {
+    previewResizeObserver.observe(els.previewSection);
+  }
 
   // Setup custom confirm dialog
   setupConfirmDialog();
