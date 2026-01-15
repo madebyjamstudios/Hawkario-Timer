@@ -346,6 +346,9 @@ function handleMessageUpdate(message) {
   // Enable split layout on content box
   contentBoxEl.classList.add('with-message');
 
+  // Force reflow so CSS layout is recalculated before we measure
+  void timerSectionEl.offsetHeight;
+
   // Immediately refit timer (before next paint) to prevent big→small flash
   if (!wasVisible) {
     fitTimerContent();
