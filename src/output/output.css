@@ -120,27 +120,6 @@ html, body {
   justify-content: center;
 }
 
-/* Timer+ToD within message mode: 75/25 split inside the 34% */
-.content-box.with-message .timer-section.with-tod {
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: flex-start;
-}
-
-.content-box.with-message .timer-section.with-tod .timer-box {
-  flex: 0 0 75%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.content-box.with-message .timer-section.with-tod .tod-box {
-  flex: 0 0 25%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .content-box.with-message .message-section {
   display: flex;
   position: absolute;
