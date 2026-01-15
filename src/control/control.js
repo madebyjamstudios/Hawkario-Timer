@@ -3671,6 +3671,9 @@ function renderLivePreviewInternal() {
   if (timerState.overtime) {
     timerColor = '#dc2626'; // Red for overtime
     colorState = 'overtime';
+  } else if ((isCountdown || isCountup) && remainingSec <= 0) {
+    timerColor = '#dc2626'; // Red for timer ended
+    colorState = 'ended';
   } else if ((isCountdown || isCountup) && remainingSec <= warnOrangeSec && remainingSec > 0) {
     timerColor = '#E64A19'; // Orange for critical warning
     colorState = 'warning-orange';

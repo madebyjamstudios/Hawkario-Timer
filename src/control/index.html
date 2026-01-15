@@ -7,7 +7,7 @@
   <title>Ninja Timer — Control</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Roboto:wght@300;400;500;700;900&family=Open+Sans:wght@300;400;500;600;700;800&family=Montserrat:wght@300;400;500;600;700;800;900&family=Lato:wght@300;400;700;900&family=Oswald:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../shared/base.css" />
   <link rel="stylesheet" href="control.css" />
 </head>
@@ -255,6 +255,29 @@
           </h3>
           <div class="section-content">
             <div class="kv">
+              <label for="fontFamily">Font</label>
+              <select id="fontFamily">
+                <option value="Inter">Inter</option>
+                <option value="Roboto">Roboto</option>
+                <option value="Open Sans">Open Sans</option>
+                <option value="Montserrat">Montserrat</option>
+                <option value="Lato">Lato</option>
+                <option value="Oswald">Oswald</option>
+              </select>
+            </div>
+            <div class="kv">
+              <label for="fontWeight">Weight</label>
+              <select id="fontWeight">
+                <option value="300">Light</option>
+                <option value="400">Regular</option>
+                <option value="500">Medium</option>
+                <option value="600">Semi Bold</option>
+                <option value="700" selected>Bold</option>
+                <option value="800">Extra Bold</option>
+                <option value="900">Black</option>
+              </select>
+            </div>
+            <div class="kv">
               <label for="fontColor">Text Color</label>
               <input id="fontColor" type="color" value="#ffffff" />
             </div>
@@ -451,6 +474,29 @@
 
           <h4 class="settings-subsection-title">Appearance</h4>
           <div class="kv">
+            <label for="defaultFontFamily">Font</label>
+            <select id="defaultFontFamily">
+              <option value="Inter">Inter</option>
+              <option value="Roboto">Roboto</option>
+              <option value="Open Sans">Open Sans</option>
+              <option value="Montserrat">Montserrat</option>
+              <option value="Lato">Lato</option>
+              <option value="Oswald">Oswald</option>
+            </select>
+          </div>
+          <div class="kv">
+            <label for="defaultFontWeight">Weight</label>
+            <select id="defaultFontWeight">
+              <option value="300">Light</option>
+              <option value="400">Regular</option>
+              <option value="500">Medium</option>
+              <option value="600">Semi Bold</option>
+              <option value="700" selected>Bold</option>
+              <option value="800">Extra Bold</option>
+              <option value="900">Black</option>
+            </select>
+          </div>
+          <div class="kv">
             <label for="defaultColor">Text Color</label>
             <input id="defaultColor" type="color" value="#ffffff" />
           </div>
@@ -499,6 +545,16 @@
               <option value="125">Large</option>
             </select>
           </div>
+        </div>
+
+        <!-- Custom Fonts Section -->
+        <div class="settings-section">
+          <h3 class="settings-section-title">Custom Fonts</h3>
+          <p class="settings-hint">Upload custom fonts for timer display</p>
+          <div id="customFontsList" class="custom-fonts-list">
+            <!-- Custom fonts will be populated here -->
+          </div>
+          <button id="addCustomFont" class="secondary">Add Font...</button>
         </div>
 
         <!-- OSC Integration Section -->

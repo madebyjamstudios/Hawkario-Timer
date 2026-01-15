@@ -473,6 +473,8 @@ function renderInternal() {
 
     if (overtime) {
       color = '#dc2626'; // Red for overtime
+    } else if (isCountdown && remainingSec <= 0) {
+      color = '#dc2626'; // Red for timer ended
     } else if (isCountdown && remainingSec <= warnOrangeSec && remainingSec > 0) {
       color = '#E64A19'; // Orange for critical warning
     } else if (isCountdown && remainingSec <= warnYellowSec) {
