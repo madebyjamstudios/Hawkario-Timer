@@ -504,7 +504,7 @@ button:disabled {
 
 .unit-label {
   font-size: 12px;
-  color: #888;
+  color: var(--color-text-secondary);
   min-width: 20px;
 }
 
@@ -540,7 +540,7 @@ button:disabled {
   min-width: 40px;
   text-align: right;
   font-size: 12px;
-  color: #888;
+  color: var(--color-text-secondary);
 }
 
 /* Utility bar */
@@ -821,10 +821,10 @@ button:disabled {
 /* Profile dropdown menu */
 .profile-dropdown {
   position: fixed;
-  background: #1a1a1a;
-  border: 1px solid #444;
-  border-radius: 10px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
   z-index: 1000;
   min-width: 180px;
   max-width: 250px;
@@ -880,18 +880,18 @@ button:disabled {
   align-items: center;
   gap: 10px;
   padding: 10px 14px;
-  color: #ddd;
+  color: var(--color-text-secondary);
   font-size: 13px;
   cursor: pointer;
-  transition: background 0.1s ease;
+  transition: background var(--transition-quick);
 }
 
 .profile-item:hover {
-  background: #2a2a2a;
+  background: var(--color-bg-tertiary);
 }
 
 .profile-item.current {
-  color: #fff;
+  color: var(--color-text-primary);
 }
 
 .profile-item .check-icon {
@@ -904,7 +904,7 @@ button:disabled {
 
 .profile-item.current .check-icon {
   opacity: 1;
-  color: #1f6feb;
+  color: var(--color-accent);
 }
 
 /* Highlight animation for new profiles */
@@ -956,14 +956,14 @@ button:disabled {
 .profile-color-picker {
   position: fixed;
   z-index: 10001;
-  background: #1a1a1a;
-  border: 1px solid #333;
-  border-radius: 8px;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
   padding: 8px;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 6px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-lg);
 }
 
 .color-swatch {
@@ -1041,15 +1041,15 @@ button:disabled {
 .profile-number {
   font-size: 12px;
   font-weight: 600;
-  color: #666;
-  transition: opacity 0.3s ease;
+  color: var(--color-text-tertiary);
+  transition: opacity var(--transition-standard);
 }
 
 .profile-drag-icon {
   position: absolute;
   opacity: 0;
-  transition: opacity 0.3s ease;
-  color: #888;
+  transition: opacity var(--transition-standard);
+  color: var(--color-text-secondary);
 }
 
 .profile-drag-icon svg {
@@ -1090,15 +1090,15 @@ button:disabled {
   align-items: center;
   gap: 10px;
   padding: 10px 14px;
-  color: #999;
+  color: var(--color-text-tertiary);
   font-size: 13px;
   cursor: pointer;
-  transition: background 0.1s ease;
+  transition: background var(--transition-quick);
 }
 
 .profile-action:hover {
-  background: #2a2a2a;
-  color: #ddd;
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
 }
 
 .profile-action svg {
@@ -1171,7 +1171,7 @@ button:disabled {
 }
 
 .timer-progress-container .progress-time {
-  color: #aaa;
+  color: var(--color-text-secondary);
   font-size: 11px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
@@ -1257,7 +1257,7 @@ button:disabled {
   left: 50%;
   transform: translateX(-50%);
   font-size: 10px;
-  color: #999;
+  color: var(--color-text-tertiary);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
@@ -1452,15 +1452,15 @@ button:disabled {
 .preset-number {
   font-size: 12px;
   font-weight: 600;
-  color: #666;
-  transition: opacity 0.3s ease;
+  color: var(--color-text-tertiary);
+  transition: opacity var(--transition-standard);
 }
 
 .preset-drag-icon {
   position: absolute;
   opacity: 0;
-  transition: opacity 0.3s ease;
-  color: #888;
+  transition: opacity var(--transition-standard);
+  color: var(--color-text-secondary);
 }
 
 .preset-drag-icon svg {
@@ -1554,18 +1554,18 @@ button:disabled {
 }
 
 .preset-duration {
-  color: #888;
+  color: var(--color-text-secondary);
   font-size: calc(13px * var(--timer-scale, 1));
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  border-bottom: 1px dashed #555;
+  border-bottom: 1px dashed var(--color-border-strong);
   padding-bottom: 1px;
 }
 
 .preset-duration:hover {
-  color: #fff;
-  border-bottom-color: #888;
+  color: var(--color-text-primary);
+  border-bottom-color: var(--color-text-secondary);
 }
 
 /* Edit mode highlight */
@@ -1586,10 +1586,10 @@ button:disabled {
 /* Duration edit popup - matches quick-edit-popup style */
 .duration-edit-popup {
   position: fixed;
-  background: #1a1a1a;
-  border: 1px solid #444;
-  border-radius: 10px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
   z-index: 10000;
   padding: 12px;
   min-width: 160px;
@@ -1605,7 +1605,7 @@ button:disabled {
 
 .duration-edit-label {
   font-size: 13px;
-  color: #aaa;
+  color: var(--color-text-secondary);
   white-space: nowrap;
 }
 
@@ -1613,17 +1613,17 @@ button:disabled {
   flex: 1;
   padding: 10px 12px;
   font-size: 14px;
-  font-family: 'JetBrains Mono', monospace;
-  background: #0a0a0a;
-  border: 1px solid #333;
-  border-radius: 6px;
-  color: #fff;
+  font-family: 'SF Mono', 'JetBrains Mono', monospace;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
   text-align: center;
 }
 
 .duration-edit-input:focus {
   outline: none;
-  border-color: #1f6feb;
+  border-color: var(--color-accent);
 }
 
 .duration-edit-buttons {
@@ -1641,12 +1641,12 @@ button:disabled {
 }
 
 .duration-edit-buttons .cancel-btn {
-  background: #333;
-  color: #ddd;
+  background: var(--color-bg-elevated);
+  color: var(--color-text-secondary);
 }
 
 .duration-edit-buttons .cancel-btn:hover {
-  background: #444;
+  background: var(--color-bg-tertiary);
 }
 
 .duration-edit-buttons .save-btn {
@@ -1731,16 +1731,16 @@ button:disabled {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: #1a1a1a;
-  border: 2px solid #444;
+  background: var(--color-bg-secondary);
+  border: 2px solid var(--color-border-strong);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #555;
+  color: var(--color-text-tertiary);
   cursor: pointer;
   opacity: 0.4;
   transform: scale(0.9);
-  transition: all 0.3s ease;
+  transition: all var(--transition-standard);
   z-index: 10;
 }
 
@@ -1840,10 +1840,10 @@ button:disabled {
 /* Preset dropdown menu */
 .preset-menu {
   position: fixed;
-  background: #1a1a1a;
-  border: 1px solid #444;
-  border-radius: 10px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
   z-index: 1000;
   min-width: 150px;
   overflow: hidden;
@@ -1854,10 +1854,10 @@ button:disabled {
   align-items: center;
   gap: 10px;
   padding: 12px 16px;
-  color: #ddd;
+  color: var(--color-text-secondary);
   font-size: 14px;
   cursor: pointer;
-  transition: background 0.1s ease;
+  transition: background var(--transition-quick);
   border: none;
   background: none;
   width: 100%;
@@ -1865,7 +1865,7 @@ button:disabled {
 }
 
 .menu-item:hover {
-  background: #2a2a2a;
+  background: var(--color-bg-tertiary);
 }
 
 .menu-item svg {
@@ -1982,20 +1982,20 @@ header {
   padding: 0;
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 8px;
-  color: #888;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all var(--transition-quick);
 }
 
 .header-settings-btn:hover {
-  background: #222;
-  border-color: #444;
-  color: #fff;
+  background: var(--color-bg-secondary);
+  border-color: var(--color-border-strong);
+  color: var(--color-text-primary);
 }
 
 .header-settings-btn:active {
-  background: #333;
+  background: var(--color-bg-elevated);
 }
 
 .header-settings-btn:focus {
@@ -2008,7 +2008,7 @@ footer {
 }
 
 footer small {
-  color: #666;
+  color: var(--color-text-tertiary);
 }
 
 /* ============ Modal ============ */
@@ -2046,13 +2046,13 @@ footer small {
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .modal-header h2 {
   margin: 0;
   font-size: 18px;
-  color: #fff;
+  color: var(--color-text-primary);
 }
 
 .modal-close {
@@ -2061,10 +2061,10 @@ footer small {
   padding: 0;
   background: transparent;
   border: none;
-  color: #888;
+  color: var(--color-text-secondary);
   font-size: 24px;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   display: flex;
   user-select: none;
   align-items: center;
@@ -2072,8 +2072,8 @@ footer small {
 }
 
 .modal-close:hover {
-  background: #222;
-  color: #fff;
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
 }
 
 .modal-body {
@@ -2087,7 +2087,7 @@ footer small {
   justify-content: flex-end;
   gap: 10px;
   padding: 16px 20px;
-  border-top: 1px solid #333;
+  border-top: 1px solid var(--color-border);
 }
 
 .modal-footer button {
@@ -2114,17 +2114,17 @@ footer small {
   position: sticky;
   top: -20px;
   z-index: 10;
-  background: #111;
+  background: var(--color-bg-primary);
   margin: -20px -20px 0 -20px;
   padding: 10px 20px;
-  border-bottom: 1px solid #333;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
 }
 
 .modal-preview-wrapper {
-  border: 1px solid #333;
-  border-radius: 8px;
-  background: #0a0a0a;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-primary);
   height: 120px;
   overflow: hidden;
 }
@@ -2186,31 +2186,31 @@ footer small {
   padding: 0;
   font-size: 8px;
   line-height: 1;
-  background: #2a2a2a;
-  border: 1px solid #444;
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border-strong);
   border-radius: 2px;
-  color: #888;
+  color: var(--color-text-secondary);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all var(--transition-quick);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .digit-btn:hover {
-  background: #3a3a3a;
-  border-color: #555;
-  color: #fff;
+  background: var(--color-bg-elevated);
+  border-color: var(--color-text-tertiary);
+  color: var(--color-text-primary);
 }
 
 .digit-btn:active {
-  background: #444;
+  background: var(--color-bg-elevated);
   transform: scale(0.95);
 }
 
 .digit-separator {
   font-size: 14px;
-  color: #555;
+  color: var(--color-text-tertiary);
   font-weight: 600;
   padding: 0 2px;
   align-self: center;
@@ -2231,7 +2231,7 @@ footer small {
 
 /* Duration input hint */
 .duration-input::placeholder {
-  color: #555;
+  color: var(--color-text-tertiary);
   font-weight: 400;
 }
 
@@ -2250,14 +2250,14 @@ footer small {
 }
 
 .toast {
-  background: #333;
-  color: #fff;
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
   padding: 12px 18px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   margin-top: 8px;
   font-size: 14px;
   animation: toast-in 0.2s ease;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-lg);
 }
 
 .toast.success {
@@ -2286,13 +2286,13 @@ footer small {
 h2 {
   font-size: 14px;
   margin: 0 0 8px 0;
-  color: #eee;
+  color: var(--color-text-primary);
 }
 
 h3 {
   font-size: 12px;
   margin: 8px 0 4px 0;
-  color: #999;
+  color: var(--color-text-tertiary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -2303,7 +2303,7 @@ h3 {
   display: flex;
   gap: 4px;
   padding: 0 0 12px 0;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--color-border);
   margin-bottom: 16px;
 }
 
@@ -2312,23 +2312,23 @@ h3 {
   padding: 8px 12px;
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 6px;
-  color: #888;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all var(--transition-quick);
 }
 
 .settings-tab:hover {
-  background: #2a2a2a;
-  color: #ccc;
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-secondary);
 }
 
 .settings-tab.active {
-  background: #2a2a2a;
-  border-color: #444;
-  color: #fff;
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-border-strong);
+  color: var(--color-text-primary);
 }
 
 .settings-tab-panels {
@@ -2347,8 +2347,8 @@ h3 {
 /* Legacy collapsible sections (keep for backwards compatibility) */
 .collapsible-section {
   margin: 10px 0;
-  border: 1px solid #333;
-  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 
@@ -2358,19 +2358,19 @@ h3 {
   align-items: center;
   padding: 10px 12px;
   margin: 0;
-  background: #1a1a1a;
+  background: var(--color-bg-secondary);
   cursor: pointer;
   user-select: none;
-  transition: background 0.15s;
+  transition: background var(--transition-quick);
 }
 
 .section-header:hover {
-  background: #222;
+  background: var(--color-bg-tertiary);
 }
 
 .section-header .chevron {
-  transition: transform 0.2s ease;
-  color: #666;
+  transition: transform var(--transition-standard);
+  color: var(--color-text-tertiary);
 }
 
 .collapsible-section.collapsed .section-header .chevron {
@@ -2379,7 +2379,7 @@ h3 {
 
 .section-content {
   padding: 12px 0;
-  background: #111;
+  background: var(--color-bg-primary);
 }
 
 .collapsible-section.collapsed .section-content {
@@ -2394,7 +2394,7 @@ h3 {
 .font-picker-label {
   display: block;
   font-size: 13px;
-  color: #888;
+  color: var(--color-text-secondary);
   margin-bottom: 8px;
 }
 
@@ -2412,46 +2412,46 @@ h3 {
 }
 
 .font-picker::-webkit-scrollbar-track {
-  background: #1a1a1a;
+  background: var(--color-bg-secondary);
   border-radius: 3px;
 }
 
 .font-picker::-webkit-scrollbar-thumb {
-  background: #444;
+  background: var(--color-bg-elevated);
   border-radius: 3px;
 }
 
 .font-picker::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: var(--color-text-tertiary);
 }
 
 .font-option {
   flex: 0 0 auto;
   width: 80px;
   padding: 8px 6px;
-  border: 2px solid #333;
-  border-radius: 10px;
-  background: #1a1a1a;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-secondary);
   cursor: pointer;
   text-align: center;
-  transition: all 0.15s ease;
+  transition: all var(--transition-quick);
   scroll-snap-align: start;
 }
 
 .font-option:hover {
-  border-color: #555;
-  background: #222;
+  border-color: var(--color-text-tertiary);
+  background: var(--color-bg-tertiary);
 }
 
 .font-option.selected {
-  border-color: #1f6feb;
+  border-color: var(--color-accent);
   background: #1a2744;
 }
 
 .font-option-preview {
   font-size: 32px;
   line-height: 1.1;
-  color: #fff;
+  color: var(--color-text-primary);
   margin-bottom: 4px;
   /* Font family set via inline style */
 }
@@ -2459,7 +2459,7 @@ h3 {
 .font-option-name {
   font-size: 10px;
   font-weight: 600;
-  color: #ccc;
+  color: var(--color-text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2467,7 +2467,7 @@ h3 {
 
 .font-option-desc {
   font-size: 9px;
-  color: #666;
+  color: var(--color-text-tertiary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2481,7 +2481,7 @@ h3 {
 .settings-section {
   margin-bottom: 20px;
   padding-bottom: 16px;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .settings-section:last-child {
@@ -2492,7 +2492,7 @@ h3 {
 .settings-section-title {
   font-size: 14px;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-text-primary);
   margin: 0 0 12px 0;
   text-transform: none;
   letter-spacing: 0;
@@ -2501,7 +2501,7 @@ h3 {
 .settings-subsection-title {
   font-size: 12px;
   font-weight: 600;
-  color: #888;
+  color: var(--color-text-secondary);
   margin: 16px 0 10px 0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -2509,7 +2509,7 @@ h3 {
 
 .settings-hint {
   font-size: 11px;
-  color: #666;
+  color: var(--color-text-tertiary);
   margin: -8px 0 12px 0;
 }
 
@@ -2523,7 +2523,7 @@ h3 {
 
 .custom-sounds-list:empty::before {
   content: 'No custom sounds installed';
-  color: #666;
+  color: var(--color-text-tertiary);
   font-size: 12px;
   font-style: italic;
 }
@@ -2533,9 +2533,9 @@ h3 {
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  background: #1a1a1a;
-  border-radius: 6px;
-  border: 1px solid #333;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
 }
 
 .custom-sound-info {
@@ -2547,12 +2547,12 @@ h3 {
 .custom-sound-name {
   font-size: 13px;
   font-weight: 500;
-  color: #fff;
+  color: var(--color-text-primary);
 }
 
 .custom-sound-meta {
   font-size: 11px;
-  color: #666;
+  color: var(--color-text-tertiary);
 }
 
 .custom-sound-actions {
@@ -2565,11 +2565,11 @@ h3 {
 .custom-sound-delete {
   background: transparent;
   border: none;
-  color: #666;
+  color: var(--color-text-tertiary);
   cursor: pointer;
   padding: 4px 8px;
   border-radius: 4px;
-  transition: all 0.15s;
+  transition: all var(--transition-quick);
 }
 
 .custom-sound-preview:hover {
@@ -2613,8 +2613,8 @@ h3 {
 
 #updateStatus {
   font-size: 13px;
-  color: #888;
-  transition: color 0.2s;
+  color: var(--color-text-secondary);
+  transition: color var(--transition-standard);
 }
 
 #updateStatus.update-success {
@@ -2647,12 +2647,12 @@ h3 {
 }
 
 #updateStatus .version-info {
-  color: #666;
+  color: var(--color-text-tertiary);
   font-size: 11px;
 }
 
 #updateStatus .no-release {
-  color: #888;
+  color: var(--color-text-secondary);
   font-size: 11px;
 }
 
@@ -2691,11 +2691,11 @@ h3 {
 #refreshUpdates {
   background: transparent;
   border: none;
-  color: #666;
+  color: var(--color-text-tertiary);
   padding: 4px;
   cursor: pointer;
   border-radius: 4px;
-  transition: all 0.15s ease;
+  transition: all var(--transition-quick);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2704,8 +2704,8 @@ h3 {
 }
 
 #refreshUpdates:hover {
-  color: #fff;
-  background: #333;
+  color: var(--color-text-primary);
+  background: var(--color-bg-elevated);
 }
 
 #refreshUpdates:active {
@@ -2850,13 +2850,13 @@ h3 {
 .confirm-title {
   font-size: 16px;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-text-primary);
   margin: 0 0 8px 0;
 }
 
 .confirm-message {
   font-size: 13px;
-  color: #999;
+  color: var(--color-text-tertiary);
   margin: 0 0 16px 0;
 }
 
@@ -2866,7 +2866,7 @@ h3 {
   justify-content: center;
   gap: 8px;
   font-size: 12px;
-  color: #888;
+  color: var(--color-text-secondary);
   margin-bottom: 20px;
   cursor: pointer;
 }
@@ -2905,10 +2905,10 @@ button.danger:active {
 /* Quick Edit Popup */
 .quick-edit-popup {
   position: fixed;
-  background: #1a1a1a;
-  border: 1px solid #444;
-  border-radius: 10px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
   z-index: 1000;
   padding: 12px;
   min-width: 200px;
@@ -2934,7 +2934,7 @@ button.danger:active {
 }
 
 .quick-edit-label {
-  color: #aaa;
+  color: var(--color-text-secondary);
   font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
@@ -2944,15 +2944,15 @@ button.danger:active {
   flex: 1;
   padding: 10px 12px;
   font-size: 14px;
-  background: #0a0a0a;
-  border: 1px solid #333;
-  border-radius: 6px;
-  color: #fff;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
   box-sizing: border-box;
 }
 
 .quick-edit-popup input:focus {
-  border-color: #1f6feb;
+  border-color: var(--color-accent);
   outline: none;
 }
 
@@ -2969,12 +2969,12 @@ button.danger:active {
 }
 
 .quick-edit-buttons .cancel-btn {
-  background: #333;
-  color: #ddd;
+  background: var(--color-bg-elevated);
+  color: var(--color-text-secondary);
 }
 
 .quick-edit-buttons .cancel-btn:hover {
-  background: #444;
+  background: var(--color-bg-tertiary);
 }
 
 .quick-edit-buttons .save-btn {
@@ -3005,10 +3005,10 @@ button.danger:active {
   justify-content: center;
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 8px;
-  color: #666;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-tertiary);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all var(--transition-quick);
 }
 
 .tab-badge {
@@ -3035,13 +3035,13 @@ button.danger:active {
 
 .tab-icon-btn:hover {
   background: rgba(255, 255, 255, 0.05);
-  color: #999;
+  color: var(--color-text-secondary);
 }
 
 .tab-icon-btn.active {
   background: rgba(31, 111, 235, 0.15);
-  border-color: #1f6feb;
-  color: #fff;
+  border-color: var(--color-accent);
+  color: var(--color-text-primary);
 }
 
 .bottom-bar .add-timer-btn {
