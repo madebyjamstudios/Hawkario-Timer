@@ -488,10 +488,10 @@ button:disabled {
 .number-stepper {
   width: 60px;
   padding: 6px 8px;
-  border: 1px solid #444;
-  border-radius: 6px;
-  background: #1a1a1a;
-  color: #fff;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
   font-size: 13px;
   text-align: center;
 }
@@ -566,24 +566,24 @@ button:disabled {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #333;
-  border: 2px solid #555;
+  background: var(--color-bg-elevated);
+  border: 2px solid var(--color-text-tertiary);
   position: relative;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all var(--transition-standard);
 }
 
 .flash-btn:hover {
-  background: #444;
-  border-color: #666;
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-text-secondary);
 }
 
 .flash-btn .flash-icon {
   width: 14px;
   height: 14px;
-  stroke: #888;
+  stroke: var(--color-text-secondary);
   fill: none;
-  transition: all 0.3s ease;
+  transition: all var(--transition-standard);
 }
 
 .flash-btn .flash-text {
@@ -686,32 +686,32 @@ button:disabled {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #333;
-  border: 2px solid #555;
-  transition: all 0.3s ease;
+  background: var(--color-bg-elevated);
+  border: 2px solid var(--color-text-tertiary);
+  transition: all var(--transition-standard);
   position: relative;
   overflow: hidden;
 }
 
 .blackout-btn:hover {
-  background: #444;
-  border-color: #666;
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-text-secondary);
 }
 
 .blackout-indicator {
   width: 8px;
   height: 8px;
-  background: #444;
+  background: var(--color-bg-elevated);
   border-radius: 50%;
-  border: 1px solid #666;
+  border: 1px solid var(--color-text-secondary);
   transition: background 0.5s ease, box-shadow 0.5s ease, border-color 0.5s ease;
   position: relative;
   flex-shrink: 0;
 }
 
 .blackout-btn.active {
-  background: #1a1a1a;
-  border-color: #E64A19;
+  background: var(--color-bg-secondary);
+  border-color: var(--color-danger);
 }
 
 .blackout-btn.active .blackout-indicator {
@@ -853,12 +853,12 @@ button:disabled {
 }
 
 .profile-list-section::-webkit-scrollbar-thumb {
-  background: #444;
+  background: var(--color-bg-elevated);
   border-radius: 3px;
 }
 
 .profile-list-section::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: var(--color-text-tertiary);
 }
 
 .profile-dropdown-section > :first-child {
@@ -871,7 +871,7 @@ button:disabled {
 
 .profile-dropdown-divider {
   height: 1px;
-  background: #333;
+  background: var(--color-border);
   margin: 0;
 }
 
@@ -1004,12 +1004,12 @@ button:disabled {
 }
 
 .color-picker-cancel {
-  background: #333;
-  color: #aaa;
+  background: var(--color-bg-elevated);
+  color: var(--color-text-secondary);
 }
 
 .color-picker-cancel:hover {
-  background: #444;
+  background: var(--color-bg-tertiary);
 }
 
 .color-picker-save {
@@ -1068,8 +1068,8 @@ button:disabled {
 
 /* Profile dragging state */
 .profile-item.dragging {
-  background: #333;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  background: var(--color-bg-elevated);
+  box-shadow: var(--shadow-md);
   z-index: 10;
   position: relative;
 }
@@ -1268,7 +1268,7 @@ button:disabled {
   top: -4px;
   bottom: -4px;
   width: 2px;
-  background: #666;
+  background: var(--color-text-tertiary);
   transform: translateX(-50%);
   border-radius: 1px;
   z-index: 2;
@@ -1823,8 +1823,8 @@ button:disabled {
 
 /* Pause button - grey by default, orange on hover */
 .icon-btn.pause-btn {
-  background: #444;
-  border-color: #555;
+  background: var(--color-bg-elevated);
+  border-color: var(--color-text-tertiary);
 }
 
 .icon-btn.pause-btn:hover {
