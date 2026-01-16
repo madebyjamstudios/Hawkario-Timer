@@ -7378,14 +7378,25 @@ function init() {
 // Start when DOM is ready
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
-    // Signal ready immediately when DOM loads (closes splash screen)
-    window.ninja.signalAppReady();
-    init();
+    try {
+      // Signal ready immediately when DOM loads (closes splash screen)
+      window.ninja.signalAppReady();
+      init();
+    } catch (err) {
+      console.error('[Control] Initialization error:', err);
+      // Still try to signal ready even if init fails
+      try { window.ninja.signalAppReady(); } catch (e) { /* ignore */ }
+    }
   });
 } else {
-  // Signal ready immediately
-  window.ninja.signalAppReady();
-  init();
+  try {
+    // Signal ready immediately
+    window.ninja.signalAppReady();
+    init();
+  } catch (err) {
+    console.error('[Control] Initialization error:', err);
+    try { window.ninja.signalAppReady(); } catch (e) { /* ignore */ }
+  }
 }
 
 // Cleanup on window close (Production Safety)

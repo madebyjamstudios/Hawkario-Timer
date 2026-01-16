@@ -1186,6 +1186,20 @@ app.whenReady().then(() => {
   // Create main window (hidden until ready)
   createMainWindow();
 
+  // Safety timeout: close splash and show main window after 5 seconds max
+  // This prevents the app from being stuck on splash if something goes wrong
+  setTimeout(() => {
+    if (splashWindow && !splashWindow.isDestroyed()) {
+      console.log('[App] Safety timeout: closing splash screen');
+      splashWindow.close();
+      splashWindow = null;
+    }
+    if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.isVisible()) {
+      console.log('[App] Safety timeout: showing main window');
+      mainWindow.show();
+    }
+  }, 5000);
+
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createMainWindow();
