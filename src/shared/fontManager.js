@@ -1,15 +1,18 @@
 /**
- * Font Manager - Built-in fonts and utilities for custom font support
+ * Font Manager - Bundled fonts for timer display
+ * All fonts are bundled locally for offline use
  */
 
-// Built-in Google Fonts available for timer display
+// Curated timer fonts bundled locally
 export const BUILT_IN_FONTS = [
-  { family: 'Inter', weights: [300, 400, 500, 600, 700, 800, 900] },
-  { family: 'Roboto', weights: [300, 400, 500, 700, 900] },
-  { family: 'Open Sans', weights: [300, 400, 500, 600, 700, 800] },
-  { family: 'Montserrat', weights: [300, 400, 500, 600, 700, 800, 900] },
-  { family: 'Lato', weights: [300, 400, 700, 900] },
-  { family: 'Oswald', weights: [300, 400, 500, 600, 700] }
+  { family: 'Inter', weights: [400, 600, 700], description: 'Modern & Clean' },
+  { family: 'Roboto', weights: [400, 700], description: 'Versatile' },
+  { family: 'JetBrains Mono', weights: [400, 600], description: 'Monospace' },
+  { family: 'Oswald', weights: [400, 700], description: 'Bold Condensed' },
+  { family: 'Bebas Neue', weights: [400], description: 'Classic Display' },
+  { family: 'Orbitron', weights: [400, 700], description: 'Futuristic' },
+  { family: 'Teko', weights: [400, 600], description: 'Modern Condensed' },
+  { family: 'Share Tech Mono', weights: [400], description: 'Digital' }
 ];
 
 // Weight labels for UI display
@@ -26,24 +29,11 @@ export const WEIGHT_LABELS = {
 /**
  * Get available weights for a font family
  * @param {string} family - Font family name
- * @param {Array} customFonts - Array of custom font objects
  * @returns {Array<number>} Available weights
  */
-export function getAvailableWeights(family, customFonts = []) {
-  // Check built-in fonts first
-  const builtIn = BUILT_IN_FONTS.find(f => f.family === family);
-  if (builtIn) {
-    return builtIn.weights;
-  }
-
-  // Check custom fonts
-  const custom = customFonts.find(f => f.family === family);
-  if (custom) {
-    return custom.weights || [400, 700]; // Default weights for custom fonts
-  }
-
-  // Fallback - return common weights
-  return [400, 700];
+export function getAvailableWeights(family) {
+  const font = BUILT_IN_FONTS.find(f => f.family === family);
+  return font ? font.weights : [400, 700];
 }
 
 /**
@@ -56,48 +46,11 @@ export function isBuiltInFont(family) {
 }
 
 /**
- * Get font format from file extension
- * @param {string} fileName - Font file name
- * @returns {string} CSS font format
+ * Get font description for UI display
+ * @param {string} family - Font family name
+ * @returns {string} Font description
  */
-export function getFontFormat(fileName) {
-  const ext = fileName.toLowerCase().split('.').pop();
-  switch (ext) {
-    case 'ttf': return 'truetype';
-    case 'otf': return 'opentype';
-    case 'woff': return 'woff';
-    case 'woff2': return 'woff2';
-    default: return 'truetype';
-  }
-}
-
-/**
- * Generate a unique font ID
- * @returns {string}
- */
-export function generateFontId() {
-  return `font-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-}
-
-/**
- * Extract font family name from file name
- * @param {string} fileName - Font file name
- * @returns {string} Font family name
- */
-export function extractFontName(fileName) {
-  // Remove extension
-  let name = fileName.replace(/\.(ttf|otf|woff|woff2)$/i, '');
-
-  // Remove common suffixes like -Regular, -Bold, etc.
-  name = name.replace(/[-_](Regular|Bold|Light|Medium|SemiBold|ExtraBold|Black|Thin|Italic)$/i, '');
-
-  // Convert to title case and replace separators with spaces
-  name = name
-    .replace(/[-_]/g, ' ')
-    .replace(/([a-z])([A-Z])/g, '$1 $2')
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
-
-  return name.trim();
+export function getFontDescription(family) {
+  const font = BUILT_IN_FONTS.find(f => f.family === family);
+  return font ? font.description : '';
 }

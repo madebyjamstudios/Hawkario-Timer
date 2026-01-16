@@ -175,23 +175,6 @@ contextBridge.exposeInMainWorld('ninja', {
     ipcRenderer.on('osc:command', (_event, data) => callback(data));
   },
 
-  // ============ Custom Fonts ============
-
-  // List all custom fonts
-  fontsList: () => ipcRenderer.invoke('fonts:list'),
-
-  // Upload a custom font
-  fontsUpload: (data) => ipcRenderer.invoke('fonts:upload', data),
-
-  // Delete a custom font
-  fontsDelete: (fontId) => ipcRenderer.invoke('fonts:delete', fontId),
-
-  // Get font file data (for @font-face CSS generation)
-  fontsGetData: (fontId) => ipcRenderer.invoke('fonts:get-data', fontId),
-
-  // Open file dialog to select font
-  fontsSelectFile: () => ipcRenderer.invoke('fonts:select-file'),
-
   // ============ Custom Sounds ============
 
   // List all custom sounds

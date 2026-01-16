@@ -11,7 +11,6 @@ import { formatTime, formatTimeOfDay, hexToRgba } from '../shared/timer.js';
 import { playWarningSound, playEndSound, initAudio } from '../shared/sounds.js';
 import { FIXED_STYLE } from '../shared/timerState.js';
 import { computeDisplay, getShadowCSS, getCombinedShadowCSS, FlashAnimator } from '../shared/renderTimer.js';
-import { getFontFormat } from '../shared/fontManager.js';
 import { autoFitMessage, applyMessageStyle } from '../shared/renderMessage.js';
 import {
   safeTimeout,
@@ -730,40 +729,9 @@ function setupAudioInit() {
 }
 
 /**
- * Load custom fonts from font storage
- */
-async function loadCustomFonts() {
-  try {
-    const fonts = await window.ninja.fontsList();
-    for (const font of fonts) {
-      try {
-        const fontData = await window.ninja.fontsGetData(font.id);
-        if (!fontData) continue;
-
-        const format = getFontFormat(font.fileName);
-        const fontFace = new FontFace(font.family, `url(data:font/${format};base64,${fontData})`, {
-          weight: '100 900',
-          style: 'normal'
-        });
-
-        await fontFace.load();
-        document.fonts.add(fontFace);
-      } catch (e) {
-        console.error('Failed to load custom font:', font.family, e);
-      }
-    }
-  } catch (e) {
-    console.error('Failed to load custom fonts:', e);
-  }
-}
-
-/**
  * Initialize output window
  */
 function init() {
-  // Load custom fonts
-  loadCustomFonts();
-
   // Apply initial styles
   applyStyle({ color: '#ffffff', bgColor: '#000000', strokeWidth: 0, strokeColor: '#000000', shadowSize: 0 });
 

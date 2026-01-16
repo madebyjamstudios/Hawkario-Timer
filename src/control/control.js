@@ -13,7 +13,7 @@ import { createTimerState, FIXED_STYLE } from '../shared/timerState.js';
 import { computeDisplay, getShadowCSS, getCombinedShadowCSS, FlashAnimator } from '../shared/renderTimer.js';
 import { autoFitMessage, applyMessageStyle } from '../shared/renderMessage.js';
 import { playSound } from '../shared/sounds.js';
-import { BUILT_IN_FONTS, WEIGHT_LABELS, getAvailableWeights, isBuiltInFont, getFontFormat } from '../shared/fontManager.js';
+import { BUILT_IN_FONTS, WEIGHT_LABELS, getAvailableWeights, isBuiltInFont } from '../shared/fontManager.js';
 import { BUILT_IN_SOUNDS, isBuiltInSound, isCustomSound, getCustomSoundId, createCustomSoundType, getAudioFormat, getAudioMimeType } from '../shared/soundManager.js';
 import {
   safeTimeout,
@@ -191,10 +191,6 @@ const els = {
 
   // Message elements
   messageList: document.getElementById('messageList'),
-
-  // Custom Fonts
-  customFontsList: document.getElementById('customFontsList'),
-  addCustomFont: document.getElementById('addCustomFont'),
 
   // Custom Sounds
   customSoundsList: document.getElementById('customSoundsList'),
@@ -1377,8 +1373,7 @@ function openAppSettings() {
     els.defaultFontWeight.value = settings.defaults.fontWeight ?? 700;
   }
 
-  // Load custom fonts and sounds lists
-  loadCustomFontsList();
+  // Load custom sounds list
   loadCustomSoundsList();
 
   // Load warning defaults (convert seconds to MM:SS)
@@ -1501,166 +1496,6 @@ function saveAppSettingsFromForm() {
 // ============ Custom Fonts Management ============
 
 // Cache for custom fonts list
-let customFonts = [];
-
-/**
- * Load and display custom fonts list in App Settings
- */
-async function loadCustomFontsList() {
-  try {
-    customFonts = await window.ninja.fontsList();
-    renderCustomFontsList();
-    updateFontDropdowns();
-  } catch (e) {
-    console.error('Failed to load custom fonts:', e);
-  }
-}
-
-/**
- * Render the custom fonts list UI
- */
-function renderCustomFontsList() {
-  if (!els.customFontsList) return;
-
-  els.customFontsList.innerHTML = '';
-
-  customFonts.forEach(font => {
-    const item = document.createElement('div');
-    item.className = 'custom-font-item';
-    item.innerHTML = `
-      <div class="custom-font-info">
-        <span class="custom-font-name" style="font-family: '${font.family}'">${font.family}</span>
-        <span class="custom-font-meta">${font.fileName}</span>
-      </div>
-      <button class="custom-font-delete" data-font-id="${font.id}" title="Delete font">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="3 6 5 6 21 6"></polyline>
-          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-        </svg>
-      </button>
-    `;
-    els.customFontsList.appendChild(item);
-  });
-
-  // Add click handlers for delete buttons
-  els.customFontsList.querySelectorAll('.custom-font-delete').forEach(btn => {
-    btn.addEventListener('click', () => deleteCustomFont(btn.dataset.fontId));
-  });
-}
-
-/**
- * Update all font dropdowns with custom fonts
- */
-function updateFontDropdowns() {
-  const dropdowns = [els.fontFamily, els.defaultFontFamily];
-
-  dropdowns.forEach(dropdown => {
-    if (!dropdown) return;
-
-    // Get current value to restore after updating
-    const currentValue = dropdown.value;
-
-    // Remove existing custom font options (keep built-in)
-    const builtInFamilies = BUILT_IN_FONTS.map(f => f.family);
-    Array.from(dropdown.options).forEach(opt => {
-      if (!builtInFamilies.includes(opt.value)) {
-        opt.remove();
-      }
-    });
-
-    // Add custom fonts
-    customFonts.forEach(font => {
-      const option = document.createElement('option');
-      option.value = font.family;
-      option.textContent = font.family;
-      option.style.fontFamily = font.family;
-      dropdown.appendChild(option);
-    });
-
-    // Restore value if still valid
-    if (Array.from(dropdown.options).some(opt => opt.value === currentValue)) {
-      dropdown.value = currentValue;
-    }
-  });
-}
-
-/**
- * Handle adding a new custom font
- */
-async function handleAddCustomFont() {
-  try {
-    const result = await window.ninja.fontsSelectFile();
-    if (!result) return; // User cancelled
-
-    const { fileName, fileData, fontName } = result;
-
-    // Upload the font
-    const font = await window.ninja.fontsUpload({ fileName, fileData, fontName });
-    if (!font) {
-      console.error('Failed to upload font');
-      return;
-    }
-
-    // Register font in browser
-    await registerCustomFont(font);
-
-    // Reload the fonts list
-    await loadCustomFontsList();
-  } catch (e) {
-    console.error('Failed to add custom font:', e);
-  }
-}
-
-/**
- * Handle deleting a custom font
- */
-async function deleteCustomFont(fontId) {
-  try {
-    const success = await window.ninja.fontsDelete(fontId);
-    if (success) {
-      await loadCustomFontsList();
-    }
-  } catch (e) {
-    console.error('Failed to delete custom font:', e);
-  }
-}
-
-/**
- * Register a custom font in the browser using @font-face
- */
-async function registerCustomFont(font) {
-  try {
-    const fontData = await window.ninja.fontsGetData(font.id);
-    if (!fontData) return;
-
-    const format = getFontFormat(font.fileName);
-    const fontFace = new FontFace(font.family, `url(data:font/${format};base64,${fontData})`, {
-      weight: '100 900', // Allow all weights
-      style: 'normal'
-    });
-
-    await fontFace.load();
-    document.fonts.add(fontFace);
-  } catch (e) {
-    console.error('Failed to register custom font:', e);
-  }
-}
-
-/**
- * Load all custom fonts on startup
- */
-async function loadAllCustomFonts() {
-  try {
-    customFonts = await window.ninja.fontsList();
-    for (const font of customFonts) {
-      await registerCustomFont(font);
-    }
-    updateFontDropdowns();
-  } catch (e) {
-    console.error('Failed to load custom fonts:', e);
-  }
-}
-
 /**
  * Update font weight dropdown options based on selected font family
  */
@@ -1668,7 +1503,7 @@ function updateFontWeightOptions(fontFamily) {
   if (!els.fontWeight) return;
 
   const currentWeight = parseInt(els.fontWeight.value, 10) || 700;
-  const weights = getAvailableWeights(fontFamily, customFonts);
+  const weights = getAvailableWeights(fontFamily);
 
   // Clear and repopulate
   els.fontWeight.innerHTML = '';
@@ -6375,11 +6210,6 @@ function setupEventListeners() {
   els.settingsExport.addEventListener('click', handleExport);
   els.settingsImport.addEventListener('click', () => els.importFile.click());
 
-  // Custom Fonts
-  if (els.addCustomFont) {
-    els.addCustomFont.addEventListener('click', handleAddCustomFont);
-  }
-
   // Custom Sounds
   if (els.addCustomSound) {
     els.addCustomSound.addEventListener('click', handleAddCustomSound);
@@ -7391,8 +7221,7 @@ function init() {
   window.ninja.setAlwaysOnTop('output', appSettings.outputOnTop);
   window.ninja.setAlwaysOnTop('control', appSettings.controlOnTop);
 
-  // Load custom fonts and sounds
-  loadAllCustomFonts();
+  // Load custom sounds
   loadAllCustomSounds();
 
   // Create default preset on first launch
