@@ -6437,7 +6437,11 @@ function setupEventListeners() {
   }
 
   // Initialize font picker
-  renderFontPicker();
+  try {
+    renderFontPicker();
+  } catch (e) {
+    console.error('[FontPicker] Error:', e);
+  }
 
   // Sound selection - show/hide volume row
   if (els.soundEnd) {
