@@ -87,9 +87,7 @@ function checkSizeLoop() {
     updateResolution();
     fitTimerContent();
     fitToDContent();
-    // Debounce message fit to avoid jitter
-    clearTimeout(messageResizeTimeout);
-    messageResizeTimeout = setTimeout(fitMessageContent, 100);
+    fitMessageContent();
   }
 
   requestAnimationFrame(checkSizeLoop);
