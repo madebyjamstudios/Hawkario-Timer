@@ -24,8 +24,6 @@ html, body {
   background: transparent;
   overflow: hidden;
   box-sizing: border-box;
-  /* DEBUG */
-  border: 3px solid blue;
 }
 
 /* ============ Content Box System ============ */
@@ -39,8 +37,6 @@ html, body {
   transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
-  /* DEBUG: visible outline */
-  outline: 3px solid red;
 }
 
 /* Timer section - fills content-box, centers timer-box */
@@ -51,15 +47,11 @@ html, body {
   align-items: center;
   justify-content: center;
   overflow: visible;
-  /* DEBUG */
-  outline: 2px solid lime;
 }
 
 /* Timer box - wraps timer text exactly (inline-block) */
 .timer-box {
   display: inline-block;
-  /* DEBUG */
-  outline: 2px dashed cyan;
 }
 
 /* ToD box - hidden by default */
@@ -87,8 +79,6 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* DEBUG */
-  outline: 2px dashed cyan;
 }
 
 .timer-section.with-tod .tod-box {
@@ -96,8 +86,6 @@ html, body {
   flex: 0 0 25%;
   align-items: center;
   justify-content: center;
-  /* DEBUG */
-  outline: 2px dashed yellow;
 }
 
 /* Message section - hidden by default */
@@ -218,23 +206,6 @@ html, body {
 :fullscreen .fs-hint,
 :-webkit-full-screen .fs-hint {
   opacity: 0;
-}
-
-/* Timer states */
-.timer.warning {
-  /* Applied via JS for warning state */
-}
-
-.timer.flash-on {
-  /* Applied via JS for flash effect */
-}
-
-.timer.flash-off {
-  /* Applied via JS for flash effect */
-}
-
-.timer.ended {
-  /* Applied via JS when timer ends */
 }
 
 /* ============ Message Overlay ============ */
