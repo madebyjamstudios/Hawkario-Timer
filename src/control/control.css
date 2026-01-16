@@ -1275,14 +1275,14 @@ button:disabled {
 }
 
 /* Pulse animation on timer start */
-@keyframes indicator-pulse {
+@keyframes progress-indicator-pulse {
   0% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 8px rgba(59, 130, 246, 0.6); }
   50% { transform: translate(-50%, -50%) scale(1.4); box-shadow: 0 0 16px rgba(59, 130, 246, 0.9); }
   100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 8px rgba(59, 130, 246, 0.6); }
 }
 
 .progress-indicator.pulse {
-  animation: indicator-pulse 0.3s ease-out;
+  animation: progress-indicator-pulse 0.3s ease-out;
 }
 
 /* Seek line (follows mouse on hover) */
