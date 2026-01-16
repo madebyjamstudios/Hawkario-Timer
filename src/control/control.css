@@ -2,7 +2,52 @@
  * Ninja Timer - Control Window Styles
  */
 
-/* Base layout */
+/* ============ Design System Variables ============ */
+:root {
+  /* NINJA BRAND COLORS */
+  --color-accent: #1f6feb;       /* Blue - primary actions, selection */
+  --color-success: #22c55e;      /* Green - play, linked, success */
+  --color-warning: #eab308;      /* Yellow - warning zone */
+  --color-danger: #E64A19;       /* Orange - stop, delete, blackout */
+
+  /* BACKGROUND HIERARCHY */
+  --color-bg-primary: #0a0a0a;     /* Darkest - app background */
+  --color-bg-secondary: #1a1a1a;   /* Cards, inputs, sections */
+  --color-bg-tertiary: #2a2a2a;    /* Hover states, elevated */
+  --color-bg-elevated: #333;        /* Dropdowns, menus, modals */
+
+  /* TEXT HIERARCHY (Apple-style opacity levels) */
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: rgba(255, 255, 255, 0.6);
+  --color-text-tertiary: rgba(255, 255, 255, 0.3);
+  --color-text-disabled: rgba(255, 255, 255, 0.2);
+
+  /* BORDERS & DIVIDERS */
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border-strong: rgba(255, 255, 255, 0.2);
+
+  /* CORNER RADIUS SYSTEM */
+  --radius-sm: 8px;    /* Buttons, small controls */
+  --radius-md: 10px;   /* Inputs, dropdowns */
+  --radius-lg: 14px;   /* Cards, preset items */
+  --radius-xl: 20px;   /* Modals, large panels */
+
+  /* SHADOWS (elevation system) */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.5);
+
+  /* TRANSITIONS */
+  --transition-quick: 0.1s ease-out;
+  --transition-standard: 0.2s ease-in-out;
+  --transition-emphasis: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* BLUR */
+  --blur-overlay: blur(20px) saturate(180%);
+}
+
+/* ============ Base Layout ============ */
 html, body {
   height: 100%;
   overflow: hidden;
@@ -26,25 +71,27 @@ html, body {
 
 /* Form elements */
 label {
-  color: #bbb;
+  color: var(--color-text-secondary);
   font-size: 11px;
 }
 
 input[type="text"],
 input[type="number"],
 select {
-  background: #1a1a1a;
-  color: #eee;
-  border: 1px solid #333;
-  border-radius: 6px;
-  padding: 6px 8px;
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
   font-size: 13px;
+  transition: border-color var(--transition-quick), box-shadow var(--transition-quick);
 }
 
 input[type="text"]:focus,
 input[type="number"]:focus,
 select:focus {
-  border-color: #1f6feb;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.2);
   outline: none;
 }
 
@@ -1326,13 +1373,13 @@ button:disabled {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: calc(14px * var(--timer-scale, 1)) 16px;
-  padding-left: calc(8px * var(--timer-scale, 1));
-  background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%);
+  padding: calc(16px * var(--timer-scale, 1)) 16px;
+  padding-left: calc(10px * var(--timer-scale, 1));
+  background: var(--color-bg-tertiary);
   border: none;
-  border-radius: calc(12px * var(--timer-scale, 1));
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  transition: all 0.15s ease;
+  border-radius: calc(var(--radius-lg) * var(--timer-scale, 1));
+  box-shadow: var(--shadow-sm);
+  transition: background var(--transition-quick), box-shadow var(--transition-quick);
   max-width: 100%;
   box-sizing: border-box;
   position: relative;
@@ -1430,8 +1477,8 @@ button:disabled {
 }
 
 .preset-item:hover {
-  background: linear-gradient(135deg, #4a4a4a 0%, #3a3a3a 100%);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  background: var(--color-bg-elevated);
+  box-shadow: var(--shadow-md);
 }
 
 /* Drag hover state - highlight timer being hovered during drag */
@@ -1442,24 +1489,24 @@ button:disabled {
 
 /* Selected timer (active) - blue */
 .preset-item.selected {
-  background: linear-gradient(135deg, #1a5fd4 0%, #1550b8 100%);
-  box-shadow: 0 2px 8px rgba(21, 80, 184, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  background: var(--color-accent);
+  box-shadow: var(--shadow-sm);
 }
 
 .preset-item.selected:hover {
-  background: linear-gradient(135deg, #1f6feb 0%, #1a5fd4 100%);
-  box-shadow: 0 4px 12px rgba(31, 111, 235, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  background: #388bfd;
+  box-shadow: var(--shadow-md);
 }
 
 /* Playing timer (actively running) - orange, overrides selected blue */
 .preset-item.playing {
-  background: linear-gradient(135deg, #E64A19 0%, #BF360C 100%);
-  box-shadow: 0 2px 8px rgba(230, 74, 25, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  background: var(--color-danger);
+  box-shadow: var(--shadow-sm);
 }
 
 .preset-item.playing:hover {
-  background: linear-gradient(135deg, #FF5722 0%, #E64A19 100%);
-  box-shadow: 0 4px 12px rgba(255, 87, 34, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  background: #FF5722;
+  box-shadow: var(--shadow-md);
 }
 
 .preset-name {
@@ -1893,33 +1940,30 @@ header {
 }
 
 .header-btn {
-  padding: 6px 12px;
+  padding: 8px 14px;
   font-size: 12px;
-  background: #333;
-  border: 1px solid #444;
-  border-radius: 6px;
-  color: #ddd;
+  font-weight: 500;
+  background: var(--color-bg-tertiary);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background var(--transition-quick);
 }
 
 .header-btn:hover {
-  background: #444;
-  border-color: #555;
-  color: #fff;
+  background: var(--color-bg-elevated);
 }
 
 .output-btn {
-  background: transparent;
-  border-color: #E64A19;
+  background: var(--color-danger);
+  border: none;
   color: #fff;
   font-weight: 600;
 }
 
 .output-btn:hover {
-  background: #E64A19;
-  border-color: #E64A19;
-  color: #fff;
+  background: #FF5722;
 }
 
 .output-btn:active {
@@ -1972,8 +2016,9 @@ footer small {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: var(--blur-overlay);
+  -webkit-backdrop-filter: var(--blur-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1985,15 +2030,15 @@ footer small {
 }
 
 .modal {
-  background: #111;
-  border: 1px solid #333;
-  border-radius: 16px;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
   width: 90%;
   max-width: 480px;
   max-height: 85vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-xl);
 }
 
 .modal-header {
