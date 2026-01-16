@@ -69,9 +69,6 @@ function updateResolution() {
   }
 }
 
-// Debounce timer for message fitting during resize
-let messageResizeTimeout = null;
-
 // Track last known dimensions for change detection
 let lastWidth = window.innerWidth;
 let lastHeight = window.innerHeight;
@@ -163,24 +160,6 @@ let lastTimerLength = 0;
 // Cache for shadow CSS to avoid recalculating every frame
 let cachedShadowCSS = '';
 let cachedShadowKey = '';
-
-/**
- * Get reference text for timer sizing based on format and duration
- * Uses 8s because 8 is typically the widest digit
- */
-function getRefText(format, durationMs) {
-  const durationSec = Math.floor(durationMs / 1000);
-  if (format === 'HH:MM:SS') {
-    const hours = Math.floor(durationSec / 3600);
-    if (hours >= 10) return '88:88:88';
-    return '8:88:88';
-  }
-  // MM:SS format
-  const minutes = Math.floor(durationSec / 60);
-  if (minutes >= 100) return '888:88';
-  if (minutes >= 10) return '88:88';
-  return '8:88';
-}
 
 /**
  * Fit timer to fill its container - scale until box touches edge
@@ -850,13 +829,6 @@ window.addEventListener('beforeunload', () => {
 
   // Stop watchdog monitoring
   stopWatchdog();
-
-  // Disconnect ResizeObserver
-  try {
-    resizeObserver.disconnect();
-  } catch (err) {
-    // Ignore cleanup errors
-  }
 
   // Clear all tracked timers
   clearAllTimers();
