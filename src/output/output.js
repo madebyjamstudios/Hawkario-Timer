@@ -152,9 +152,12 @@ let currentMessage = null;
 // Track last rendered text/format/mode to only refit when needed
 let lastTimerText = '';
 let lastMessageText = '';
+let lastMessageUppercase = false;
 let lastTimerFormat = '';
 let lastTimerMode = '';
 let lastTimerLength = 0;
+let lastContainerWidth = 0;
+let lastContainerHeight = 0;
 
 // Cache for shadow CSS to avoid recalculating every frame
 let cachedShadowCSS = '';
@@ -325,6 +328,7 @@ function handleMessageUpdate(message) {
     // Hide message and restore full layout
     currentMessage = null;
     lastMessageText = '';
+    lastMessageUppercase = false;
     messageOverlayEl.classList.remove('visible', 'bold', 'italic', 'uppercase');
 
     // Shrink timer before layout change to prevent flash
@@ -364,9 +368,11 @@ function handleMessageUpdate(message) {
 
   // Wait for layout to update, then fit content (matches preview behavior)
   requestAnimationFrame(() => {
-    // Fit message content (when text changes or message just became visible)
-    if (message.text !== lastMessageText || !wasVisible) {
+    // Fit message content (when text or formatting changes, or message just became visible)
+    const uppercaseChanged = message.uppercase !== lastMessageUppercase;
+    if (message.text !== lastMessageText || uppercaseChanged || !wasVisible) {
       lastMessageText = message.text;
+      lastMessageUppercase = message.uppercase;
       fitMessageContent();
     }
 
@@ -566,8 +572,24 @@ function renderInternal() {
     void timerSectionEl.offsetHeight;
   }
 
-  // Apply timer text FIRST (before measuring for fit)
-  timerEl.innerHTML = text;
+  // Check if text or container size changed (optimization: avoid refit every frame)
+  const textChanged = text !== lastTimerText;
+  const containerWidth = window.innerWidth;
+  const containerHeight = window.innerHeight;
+  const sizeChanged = containerWidth !== lastContainerWidth || containerHeight !== lastContainerHeight;
+  const needsRefit = textChanged || sizeChanged || todModeChanged;
+
+  // Update tracking variables
+  if (textChanged) lastTimerText = text;
+  if (sizeChanged) {
+    lastContainerWidth = containerWidth;
+    lastContainerHeight = containerHeight;
+  }
+
+  // Apply timer text (only update DOM if changed to avoid unnecessary reflows)
+  if (textChanged) {
+    timerEl.innerHTML = text;
+  }
 
   // Apply ToD text (separate element, uses innerHTML for colon spans)
   if (showToD && todText) {
@@ -578,10 +600,11 @@ function renderInternal() {
     todEl.style.visibility = 'hidden';
   }
 
-  // Always refit on every frame to handle window resizes
-  // MUST be called AFTER innerHTML is set so we measure the new content
-  fitTimerContent();
-  if (showToD) fitToDContent();
+  // Only refit when text, container size, or ToD mode changes (not every frame)
+  if (needsRefit) {
+    fitTimerContent();
+    if (showToD) fitToDContent();
+  }
 
   // Apply color and stroke (skip during flash animation)
   if (!flashAnimator?.isFlashing) {

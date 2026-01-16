@@ -175,15 +175,15 @@ button:active {
 }
 
 button.secondary {
-  background: #333;
+  background: var(--color-bg-elevated);
 }
 
 button.secondary:hover {
-  background: #444;
+  background: var(--color-bg-tertiary);
 }
 
 button.secondary:active {
-  background: #222;
+  background: var(--color-bg-secondary);
 }
 
 button:disabled {
@@ -227,13 +227,13 @@ button:disabled {
 .resize-grip {
   width: 40px;
   height: 4px;
-  background: #444;
+  background: var(--color-bg-elevated);
   border-radius: 2px;
-  transition: background 0.15s;
+  transition: background var(--transition-quick);
 }
 
 .preview-resize-handle:hover .resize-grip {
-  background: #666;
+  background: var(--color-text-tertiary);
 }
 
 .preview-resize-handle:active .resize-grip {
@@ -242,12 +242,12 @@ button:disabled {
 
 /* Live Preview Mini-Box (main window) */
 .live-preview-wrapper {
-  background: #0a0a0a;
+  background: var(--color-bg-primary);
   aspect-ratio: 16 / 9;
   width: 100%;
   min-width: 150px;
-  border: 1px solid #333;
-  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
   overflow: hidden;
 }
 
@@ -765,25 +765,25 @@ button:disabled {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #333;
-  border: 2px solid #555;
-  border-radius: 8px;
+  background: var(--color-bg-elevated);
+  border: 2px solid var(--color-text-tertiary);
+  border-radius: var(--radius-sm);
   padding: 8px 12px;
   font-size: 12px;
-  color: #eee;
+  color: var(--color-text-primary);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all var(--transition-quick);
   max-width: 160px;
 }
 
 .profile-btn:hover {
-  background: #444;
-  border-color: #666;
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-text-secondary);
 }
 
 .profile-btn.active {
-  background: #1a1a1a;
-  border-color: #1f6feb;
+  background: var(--color-bg-secondary);
+  border-color: var(--color-accent);
 }
 
 /* Profile color dot - shows profile color in button and dropdown */
@@ -3158,15 +3158,15 @@ button.danger:active {
 .message-number {
   font-size: 12px;
   font-weight: 600;
-  color: #666;
-  transition: opacity 0.3s ease;
+  color: var(--color-text-tertiary);
+  transition: opacity var(--transition-standard);
 }
 
 .message-drag-icon {
   position: absolute;
   opacity: 0;
-  transition: opacity 0.3s ease;
-  color: #888;
+  transition: opacity var(--transition-standard);
+  color: var(--color-text-secondary);
 }
 
 .message-drag-icon svg {
@@ -3195,10 +3195,10 @@ button.danger:active {
 .message-text-input {
   width: 100%;
   padding: 8px 10px;
-  background: #1a1a1a;
-  border: 1px solid #333;
-  border-radius: 6px;
-  color: #fff;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
   font-size: 14px;
   box-sizing: border-box;
   /* Truncate long text with ellipsis */
@@ -3208,7 +3208,7 @@ button.danger:active {
 }
 
 .message-text-input:focus {
-  border-color: #1f6feb;
+  border-color: var(--color-accent);
   outline: none;
   /* Show full text when editing */
   overflow: visible;
@@ -3228,14 +3228,14 @@ button.danger:active {
   position: fixed;
   transform: translateX(-50%) translateY(-100%);
   background: rgba(20, 20, 20, 0.95);
-  border: 1px solid #444;
-  border-radius: 8px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
   padding: 10px 16px;
   font-size: 14px;
   max-width: 300px;
   word-wrap: break-word;
   white-space: pre-wrap;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-lg);
   z-index: 1000;
   pointer-events: none;
   text-align: center;
@@ -3248,7 +3248,7 @@ button.danger:active {
   left: 50%;
   transform: translateX(-50%);
   border: 6px solid transparent;
-  border-top-color: #444;
+  border-top-color: var(--color-border-strong);
 }
 
 .message-actions {
@@ -3266,11 +3266,11 @@ button.danger:active {
   width: 32px;
   height: 32px;
   padding: 0;
-  background: #333;
-  border: 2px solid #555;
-  border-radius: 8px;
+  background: var(--color-bg-elevated);
+  border: 2px solid var(--color-text-tertiary);
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-standard);
   position: relative;
   overflow: hidden;
 }
@@ -3298,8 +3298,8 @@ button.danger:active {
 }
 
 .message-visibility-btn:hover {
-  background: #444;
-  border-color: #666;
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-text-secondary);
 }
 
 .message-visibility-btn.active {
@@ -3334,10 +3334,10 @@ button.danger:active {
   position: relative;
   width: 8px;
   height: 8px;
-  background: #444;
+  background: var(--color-bg-elevated);
   border-radius: 50%;
-  border: 1px solid #666;
-  transition: all 0.3s ease;
+  border: 1px solid var(--color-text-secondary);
+  transition: all var(--transition-standard);
   z-index: 1;
 }
 
@@ -3400,9 +3400,9 @@ button.danger:active {
 .message-compose {
   margin: 8px;
   padding: 14px;
-  background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%);
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
 }
 
 .compose-input-row {
@@ -3412,16 +3412,16 @@ button.danger:active {
 .message-input {
   width: 100%;
   padding: 10px 12px;
-  background: #1a1a1a;
-  border: 1px solid #333;
-  border-radius: 8px;
-  color: #fff;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
   font-size: 14px;
   box-sizing: border-box;
 }
 
 .message-input:focus {
-  border-color: #1f6feb;
+  border-color: var(--color-accent);
   outline: none;
 }
 
@@ -3442,10 +3442,10 @@ button.danger:active {
   width: 32px;
   height: 32px;
   padding: 0;
-  background: #333;
-  border: 1px solid #444;
-  border-radius: 6px;
-  color: #ddd;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
   font-size: 14px;
   cursor: pointer;
   transition: all 0.15s;
