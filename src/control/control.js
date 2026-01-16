@@ -278,28 +278,39 @@ function parseSmartDuration(val) {
   // Already formatted as HH:MM:SS or H:MM:SS
   if (/^\d{1,3}:\d{1,2}:\d{1,2}$/.test(str)) {
     const parts = str.split(':');
-    return { h: parseInt(parts[0], 10), m: parseInt(parts[1], 10), s: parseInt(parts[2], 10) };
+    const hh = parseInt(parts[0], 10);
+    const mm = parseInt(parts[1], 10);
+    const ss = parseInt(parts[2], 10);
+    // Validate and normalize (e.g., 1:99:99 → 2:40:39)
+    const totalSec = Math.min(hh * 3600 + mm * 60 + ss, 999 * 3600 + 59 * 60 + 59);
+    return { h: Math.floor(totalSec / 3600), m: Math.floor((totalSec % 3600) / 60), s: totalSec % 60 };
   }
 
   // Formatted as MM:SS or M:SS
   if (/^\d{1,2}:\d{1,2}$/.test(str)) {
     const parts = str.split(':');
-    return { h: 0, m: parseInt(parts[0], 10), s: parseInt(parts[1], 10) };
+    const mm = parseInt(parts[0], 10);
+    const ss = parseInt(parts[1], 10);
+    // Validate and normalize (e.g., 99:99 → 1:40:39)
+    const totalSec = Math.min(mm * 60 + ss, 999 * 3600 + 59 * 60 + 59);
+    return { h: Math.floor(totalSec / 3600), m: Math.floor((totalSec % 3600) / 60), s: totalSec % 60 };
   }
 
   // Just digits - smart parse based on length
+  // Cap at 999:59:59 to prevent unreasonable values
+  const MAX_SECONDS = 999 * 3600 + 59 * 60 + 59;
   if (/^\d+$/.test(str)) {
     const num = str;
     if (num.length <= 2) {
       // 1-2 digits: treat as seconds (e.g., "30" → 0:00:30)
-      const totalSec = parseInt(num, 10);
-      return { h: 0, m: Math.floor(totalSec / 60), s: totalSec % 60 };
+      const totalSec = Math.min(parseInt(num, 10), MAX_SECONDS);
+      return { h: Math.floor(totalSec / 3600), m: Math.floor((totalSec % 3600) / 60), s: totalSec % 60 };
     } else if (num.length <= 4) {
       // 3-4 digits: treat as MMSS (e.g., "530" → 0:05:30, "1230" → 0:12:30)
       const ss = parseInt(num.slice(-2), 10);
       const mm = parseInt(num.slice(0, -2), 10);
       // Handle overflow (e.g., "90" as seconds)
-      const totalSec = mm * 60 + ss;
+      const totalSec = Math.min(mm * 60 + ss, MAX_SECONDS);
       const h = Math.floor(totalSec / 3600);
       const m = Math.floor((totalSec % 3600) / 60);
       const s = totalSec % 60;
@@ -309,7 +320,12 @@ function parseSmartDuration(val) {
       const ss = parseInt(num.slice(-2), 10);
       const mm = parseInt(num.slice(-4, -2), 10);
       const hh = parseInt(num.slice(0, -4), 10) || 0;
-      return { h: hh, m: mm, s: ss };
+      // Validate and convert to total seconds to handle overflow (e.g., 99 seconds → 1:39)
+      const totalSec = Math.min(hh * 3600 + mm * 60 + ss, MAX_SECONDS);
+      const h = Math.floor(totalSec / 3600);
+      const m = Math.floor((totalSec % 3600) / 60);
+      const s = totalSec % 60;
+      return { h, m, s };
     }
   }
 
@@ -2539,6 +2555,7 @@ function updateMessageField(messageId, field, value) {
   const messages = loadMessages();
   const msg = messages.find(m => m.id === messageId);
   if (msg) {
+    saveUndoState(); // Save state before edit for undo
     msg[field] = value;
     saveMessagesToStorage(messages);
 
@@ -2622,6 +2639,8 @@ function toggleMessageVisibility(messageId) {
   const targetIndex = messages.findIndex(m => m.id === messageId);
   if (targetIndex === -1) return;
 
+  saveUndoState(); // Save state before toggle for undo
+
   const target = messages[targetIndex];
   const wasVisible = target.visible;
 
@@ -2697,6 +2716,8 @@ async function deleteMessage(messageId) {
 }
 
 function addNewMessage() {
+  saveUndoState(); // Save state before adding for undo
+
   const newMsg = {
     id: `msg-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     text: '',
@@ -5185,6 +5206,8 @@ function reorderProfiles(fromIndex, toIndex) {
   if (fromIndex < 0 || fromIndex >= profiles.length) return;
   if (toIndex < 0 || toIndex >= profiles.length) return;
 
+  saveUndoState(true); // Save state before reorder for undo
+
   // Remove from old position and insert at new position
   const [movedProfile] = profiles.splice(fromIndex, 1);
   profiles.splice(toIndex, 0, movedProfile);
@@ -5294,6 +5317,7 @@ function promptRenameProfile() {
       showToast('Profile name cannot be empty', 'error');
       return;
     }
+    saveUndoState(true); // Save state before rename for undo
     profile.name = newName;
     saveProfiles();
     updateProfileButton();
@@ -5391,6 +5415,7 @@ function duplicateProfile(id) {
       presets: JSON.parse(JSON.stringify(profile.presets))
     };
 
+    saveUndoState(true); // Save state before duplicate for undo
     profiles.push(newProfile);
     saveProfiles();
 
@@ -5854,6 +5879,7 @@ function showPresetMenu(idx, preset, anchorEl) {
   cloneItem.className = 'menu-item';
   cloneItem.innerHTML = `${ICONS.clone} Clone`;
   cloneItem.onclick = () => {
+    saveUndoState(); // Save state before clone for undo
     const presets = loadPresets();
     presets.splice(idx + 1, 0, {
       ...preset,
@@ -5862,7 +5888,7 @@ function showPresetMenu(idx, preset, anchorEl) {
     savePresets(presets);
     renderPresetList();
     menu.remove();
-    showToast('Preset cloned');
+    showToast('Preset cloned (Cmd/Ctrl+Z to undo)', 'success');
   };
 
   const deleteItem = document.createElement('button');
