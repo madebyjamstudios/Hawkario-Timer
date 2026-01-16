@@ -2253,6 +2253,53 @@ h3 {
 }
 
 /* Collapsible settings sections */
+/* ============ Settings Tabs (Timer Modal) ============ */
+.settings-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 0 12px 0;
+  border-bottom: 1px solid #333;
+  margin-bottom: 16px;
+}
+
+.settings-tab {
+  flex: 1;
+  padding: 8px 12px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: #888;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.settings-tab:hover {
+  background: #2a2a2a;
+  color: #ccc;
+}
+
+.settings-tab.active {
+  background: #2a2a2a;
+  border-color: #444;
+  color: #fff;
+}
+
+.settings-tab-panels {
+  min-height: 200px;
+}
+
+.settings-tab-panel {
+  display: none;
+}
+
+.settings-tab-panel.active {
+  display: block;
+  animation: fadeIn 0.15s ease-out;
+}
+
+/* Legacy collapsible sections (keep for backwards compatibility) */
 .collapsible-section {
   margin: 10px 0;
   border: 1px solid #333;

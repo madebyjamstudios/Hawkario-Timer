@@ -3354,6 +3354,53 @@ function saveSectionsState() {
   localStorage.setItem(SECTIONS_STATE_KEY, JSON.stringify(state));
 }
 
+// ============ Settings Tabs (Timer Modal) ============
+
+const SETTINGS_TAB_KEY = 'ninja:settingsTab';
+
+function setupSettingsTabs() {
+  const tabs = document.querySelectorAll('.settings-tab');
+  const panels = document.querySelectorAll('.settings-tab-panel');
+
+  if (tabs.length === 0) return;
+
+  // Restore last active tab
+  const savedTab = localStorage.getItem(SETTINGS_TAB_KEY) || 'timer';
+  switchSettingsTab(savedTab);
+
+  // Add click handlers
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const tabId = tab.dataset.tab;
+      switchSettingsTab(tabId);
+      localStorage.setItem(SETTINGS_TAB_KEY, tabId);
+    });
+  });
+}
+
+function switchSettingsTab(tabId) {
+  const tabs = document.querySelectorAll('.settings-tab');
+  const panels = document.querySelectorAll('.settings-tab-panel');
+
+  // Update tab buttons
+  tabs.forEach(tab => {
+    if (tab.dataset.tab === tabId) {
+      tab.classList.add('active');
+    } else {
+      tab.classList.remove('active');
+    }
+  });
+
+  // Update panels
+  panels.forEach(panel => {
+    if (panel.dataset.panel === tabId) {
+      panel.classList.add('active');
+    } else {
+      panel.classList.remove('active');
+    }
+  });
+}
+
 // ============ Preview Panel Resize ============
 
 const PREVIEW_WIDTH_KEY = 'ninja:previewWidth';
@@ -7352,8 +7399,11 @@ function init() {
     }
   }
 
-  // Setup collapsible sections in modal
+  // Setup collapsible sections in modal (legacy, keep for app settings)
   setupCollapsibleSections();
+
+  // Setup settings tabs in timer modal
+  setupSettingsTabs();
 
   // Setup preview resize
   setupPreviewResize();

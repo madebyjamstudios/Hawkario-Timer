@@ -199,15 +199,18 @@
           </div>
         </div>
 
-        <!-- Timer Section -->
-        <div class="collapsible-section" data-section="timer">
-          <h3 class="section-header">
-            <span>Timer</span>
-            <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </h3>
-          <div class="section-content">
+        <!-- Settings Tab Bar -->
+        <div class="settings-tabs">
+          <button class="settings-tab active" data-tab="timer">Timer</button>
+          <button class="settings-tab" data-tab="appearance">Appearance</button>
+          <button class="settings-tab" data-tab="sound">Sound</button>
+          <button class="settings-tab" data-tab="warning">Warnings</button>
+        </div>
+
+        <!-- Tab Panels -->
+        <div class="settings-tab-panels">
+          <!-- Timer Tab -->
+          <div class="settings-tab-panel active" data-panel="timer">
             <div class="kv">
               <label for="presetName">Title</label>
               <input id="presetName" type="text" placeholder="Timer 1" />
@@ -241,17 +244,9 @@
               </select>
             </div>
           </div>
-        </div>
 
-        <!-- Appearance Section -->
-        <div class="collapsible-section" data-section="appearance">
-          <h3 class="section-header">
-            <span>Appearance</span>
-            <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </h3>
-          <div class="section-content">
+          <!-- Appearance Tab -->
+          <div class="settings-tab-panel" data-panel="appearance">
             <!-- Apple-style Font Picker -->
             <div class="font-picker-section">
               <label class="font-picker-label">Font</label>
@@ -297,17 +292,9 @@
               <input id="bgColor" type="color" value="#000000" />
             </div>
           </div>
-        </div>
 
-        <!-- Sound Section -->
-        <div class="collapsible-section" data-section="sound">
-          <h3 class="section-header">
-            <span>Sound</span>
-            <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </h3>
-          <div class="section-content">
+          <!-- Sound Tab -->
+          <div class="settings-tab-panel" data-panel="sound">
             <div class="kv">
               <label for="soundEnd">End sound</label>
               <div class="sound-select-row">
@@ -331,17 +318,9 @@
               <input id="soundVolume" type="range" min="0" max="1" step="0.1" value="0.7" />
             </div>
           </div>
-        </div>
 
-        <!-- Warning Section -->
-        <div class="collapsible-section" data-section="warning">
-          <h3 class="section-header">
-            <span>Warning Colors</span>
-            <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </h3>
-          <div class="section-content">
+          <!-- Warning Tab -->
+          <div class="settings-tab-panel" data-panel="warning">
             <div class="kv">
               <label class="warn-label"><span class="warn-dot warn-dot-yellow"></span>Yellow at</label>
               <input id="warnYellowSec" type="text" class="time-input time-input-ms" value="01:00" maxlength="5" />
