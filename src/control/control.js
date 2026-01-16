@@ -7357,9 +7357,6 @@ function init() {
   setupPreviewResize();
   restorePreviewWidth();
 
-  // Debounce timer for message fitting during resize
-  let previewMessageResizeTimeout = null;
-
   // ResizeObserver for reliable resize detection (works with window snapping)
   const previewResizeObserver = new ResizeObserver(() => {
     // Double RAF to ensure all layouts have recalculated
@@ -7373,9 +7370,7 @@ function init() {
         }
         fitPreviewTimer();
         fitPreviewToD();
-        // Debounce message fit to avoid jitter during continuous resize
-        clearTimeout(previewMessageResizeTimeout);
-        previewMessageResizeTimeout = setTimeout(fitPreviewMessage, 100);
+        fitPreviewMessage();
       });
     });
   });
