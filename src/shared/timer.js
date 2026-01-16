@@ -65,27 +65,6 @@ export function secondsToHMS(total) {
 const COLON_HTML = '<span class="colon">:</span>';
 
 /**
- * Format time as plain text (for inputs and textContent)
- * First segment is not padded (9:00 not 09:00), rest are padded (0:09 not 0:9)
- */
-export function formatTimePlain(ms, format = 'MM:SS', roundUp = false) {
-  const total = Math.max(0, roundUp ? Math.ceil(ms / 1000) : Math.floor(ms / 1000));
-  const h = Math.floor(total / 3600);
-  const m = Math.floor((total % 3600) / 60);
-  const s = total % 60;
-
-  const pad = n => String(n).padStart(2, '0');
-
-  switch (format) {
-    case 'HH:MM:SS':
-      return `${h}:${pad(m)}:${pad(s)}`;
-    case 'MM:SS':
-    default:
-      return `${m + (h * 60)}:${pad(s)}`;
-  }
-}
-
-/**
  * Format time as HTML (with centered colons for display)
  * First segment is not padded (9:00 not 09:00), rest are padded (0:09 not 0:9)
  */
