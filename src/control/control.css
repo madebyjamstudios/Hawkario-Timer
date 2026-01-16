@@ -216,8 +216,6 @@ button:disabled {
   box-sizing: border-box;
   user-select: none;
   -webkit-user-select: none;
-  /* DEBUG */
-  border: 3px solid blue;
 }
 
 /* ============ Content Box System ============ */
@@ -231,8 +229,6 @@ button:disabled {
   transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
-  /* DEBUG */
-  outline: 3px solid red;
 }
 
 /* Timer section - fills content-box, centers timer-box */
@@ -243,15 +239,11 @@ button:disabled {
   align-items: center;
   justify-content: center;
   overflow: visible;
-  /* DEBUG */
-  outline: 2px solid lime;
 }
 
 /* Timer box - wraps timer text exactly (inline-block) */
 .live-preview .timer-box {
   display: inline-block;
-  /* DEBUG */
-  outline: 2px dashed cyan;
 }
 
 /* ToD box - hidden by default */
@@ -279,8 +271,6 @@ button:disabled {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* DEBUG */
-  outline: 2px dashed cyan;
 }
 
 .live-preview .timer-section.with-tod .tod-box {
@@ -288,8 +278,6 @@ button:disabled {
   flex: 0 0 25%;
   align-items: center;
   justify-content: center;
-  /* DEBUG */
-  outline: 2px dashed yellow;
 }
 
 /* Message section - hidden by default */
@@ -344,8 +332,6 @@ button:disabled {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  /* DEBUG */
-  outline: 2px dashed magenta;
 }
 
 /* Timer preview element */
