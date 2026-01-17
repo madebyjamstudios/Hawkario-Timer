@@ -129,7 +129,7 @@ const els = {
   addTimer: document.getElementById('addTimer'),
 
   // Timer Modal
-  settingsModal: document.getElementById('settingsModal'),
+  timerModal: document.getElementById('timerModal'),
   modalTitle: document.getElementById('modalTitle'),
   modalPopout: document.getElementById('modalPopout'),
   modalClose: document.getElementById('modalClose'),
@@ -3380,7 +3380,7 @@ function openModal(presetIndex = null) {
     applyConfig(getDefaultTimerConfig());
   }
 
-  els.settingsModal.classList.remove('hidden');
+  els.timerModal.classList.remove('hidden');
   els.presetName.focus();
   els.presetName.select();
   updateDurationDigitDisplay();
@@ -3390,7 +3390,7 @@ function openModal(presetIndex = null) {
 }
 
 function closeModal() {
-  els.settingsModal.classList.add('hidden');
+  els.timerModal.classList.add('hidden');
   editingPresetIndex = null;
 }
 
@@ -6819,15 +6819,15 @@ function setupEventListeners() {
   });
 
   // Close modal on backdrop click
-  els.settingsModal.addEventListener('click', (e) => {
-    if (e.target === els.settingsModal) {
+  els.timerModal.addEventListener('click', (e) => {
+    if (e.target === els.timerModal) {
       closeModal();
     }
   });
 
   // Global keyboard shortcuts for settings modal (Enter to save, Escape to cancel)
   document.addEventListener('keydown', (e) => {
-    if (els.settingsModal.classList.contains('hidden')) return;
+    if (els.timerModal.classList.contains('hidden')) return;
 
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -6862,7 +6862,7 @@ function setupEventListeners() {
       return;
     }
     // Ignore if any modal is open
-    if (!els.settingsModal.classList.contains('hidden') ||
+    if (!els.timerModal.classList.contains('hidden') ||
         !els.appSettingsModal.classList.contains('hidden') ||
         !els.confirmDialog.classList.contains('hidden')) {
       return;
