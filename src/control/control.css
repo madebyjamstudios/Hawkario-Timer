@@ -2978,10 +2978,49 @@ h3 {
   cursor: pointer;
 }
 
-.confirm-checkbox-label input[type="checkbox"] {
-  width: 14px;
-  height: 14px;
+/* Checkboxes - Apple-style: rounded square, accent color when checked */
+input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid var(--color-text-tertiary);
+  border-radius: 4px;
+  background: transparent;
   cursor: pointer;
+  position: relative;
+  transition: all var(--transition-quick);
+}
+
+input[type="checkbox"]:hover {
+  border-color: var(--color-text-secondary);
+}
+
+input[type="checkbox"]:checked {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 4.5px;
+  top: 1.5px;
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+input[type="checkbox"]:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.2);
+}
+
+.confirm-checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
 }
 
 .confirm-buttons {
