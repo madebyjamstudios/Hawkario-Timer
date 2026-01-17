@@ -348,245 +348,248 @@
         <button id="appSettingsClose" class="modal-close">&times;</button>
       </div>
 
+      <!-- App Settings Tabs -->
+      <div class="settings-tabs">
+        <button class="settings-tab active" data-tab="app-general">General</button>
+        <button class="settings-tab" data-tab="app-defaults">Defaults</button>
+        <button class="settings-tab" data-tab="app-osc">OSC</button>
+      </div>
+
       <div class="modal-body">
-        <!-- General Section -->
-        <div class="settings-section">
-          <h3 class="settings-section-title">General</h3>
-          <div class="kv">
-            <label for="todFormat">Time of Day</label>
-            <select id="todFormat">
-              <option value="12h">12-hour</option>
-              <option value="24h">24-hour</option>
-            </select>
-          </div>
-          <div class="kv">
-            <label for="timezone">Timezone</label>
-            <select id="timezone">
-              <!-- Populated by JavaScript -->
-            </select>
-          </div>
-          <div class="kv">
-            <label for="confirmDelete">Confirm delete</label>
-            <select id="confirmDelete">
-              <option value="on">Ask before deleting</option>
-              <option value="off">Delete immediately</option>
-            </select>
-          </div>
-          <div class="settings-row">
-            <button id="settingsExport" class="secondary">Export Timers</button>
-            <button id="settingsImport" class="secondary">Import Timers</button>
-          </div>
-        </div>
-
-        <!-- Window Section -->
-        <div class="settings-section">
-          <h3 class="settings-section-title">Window</h3>
-          <div class="kv">
-            <label for="outputOnTop">Output stays on top</label>
-            <select id="outputOnTop">
-              <option value="off">Off</option>
-              <option value="on">On</option>
-            </select>
-          </div>
-          <div class="kv">
-            <label for="controlOnTop">Control stays on top</label>
-            <select id="controlOnTop">
-              <option value="off">Off</option>
-              <option value="on">On</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Default Timer Settings -->
-        <div class="settings-section">
-          <h3 class="settings-section-title">New Timer Defaults</h3>
-          <p class="settings-hint">Settings applied when creating new timers</p>
-
-          <div class="kv">
-            <label for="defaultMode">Mode</label>
-            <select id="defaultMode">
-              <option value="countdown">Countdown</option>
-              <option value="countup">Count Up</option>
-              <option value="tod">Time of Day</option>
-              <option value="countdown-tod">C/D + ToD</option>
-              <option value="countup-tod">C/U + ToD</option>
-            </select>
-          </div>
-          <div class="kv">
-            <label>Duration</label>
-            <input id="defaultDuration" type="text" class="time-input" value="00:10:00" maxlength="8" />
-          </div>
-          <div class="kv">
-            <label for="defaultFormat">Format</label>
-            <select id="defaultFormat">
-              <option value="HH:MM:SS">HH:MM:SS</option>
-              <option value="MM:SS">MM:SS</option>
-            </select>
-          </div>
-          <div class="kv">
-            <label for="defaultSound">End sound</label>
-            <select id="defaultSound">
-              <option value="none">None</option>
-              <option value="chime">Chime</option>
-              <option value="bell">Bell</option>
-              <option value="alert">Alert</option>
-              <option value="gong">Gong</option>
-              <option value="soft">Soft</option>
-            </select>
-          </div>
-          <div class="kv">
-            <label for="defaultAllowOvertime">Overtime</label>
-            <select id="defaultAllowOvertime">
-              <option value="on">On</option>
-              <option value="off">Off</option>
-            </select>
-          </div>
-          <div class="kv">
-            <label for="defaultSoundVolume">Sound Volume</label>
-            <input id="defaultSoundVolume" type="range" min="0" max="1" step="0.1" value="0.7" />
-          </div>
-
-          <h4 class="settings-subsection-title">Appearance</h4>
-          <div class="kv">
-            <label for="defaultFontFamily">Font</label>
-            <select id="defaultFontFamily">
-              <option value="Inter">Inter - Modern & Clean</option>
-              <option value="Roboto">Roboto - Versatile</option>
-              <option value="JetBrains Mono">JetBrains Mono - Monospace</option>
-              <option value="Oswald">Oswald - Bold Condensed</option>
-              <option value="Bebas Neue">Bebas Neue - Classic Display</option>
-              <option value="Orbitron">Orbitron - Futuristic</option>
-              <option value="Teko">Teko - Modern Condensed</option>
-              <option value="Share Tech Mono">Share Tech Mono - Digital</option>
-            </select>
-          </div>
-          <div class="kv">
-            <label for="defaultFontWeight">Weight</label>
-            <select id="defaultFontWeight">
-              <option value="300">Light</option>
-              <option value="400">Regular</option>
-              <option value="500">Medium</option>
-              <option value="600">Semi Bold</option>
-              <option value="700" selected>Bold</option>
-              <option value="800">Extra Bold</option>
-              <option value="900">Black</option>
-            </select>
-          </div>
-          <div class="kv">
-            <label for="defaultColor">Text Color</label>
-            <input id="defaultColor" type="color" value="#ffffff" />
-          </div>
-          <div class="kv kv-inline">
-            <label>Stroke</label>
-            <div class="inline-controls">
-              <input id="defaultStrokeWidth" type="number" min="0" max="20" step="1" value="0" class="number-stepper" />
-              <span class="unit-label">px</span>
-              <input id="defaultStrokeColor" type="color" value="#000000" />
+        <!-- General Tab Panel -->
+        <div class="settings-tab-panel active" data-panel="app-general">
+          <div class="settings-section">
+            <div class="kv">
+              <label for="todFormat">Time of Day</label>
+              <select id="todFormat">
+                <option value="12h">12-hour</option>
+                <option value="24h">24-hour</option>
+              </select>
+            </div>
+            <div class="kv">
+              <label for="timezone">Timezone</label>
+              <select id="timezone">
+                <!-- Populated by JavaScript -->
+              </select>
+            </div>
+            <div class="kv">
+              <label for="outputOnTop">Output stays on top</label>
+              <select id="outputOnTop">
+                <option value="off">Off</option>
+                <option value="on">On</option>
+              </select>
+            </div>
+            <div class="kv">
+              <label for="controlOnTop">Control stays on top</label>
+              <select id="controlOnTop">
+                <option value="off">Off</option>
+                <option value="on">On</option>
+              </select>
+            </div>
+            <div class="kv">
+              <label for="confirmDelete">Confirm delete</label>
+              <select id="confirmDelete">
+                <option value="on">Ask before deleting</option>
+                <option value="off">Delete immediately</option>
+              </select>
+            </div>
+            <div class="settings-row">
+              <button id="settingsExport" class="secondary">Export Timers</button>
+              <button id="settingsImport" class="secondary">Import Timers</button>
             </div>
           </div>
-          <div class="kv kv-inline">
-            <label>Shadow</label>
-            <div class="inline-controls">
-              <input id="defaultShadowSize" type="number" min="0" max="50" step="1" value="0" class="number-stepper" />
-              <span class="unit-label">px</span>
-              <input id="defaultShadowColor" type="color" value="#000000" />
+
+          <div class="settings-section">
+            <h3 id="updatesSectionTitle" class="settings-section-title">Updates</h3>
+            <div class="update-section">
+              <span id="updateStatus"></span>
+              <button id="refreshUpdates" class="icon-btn" title="Re-check for updates">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 2v6h-6"></path>
+                  <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+                  <path d="M3 22v-6h6"></path>
+                  <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+                </svg>
+              </button>
+              <button id="downloadUpdates" class="secondary hidden">Download Updates</button>
+              <button id="restartApp" class="secondary hidden">Restart App</button>
+            </div>
+            <div id="downloadProgress" class="download-progress hidden">
+              <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+                <span class="progress-text" id="progressText">0%</span>
+              </div>
+              <span class="progress-time" id="progressTime"></span>
             </div>
           </div>
-          <div class="kv">
-            <label for="defaultBgColor">Background</label>
-            <input id="defaultBgColor" type="color" value="#000000" />
-          </div>
-
-          <h4 class="settings-subsection-title">Warning Colors</h4>
-          <div class="kv">
-            <label class="warn-label"><span class="warn-dot warn-dot-yellow"></span> Yellow at</label>
-            <input id="defaultWarnYellow" type="text" class="time-input time-input-ms" value="01:00" maxlength="5" placeholder="MM:SS" />
-          </div>
-          <div class="kv">
-            <label class="warn-label"><span class="warn-dot warn-dot-orange"></span> Orange at</label>
-            <input id="defaultWarnOrange" type="text" class="time-input time-input-ms" value="00:15" maxlength="5" placeholder="MM:SS" />
-          </div>
         </div>
 
-        <!-- Display Section -->
-        <div class="settings-section">
-          <h3 class="settings-section-title">Display</h3>
-          <div class="kv">
-            <label for="timerZoom">Timer Size</label>
-            <select id="timerZoom">
-              <option value="75">Small</option>
-              <option value="100" selected>Medium</option>
-              <option value="125">Large</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Custom Sounds Section -->
-        <div class="settings-section">
-          <h3 class="settings-section-title">Custom Sounds</h3>
-          <p class="settings-hint">Upload custom sounds for timer alerts</p>
-          <div id="customSoundsList" class="custom-sounds-list">
-            <!-- Custom sounds will be populated here -->
-          </div>
-          <button id="addCustomSound" class="secondary">Add Sound...</button>
-        </div>
-
-        <!-- OSC Integration Section -->
-        <div class="settings-section">
-          <h3 class="settings-section-title">OSC Integration</h3>
-          <p class="settings-hint">Control Ninja Timer from Companion, Millumin, etc.</p>
-          <div class="kv">
-            <label for="oscEnabled">OSC Control</label>
-            <select id="oscEnabled">
-              <option value="off">Disabled</option>
-              <option value="on">Enabled</option>
-            </select>
-          </div>
-          <div class="kv" id="oscListenPortRow">
-            <label for="oscListenPort">Listen Port</label>
-            <input id="oscListenPort" type="number" min="1024" max="65535" value="8000" class="number-input" />
-          </div>
-          <div class="kv">
-            <label for="oscFeedbackEnabled">Send Feedback</label>
-            <select id="oscFeedbackEnabled">
-              <option value="off">Disabled</option>
-              <option value="on">Enabled</option>
-            </select>
-          </div>
-          <div class="kv" id="oscFeedbackHostRow">
-            <label for="oscFeedbackHost">Feedback Host</label>
-            <input id="oscFeedbackHost" type="text" value="127.0.0.1" class="text-input" />
-          </div>
-          <div class="kv" id="oscFeedbackPortRow">
-            <label for="oscFeedbackPort">Feedback Port</label>
-            <input id="oscFeedbackPort" type="number" min="1024" max="65535" value="9000" class="number-input" />
-          </div>
-          <div id="oscStatus" class="osc-status"></div>
-        </div>
-
-        <!-- Updates Section -->
-        <div class="settings-section">
-          <h3 id="updatesSectionTitle" class="settings-section-title">Updates</h3>
-          <div class="update-section">
-            <span id="updateStatus"></span>
-            <button id="refreshUpdates" class="icon-btn" title="Re-check for updates">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 2v6h-6"></path>
-                <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
-                <path d="M3 22v-6h6"></path>
-                <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
-              </svg>
-            </button>
-            <button id="downloadUpdates" class="secondary hidden">Download Updates</button>
-            <button id="restartApp" class="secondary hidden">Restart App</button>
-          </div>
-          <div id="downloadProgress" class="download-progress hidden">
-            <div class="progress-bar">
-              <div class="progress-fill" id="progressFill"></div>
-              <span class="progress-text" id="progressText">0%</span>
+        <!-- Defaults Tab Panel -->
+        <div class="settings-tab-panel" data-panel="app-defaults">
+          <div class="settings-section">
+            <h3 class="settings-section-title">Timer</h3>
+            <p class="settings-hint">Settings applied when creating new timers</p>
+            <div class="kv">
+              <label for="defaultMode">Mode</label>
+              <select id="defaultMode">
+                <option value="countdown">Countdown</option>
+                <option value="countup">Count Up</option>
+                <option value="tod">Time of Day</option>
+                <option value="countdown-tod">C/D + ToD</option>
+                <option value="countup-tod">C/U + ToD</option>
+              </select>
             </div>
-            <span class="progress-time" id="progressTime"></span>
+            <div class="kv">
+              <label>Duration</label>
+              <input id="defaultDuration" type="text" class="time-input" value="00:10:00" maxlength="8" />
+            </div>
+            <div class="kv">
+              <label for="defaultFormat">Format</label>
+              <select id="defaultFormat">
+                <option value="HH:MM:SS">HH:MM:SS</option>
+                <option value="MM:SS">MM:SS</option>
+              </select>
+            </div>
+            <div class="kv">
+              <label for="defaultSound">End sound</label>
+              <select id="defaultSound">
+                <option value="none">None</option>
+                <option value="chime">Chime</option>
+                <option value="bell">Bell</option>
+                <option value="alert">Alert</option>
+                <option value="gong">Gong</option>
+                <option value="soft">Soft</option>
+              </select>
+            </div>
+            <div class="kv">
+              <label for="defaultAllowOvertime">Overtime</label>
+              <select id="defaultAllowOvertime">
+                <option value="on">On</option>
+                <option value="off">Off</option>
+              </select>
+            </div>
+            <div class="kv">
+              <label for="defaultSoundVolume">Sound Volume</label>
+              <input id="defaultSoundVolume" type="range" min="0" max="1" step="0.1" value="0.7" />
+            </div>
           </div>
+
+          <div class="settings-section">
+            <h3 class="settings-section-title">Appearance</h3>
+            <div class="kv">
+              <label for="defaultFontFamily">Font</label>
+              <select id="defaultFontFamily">
+                <option value="Inter">Inter - Modern & Clean</option>
+                <option value="Roboto">Roboto - Versatile</option>
+                <option value="JetBrains Mono">JetBrains Mono - Monospace</option>
+                <option value="Oswald">Oswald - Bold Condensed</option>
+                <option value="Bebas Neue">Bebas Neue - Classic Display</option>
+                <option value="Orbitron">Orbitron - Futuristic</option>
+                <option value="Teko">Teko - Modern Condensed</option>
+                <option value="Share Tech Mono">Share Tech Mono - Digital</option>
+              </select>
+            </div>
+            <div class="kv">
+              <label for="defaultFontWeight">Weight</label>
+              <select id="defaultFontWeight">
+                <option value="300">Light</option>
+                <option value="400">Regular</option>
+                <option value="500">Medium</option>
+                <option value="600">Semi Bold</option>
+                <option value="700" selected>Bold</option>
+                <option value="800">Extra Bold</option>
+                <option value="900">Black</option>
+              </select>
+            </div>
+            <div class="kv">
+              <label for="defaultColor">Text Color</label>
+              <input id="defaultColor" type="color" value="#ffffff" />
+            </div>
+            <div class="kv kv-inline">
+              <label>Stroke</label>
+              <div class="inline-controls">
+                <input id="defaultStrokeWidth" type="number" min="0" max="20" step="1" value="0" class="number-stepper" />
+                <span class="unit-label">px</span>
+                <input id="defaultStrokeColor" type="color" value="#000000" />
+              </div>
+            </div>
+            <div class="kv kv-inline">
+              <label>Shadow</label>
+              <div class="inline-controls">
+                <input id="defaultShadowSize" type="number" min="0" max="50" step="1" value="0" class="number-stepper" />
+                <span class="unit-label">px</span>
+                <input id="defaultShadowColor" type="color" value="#000000" />
+              </div>
+            </div>
+            <div class="kv">
+              <label for="defaultBgColor">Background</label>
+              <input id="defaultBgColor" type="color" value="#000000" />
+            </div>
+            <div class="kv">
+              <label for="timerZoom">Timer Size</label>
+              <select id="timerZoom">
+                <option value="75">Small</option>
+                <option value="100" selected>Medium</option>
+                <option value="125">Large</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h3 class="settings-section-title">Warnings</h3>
+            <div class="kv">
+              <label class="warn-label"><span class="warn-dot warn-dot-yellow"></span> Yellow at</label>
+              <input id="defaultWarnYellow" type="text" class="time-input time-input-ms" value="01:00" maxlength="5" placeholder="MM:SS" />
+            </div>
+            <div class="kv">
+              <label class="warn-label"><span class="warn-dot warn-dot-orange"></span> Orange at</label>
+              <input id="defaultWarnOrange" type="text" class="time-input time-input-ms" value="00:15" maxlength="5" placeholder="MM:SS" />
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h3 class="settings-section-title">Custom Sounds</h3>
+            <p class="settings-hint">Upload custom sounds for timer alerts</p>
+            <div id="customSoundsList" class="custom-sounds-list">
+              <!-- Custom sounds will be populated here -->
+            </div>
+            <button id="addCustomSound" class="secondary">Add Sound...</button>
+          </div>
+        </div>
+
+        <!-- OSC Tab Panel -->
+        <div class="settings-tab-panel" data-panel="app-osc">
+          <div class="settings-section">
+            <p class="settings-hint">Control Ninja Timer from Companion, Millumin, etc.</p>
+            <div class="kv">
+              <label for="oscEnabled">OSC Control</label>
+              <select id="oscEnabled">
+                <option value="off">Disabled</option>
+                <option value="on">Enabled</option>
+              </select>
+            </div>
+            <div class="kv" id="oscListenPortRow">
+              <label for="oscListenPort">Listen Port</label>
+              <input id="oscListenPort" type="number" min="1024" max="65535" value="8000" class="number-input" />
+            </div>
+            <div class="kv">
+              <label for="oscFeedbackEnabled">Send Feedback</label>
+              <select id="oscFeedbackEnabled">
+                <option value="off">Disabled</option>
+                <option value="on">Enabled</option>
+              </select>
+            </div>
+            <div class="kv" id="oscFeedbackHostRow">
+              <label for="oscFeedbackHost">Feedback Host</label>
+              <input id="oscFeedbackHost" type="text" value="127.0.0.1" class="text-input" />
+            </div>
+            <div class="kv" id="oscFeedbackPortRow">
+              <label for="oscFeedbackPort">Feedback Port</label>
+              <input id="oscFeedbackPort" type="number" min="1024" max="65535" value="9000" class="number-input" />
+            </div>
+            <div id="oscStatus" class="osc-status"></div>
+          </div>
+        </div>
         </div>
       </div>
 

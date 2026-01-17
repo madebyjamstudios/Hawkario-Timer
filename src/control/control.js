@@ -3497,8 +3497,11 @@ function saveSectionsState() {
 const SETTINGS_TAB_KEY = 'ninja:settingsTab';
 
 function setupSettingsTabs() {
-  const tabs = document.querySelectorAll('.settings-tab');
-  const panels = document.querySelectorAll('.settings-tab-panel');
+  const modal = els.settingsModal;
+  if (!modal) return;
+
+  const tabs = modal.querySelectorAll('.settings-tab');
+  const panels = modal.querySelectorAll('.settings-tab-panel');
 
   if (tabs.length === 0) return;
 
@@ -3517,8 +3520,64 @@ function setupSettingsTabs() {
 }
 
 function switchSettingsTab(tabId) {
-  const tabs = document.querySelectorAll('.settings-tab');
-  const panels = document.querySelectorAll('.settings-tab-panel');
+  const modal = els.settingsModal;
+  if (!modal) return;
+
+  const tabs = modal.querySelectorAll('.settings-tab');
+  const panels = modal.querySelectorAll('.settings-tab-panel');
+
+  // Update tab buttons
+  tabs.forEach(tab => {
+    if (tab.dataset.tab === tabId) {
+      tab.classList.add('active');
+    } else {
+      tab.classList.remove('active');
+    }
+  });
+
+  // Update panels
+  panels.forEach(panel => {
+    if (panel.dataset.panel === tabId) {
+      panel.classList.add('active');
+    } else {
+      panel.classList.remove('active');
+    }
+  });
+}
+
+// ============ Settings Tabs (App Settings Modal) ============
+
+const APP_SETTINGS_TAB_KEY = 'ninja:appSettingsTab';
+
+function setupAppSettingsTabs() {
+  const modal = els.appSettingsModal;
+  if (!modal) return;
+
+  const tabs = modal.querySelectorAll('.settings-tab');
+  const panels = modal.querySelectorAll('.settings-tab-panel');
+
+  if (tabs.length === 0) return;
+
+  // Restore last active tab
+  const savedTab = localStorage.getItem(APP_SETTINGS_TAB_KEY) || 'app-general';
+  switchAppSettingsTab(savedTab);
+
+  // Add click handlers
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const tabId = tab.dataset.tab;
+      switchAppSettingsTab(tabId);
+      localStorage.setItem(APP_SETTINGS_TAB_KEY, tabId);
+    });
+  });
+}
+
+function switchAppSettingsTab(tabId) {
+  const modal = els.appSettingsModal;
+  if (!modal) return;
+
+  const tabs = modal.querySelectorAll('.settings-tab');
+  const panels = modal.querySelectorAll('.settings-tab-panel');
 
   // Update tab buttons
   tabs.forEach(tab => {
@@ -7584,6 +7643,9 @@ function init() {
 
   // Setup settings tabs in timer modal
   setupSettingsTabs();
+
+  // Setup settings tabs in app settings modal
+  setupAppSettingsTabs();
 
   // Setup preview resize
   setupPreviewResize();
