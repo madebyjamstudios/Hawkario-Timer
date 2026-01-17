@@ -210,6 +210,8 @@ function createMainWindow() {
     height: 700,
     minWidth: 280,
     minHeight: 400,
+    maxWidth: 500,
+    maxHeight: 900,
     center: true,
     show: false,  // Hidden until app signals ready
     title: 'Ninja Timer',
