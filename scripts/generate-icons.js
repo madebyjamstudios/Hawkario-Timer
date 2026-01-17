@@ -9,10 +9,11 @@ const path = require('path');
 const { execSync } = require('child_process');
 
 const ROOT_DIR = path.join(__dirname, '..');
-const SVG_PATH = path.join(ROOT_DIR, 'icon.svg');
-const ICONSET_DIR = path.join(ROOT_DIR, 'icon.iconset');
-const ICNS_PATH = path.join(ROOT_DIR, 'icon.icns');
-const PNG_PATH = path.join(ROOT_DIR, 'icon.png');
+const ICONS_DIR = path.join(ROOT_DIR, 'assets', 'icons');
+const SVG_PATH = path.join(ICONS_DIR, 'icon.svg');
+const ICONSET_DIR = path.join(ICONS_DIR, 'icon.iconset');
+const ICNS_PATH = path.join(ICONS_DIR, 'icon.icns');
+const PNG_PATH = path.join(ICONS_DIR, 'icon.png');
 
 // Required sizes for macOS iconset
 const SIZES = [

@@ -236,7 +236,7 @@ function createMainWindow() {
     // Prevent close until user confirms
     event.preventDefault();
 
-    const iconPath = path.join(__dirname, 'icon.png');
+    const iconPath = path.join(__dirname, 'assets', 'icons', 'icon.png');
     const icon = nativeImage.createFromPath(iconPath);
 
     const result = await dialog.showMessageBox(mainWindow, {
@@ -1022,7 +1022,7 @@ ipcMain.on('window:set-background-color', (_event, { window, color }) => {
 
 // Confirm dialog with app icon
 ipcMain.handle('dialog:confirm', async (_event, options) => {
-  const iconPath = path.join(__dirname, 'icon.png');
+  const iconPath = path.join(__dirname, 'assets', 'icons', 'icon.png');
   const icon = nativeImage.createFromPath(iconPath);
 
   const result = await dialog.showMessageBox(mainWindow, {
