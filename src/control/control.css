@@ -153,7 +153,7 @@ input[type="color"] {
   box-shadow: 0 0 4px rgba(230, 74, 25, 0.5);
 }
 
-/* Buttons */
+/* Buttons - Apple-style hierarchy */
 button {
   background: var(--color-accent);
   color: var(--color-text-primary);
@@ -174,16 +174,47 @@ button:active {
   filter: brightness(0.9);
 }
 
+/* Secondary - text-only, subtle hover */
 button.secondary {
-  background: var(--color-bg-elevated);
+  background: transparent;
+  color: var(--color-text-secondary);
 }
 
 button.secondary:hover {
-  background: var(--color-bg-tertiary);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-text-primary);
 }
 
 button.secondary:active {
-  background: var(--color-bg-secondary);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Tertiary - accent text, no background */
+button.tertiary {
+  background: transparent;
+  color: var(--color-accent);
+}
+
+button.tertiary:hover {
+  background: rgba(31, 111, 235, 0.1);
+}
+
+button.tertiary:active {
+  background: rgba(31, 111, 235, 0.15);
+}
+
+/* Destructive - red text, no background until hover */
+button.destructive {
+  background: transparent;
+  color: #ef4444;
+}
+
+button.destructive:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+button.destructive:active {
+  background: rgba(239, 68, 68, 0.15);
 }
 
 button:disabled {

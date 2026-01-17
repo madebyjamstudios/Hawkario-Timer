@@ -4083,8 +4083,18 @@ function renderLivePreviewInternal() {
             sendCommand('start');
             renderPresetList();
           }, 1000);
+        } else {
+          // End of chain or standalone timer - check overtime setting
+          // ToD mode doesn't have visual overtime, but respects the stop behavior
+          if (activeTimerConfig.allowOvertime === false) {
+            // Stop at 0:00
+            setRunning(false);
+            timerState.pausedAcc = activeTimerConfig.durationSec * 1000;
+            timerState.startedAt = null;
+          }
+          // If overtime is allowed, ToD just keeps showing the clock (no change needed)
+          renderPresetList();
         }
-        // Note: No overtime for ToD mode since it just shows clock
       }
     } else if (activePresetIndex !== null) {
       // Timer not running, just update progress bar with paused state
