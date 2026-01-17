@@ -3574,39 +3574,11 @@ function getRefText(format, durationSec) {
 }
 
 /**
- * Position and size preview content-box using fixed positioning
- * This matches output.css behavior where content-box uses position: fixed
- * to escape overflow clipping from parent containers
- */
-function positionPreviewContentBox() {
-  const wrapper = els.livePreview;
-  const contentBox = els.livePreviewContentBox;
-  if (!wrapper || !contentBox) return;
-
-  const rect = wrapper.getBoundingClientRect();
-  if (rect.width <= 0 || rect.height <= 0) return;
-
-  // Match output.css: 90% width, 64% height, centered
-  const width = rect.width * 0.9;
-  const height = rect.height * 0.64;
-  const centerX = rect.left + rect.width / 2;
-  const centerY = rect.top + rect.height / 2;
-
-  contentBox.style.width = width + 'px';
-  contentBox.style.height = height + 'px';
-  contentBox.style.left = centerX + 'px';
-  contentBox.style.top = centerY + 'px';
-}
-
-/**
  * Fit preview timer to fill its container - scale until box touches edge
  * Respects message mode (34% height) and ToD mode (75% of that)
  */
 function fitPreviewTimer() {
   if (!els.livePreviewTimer || !els.livePreviewTimerBox || !els.livePreviewContentBox) return;
-
-  // Position content-box first (uses fixed positioning like output)
-  positionPreviewContentBox();
 
   const hasToD = els.livePreviewTimerSection?.classList.contains('with-tod');
   const hasMessage = els.livePreviewContentBox?.classList.contains('with-message');
