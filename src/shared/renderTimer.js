@@ -266,20 +266,19 @@ export function getCombinedShadowCSS(strokeWidth, strokeColor, shadowSize, shado
  * animation issues from affecting the main timer display.
  */
 export class FlashAnimator {
-  constructor(timerEl, containerEl, onComplete) {
-    // Validate elements
-    if (!timerEl) {
-      console.warn('[FlashAnimator] No timer element provided');
+  constructor(elements, containerEl, onComplete) {
+    // Accept single element or array of elements
+    this.elements = Array.isArray(elements) ? elements.filter(Boolean) : (elements ? [elements] : []);
+
+    if (this.elements.length === 0) {
+      console.warn('[FlashAnimator] No elements provided');
     }
 
-    this.timerEl = timerEl;
     this.containerEl = containerEl;
     this.onComplete = onComplete;
 
-    this.originalColor = '';
-    this.originalShadow = '';
-    this.originalStroke = '';
-    this.originalStrokeWidth = '';
+    // Store original styles for each element
+    this.originalStyles = [];
 
     this.maxFlashes = 3;
     this.glowDuration = 400;
@@ -297,12 +296,16 @@ export class FlashAnimator {
   start(startedAt = Date.now()) {
     if (this.isFlashing) return;
 
-    // Store original styles
-    this.originalColor = this.timerEl.style.color;
-    this.originalShadow = this.timerEl.style.textShadow;
+    // Store original styles for all elements
+    this.originalStyles = this.elements.map(el => ({
+      color: el.style.color,
+      shadow: el.style.textShadow
+    }));
 
     // Add smooth transition for phase changes
-    this.timerEl.style.transition = 'color 100ms ease, text-shadow 100ms ease';
+    this.elements.forEach(el => {
+      el.style.transition = 'color 100ms ease, text-shadow 100ms ease';
+    });
 
     this.startedAt = startedAt;
     this.isFlashing = true;
@@ -346,32 +349,37 @@ export class FlashAnimator {
   }
 
   applyGlow() {
-    const metrics = computeGlowMetrics(this.timerEl);
-    const glowCSS = getFlashGlowCSS(metrics);
-
-    this.timerEl.style.color = '#ffffff';
-    this.timerEl.style.textShadow = glowCSS;
+    this.elements.forEach(el => {
+      const metrics = computeGlowMetrics(el);
+      const glowCSS = getFlashGlowCSS(metrics);
+      el.style.color = '#ffffff';
+      el.style.textShadow = glowCSS;
+    });
   }
 
   applyGrey() {
-    this.timerEl.style.color = '#666666';
-    this.timerEl.style.textShadow = 'none';
+    this.elements.forEach(el => {
+      el.style.color = '#666666';
+      el.style.textShadow = 'none';
+    });
   }
 
   restore() {
     // Add quick fade transition for color (white -> original)
-    this.timerEl.style.transition = 'color 200ms ease-out';
-
-    // Restore color with fade
-    this.timerEl.style.color = this.originalColor;
-
-    // Restore shadow instantly (no transition - looks weird animated)
-    this.timerEl.style.textShadow = this.originalShadow;
+    this.elements.forEach((el, i) => {
+      el.style.transition = 'color 200ms ease-out';
+      // Restore color with fade
+      el.style.color = this.originalStyles[i]?.color || '';
+      // Restore shadow instantly (no transition - looks weird animated)
+      el.style.textShadow = this.originalStyles[i]?.shadow || '';
+    });
 
     // Keep isFlashing true during fade-out so render loops don't override
     // Clear transition and isFlashing after animation completes
     setTimeout(() => {
-      this.timerEl.style.transition = '';
+      this.elements.forEach(el => {
+        el.style.transition = '';
+      });
       this.isFlashing = false;
       this.startedAt = null;
       this.lastPhase = null;
@@ -389,9 +397,9 @@ export class FlashAnimator {
         this.rafId = null;
       }
 
-      if (this.timerEl) {
-        this.timerEl.style.transition = '';
-      }
+      this.elements.forEach(el => {
+        if (el) el.style.transition = '';
+      });
 
       if (this.isFlashing) {
         this.restore();

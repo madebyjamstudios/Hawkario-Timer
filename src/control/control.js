@@ -6661,10 +6661,18 @@ function setupEventListeners() {
     // Create timestamp for sync - both windows use the same startedAt
     const flashStartedAt = Date.now();
 
+    // Collect elements to flash: timer + ToD (if visible)
+    // Message should never flash
+    const elementsToFlash = [els.livePreviewTimer];
+    const hasToD = els.livePreviewTimerSection?.classList.contains('with-tod');
+    if (hasToD && els.livePreviewToD) {
+      elementsToFlash.push(els.livePreviewToD);
+    }
+
     // Create flash animator with shared code (font-relative glow)
-    // Pass null for container so only the timer text flashes, not the whole control window
+    // Pass null for container so only the timer/ToD text flashes
     flashAnimator = new FlashAnimator(
-      els.livePreviewTimer,
+      elementsToFlash,
       null,
       () => {
         // On complete - update button state and clear flash state

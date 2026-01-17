@@ -197,6 +197,25 @@ input[type="range"]:focus::-webkit-slider-thumb {
   width: 100%;
 }
 
+/* Volume slider with icons */
+.volume-slider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.volume-slider input[type="range"] {
+  flex: 1;
+}
+
+.volume-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--color-muted);
+  flex-shrink: 0;
+}
+
 input[type="color"] {
   width: 32px;
   height: 32px;

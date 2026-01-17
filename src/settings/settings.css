@@ -386,6 +386,25 @@ input[type="range"]::-webkit-slider-thumb {
   box-shadow: var(--shadow-sm);
 }
 
+/* Volume slider with icons */
+.volume-slider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.volume-slider input[type="range"] {
+  flex: 1;
+}
+
+.volume-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
 /* Number stepper */
 .number-stepper {
   width: 60px;
