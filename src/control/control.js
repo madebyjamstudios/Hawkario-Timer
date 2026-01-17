@@ -5771,12 +5771,16 @@ function renderPresetList() {
       selectResetBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         e.preventDefault();
-        // Select this timer without starting
-        setActiveTimerConfig(preset.config);
-        applyConfig(preset.config);
-        activePresetIndex = idx;
-        sendCommand('reset');
-        renderPresetList();
+        // Select this timer without starting - reload preset at click time for fresh data
+        const currentPresets = loadPresets();
+        const clickedPreset = currentPresets[idx];
+        if (clickedPreset) {
+          setActiveTimerConfig(clickedPreset.config);
+          applyConfig(clickedPreset.config);
+          activePresetIndex = idx;
+          sendCommand('reset');
+          renderPresetList();
+        }
       });
     }
 
@@ -5814,11 +5818,15 @@ function renderPresetList() {
         // Resume the paused timer (preserves seeked position)
         sendCommand('resume');
       } else {
-        // Start this preset fresh
-        setActiveTimerConfig(preset.config);
-        applyConfig(preset.config);
-        activePresetIndex = idx;
-        sendCommand('start');
+        // Start this preset fresh - reload preset at click time to ensure fresh data
+        const currentPresets = loadPresets();
+        const clickedPreset = currentPresets[idx];
+        if (clickedPreset) {
+          setActiveTimerConfig(clickedPreset.config);
+          applyConfig(clickedPreset.config);
+          activePresetIndex = idx;
+          sendCommand('start');
+        }
       }
       updatePlayingRowState(); // Update button states without re-rendering
     });

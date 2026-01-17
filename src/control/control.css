@@ -396,7 +396,7 @@ button:disabled {
 .live-preview .message-preview {
   position: relative;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--color-text-primary);
   text-align: center;
   overflow: visible;
   word-wrap: break-word;
@@ -980,7 +980,7 @@ button:disabled {
 }
 
 .color-swatch.selected {
-  border-color: #fff;
+  border-color: var(--color-text-primary);
 }
 
 /* Color picker buttons */
@@ -1355,7 +1355,7 @@ button:disabled {
   top: -22px;
   transform: translateX(-50%);
   background: rgba(0, 0, 0, 0.85);
-  color: #fff;
+  color: var(--color-text-primary);
   padding: 2px 6px;
   border-radius: 3px;
   font-size: 10px;
@@ -1514,7 +1514,7 @@ button:disabled {
   align-items: center;
   justify-content: flex-start;
   gap: calc(8px * var(--timer-scale, 1));
-  color: #fff;
+  color: var(--color-text-primary);
   font-size: calc(16px * var(--timer-scale, 1));
   font-weight: 600;
   letter-spacing: 0.01em;
@@ -1789,7 +1789,7 @@ button:disabled {
   background: rgba(255, 255, 255, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
-  color: #fff;
+  color: var(--color-text-primary);
   cursor: pointer;
   transition: all 0.15s ease;
   flex-shrink: 0;
@@ -1958,7 +1958,7 @@ header {
 .output-btn {
   background: var(--color-danger);
   border: none;
-  color: #fff;
+  color: var(--color-text-primary);
   font-weight: 600;
 }
 
@@ -1969,7 +1969,7 @@ header {
 .output-btn:active {
   background: #BF360C;
   border-color: #BF360C;
-  color: #fff;
+  color: var(--color-text-primary);
 }
 
 .header-settings-btn {
@@ -2891,7 +2891,7 @@ h3 {
 
 button.danger {
   background: #E64A19;
-  color: #fff;
+  color: var(--color-text-primary);
 }
 
 button.danger:hover {
@@ -3022,7 +3022,7 @@ button.danger:active {
   border-radius: 7px;
   font-size: 9px;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3461,7 +3461,7 @@ button.danger:active {
 .format-btn.active {
   background: #1f6feb;
   border-color: #388bfd;
-  color: #fff;
+  color: var(--color-text-primary);
 }
 
 .format-btn.uppercase-btn {
@@ -3619,7 +3619,7 @@ button.danger:active {
 
 .active-message-text {
   flex: 1;
-  color: #fff;
+  color: var(--color-text-primary);
   font-size: 13px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -3640,7 +3640,7 @@ button.danger:active {
   background: #dc2626;
   border: none;
   border-radius: 6px;
-  color: #fff;
+  color: var(--color-text-primary);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
