@@ -1483,8 +1483,8 @@ button:disabled {
 
 /* Drag hover state - highlight timer being hovered during drag */
 .preset-item.drag-hover {
-  background: linear-gradient(135deg, #4a4a4a 0%, #3a3a3a 100%);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  background: var(--color-bg-elevated);
+  box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 /* Selected timer (active) - blue */
@@ -1494,7 +1494,7 @@ button:disabled {
 }
 
 .preset-item.selected:hover {
-  background: #388bfd;
+  filter: brightness(1.15);
   box-shadow: var(--shadow-md);
 }
 
@@ -1505,7 +1505,7 @@ button:disabled {
 }
 
 .preset-item.playing:hover {
-  background: #FF5722;
+  filter: brightness(1.1);
   box-shadow: var(--shadow-md);
 }
 
