@@ -3574,11 +3574,38 @@ function getRefText(format, durationSec) {
 }
 
 /**
+ * Position the preview content-box using fixed positioning
+ * This is needed because content-box uses position: fixed to escape overflow clipping
+ * (matching how output.css works with position: fixed on content-box)
+ */
+function positionPreviewContentBox() {
+  const wrapper = els.previewWrapper;
+  const contentBox = els.livePreviewContentBox;
+  if (!wrapper || !contentBox) return;
+
+  const rect = wrapper.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) return;
+
+  // Calculate content-box dimensions (90% x 64% of wrapper, matching output)
+  const width = rect.width * 0.9;
+  const height = rect.height * 0.64;
+
+  // Center within the wrapper's screen position
+  contentBox.style.width = width + 'px';
+  contentBox.style.height = height + 'px';
+  contentBox.style.left = (rect.left + rect.width / 2) + 'px';
+  contentBox.style.top = (rect.top + rect.height / 2) + 'px';
+}
+
+/**
  * Fit preview timer to fill its container - scale until box touches edge
  * Respects message mode (34% height) and ToD mode (75% of that)
  */
 function fitPreviewTimer() {
   if (!els.livePreviewTimer || !els.livePreviewTimerBox || !els.livePreviewContentBox) return;
+
+  // Position the content-box first (needed for position: fixed)
+  positionPreviewContentBox();
 
   const hasToD = els.livePreviewTimerSection?.classList.contains('with-tod');
   const hasMessage = els.livePreviewContentBox?.classList.contains('with-message');
@@ -7613,6 +7640,10 @@ function init() {
   if (els.previewSection) {
     previewResizeObserver.observe(els.previewSection);
   }
+
+  // Update content-box position on scroll/resize (needed for position: fixed)
+  window.addEventListener('scroll', positionPreviewContentBox, true);
+  window.addEventListener('resize', positionPreviewContentBox);
 
   // Setup custom confirm dialog
   setupConfirmDialog();
