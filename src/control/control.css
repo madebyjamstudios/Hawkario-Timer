@@ -360,13 +360,10 @@ button:disabled {
 }
 
 /* ============ Content Box System ============ */
-/* The big box - positioned relative to preview container, not virtual canvas */
+/* The big box - uses position: fixed like output to escape overflow clipping */
+/* Dimensions and position are set by JS based on preview wrapper bounds */
 .live-preview .content-box {
-  position: absolute;
-  width: 90%;
-  height: 64%;
-  top: 50%;
-  left: 50%;
+  position: fixed;
   transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
