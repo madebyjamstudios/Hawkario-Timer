@@ -3505,17 +3505,66 @@ function updateModalPreview() {
     }
   }
 
-  // Auto-fit timer text within timer-box
-  const timerContainer = showToD && mode !== 'tod' ? els.modalPreviewTimerBox : els.modalPreview;
-  autoFitText(els.modalPreviewTimer, timerContainer || els.modalPreview, 0.95);
-
-  // Auto-fit ToD text within tod-box if visible
-  if (showToD && mode !== 'tod' && els.modalPreviewToD && els.modalPreviewToDBox) {
-    autoFitText(els.modalPreviewToD, els.modalPreviewToDBox, 0.9);
-  }
+  // Fit timer and ToD using calculated dimensions (like fitPreviewTimer)
+  fitModalPreviewContent(showToD && mode !== 'tod');
 
   // Align duration buttons to match timer digit positions
   alignDurationButtons();
+}
+
+/**
+ * Fit modal preview timer and ToD content using calculated dimensions
+ * Similar to fitPreviewTimer but for the modal preview
+ */
+function fitModalPreviewContent(hasToD) {
+  if (!els.modalPreviewTimer || !els.modalPreview) return;
+
+  const containerWidth = els.modalPreview.offsetWidth;
+  const containerHeight = els.modalPreview.offsetHeight;
+
+  if (containerWidth <= 0 || containerHeight <= 0) {
+    // Layout not ready, retry
+    setTimeout(() => fitModalPreviewContent(hasToD), 50);
+    return;
+  }
+
+  // Calculate timer container height based on ToD mode
+  const timerHeight = hasToD ? containerHeight * 0.75 : containerHeight;
+  const maxWidth = containerWidth * 0.95;
+  const maxHeight = timerHeight * 0.9;
+
+  // Measure timer at base font size
+  els.modalPreviewTimer.style.fontSize = '100px';
+  void els.modalPreviewTimer.offsetWidth;
+
+  const naturalWidth = els.modalPreviewTimer.offsetWidth;
+  const naturalHeight = els.modalPreviewTimer.offsetHeight;
+  if (naturalWidth <= 0 || naturalHeight <= 0) return;
+
+  // Scale to fit
+  const scaleW = maxWidth / naturalWidth;
+  const scaleH = maxHeight / naturalHeight;
+  const scale = Math.min(scaleW, scaleH);
+  els.modalPreviewTimer.style.fontSize = Math.floor(100 * scale) + 'px';
+
+  // Fit ToD if visible
+  if (hasToD && els.modalPreviewToD) {
+    const todHeight = containerHeight * 0.25;
+    const todMaxWidth = containerWidth * 0.9;
+    const todMaxHeight = todHeight * 0.85;
+
+    els.modalPreviewToD.style.fontSize = '100px';
+    void els.modalPreviewToD.offsetWidth;
+
+    const todNaturalWidth = els.modalPreviewToD.offsetWidth;
+    const todNaturalHeight = els.modalPreviewToD.offsetHeight;
+    if (todNaturalWidth > 0 && todNaturalHeight > 0) {
+      const todScaleW = todMaxWidth / todNaturalWidth;
+      const todScaleH = todMaxHeight / todNaturalHeight;
+      const todScale = Math.min(todScaleW, todScaleH);
+      els.modalPreviewToD.style.fontSize = Math.floor(100 * todScale) + 'px';
+    }
+  }
 }
 
 // ============ Collapsible Settings Sections ============
