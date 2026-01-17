@@ -11,6 +11,10 @@ html {
   color-scheme: dark;
 }
 
+html[data-theme="light"] {
+  color-scheme: light;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -18,8 +22,8 @@ body {
   font-family: 'SF Pro Text', 'SF Pro', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   font-size: 14px;
   line-height: 1.4;
-  color: #e0e0e0;
-  background: #0d0d0d;
+  color: var(--color-text-primary, #e0e0e0);
+  background: var(--color-bg-primary, #0a0a0a);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -41,6 +45,19 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+/* Light theme scrollbars */
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: #f0eeea;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #d1d1d6;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: #c0c0c0;
 }
 
 /* Selection */

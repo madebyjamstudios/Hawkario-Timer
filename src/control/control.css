@@ -47,35 +47,415 @@
   --blur-overlay: blur(20px) saturate(180%);
 }
 
-/* Light theme overrides */
+/* ============ Light Theme (Warm Cream Palette) ============ */
 [data-theme="light"] {
-  --color-bg-primary: #f5f5f7;
-  --color-bg-secondary: #e8e8ed;
-  --color-bg-tertiary: #d1d1d6;
-  --color-bg-elevated: #ffffff;
+  /* Warm cream background hierarchy */
+  --color-bg-primary: #faf9f6;      /* Soft ivory - app background */
+  --color-bg-secondary: #f0eeea;    /* Cream - cards, inputs */
+  --color-bg-tertiary: #e5e3de;     /* Light tan - hover states */
+  --color-bg-elevated: #ffffff;     /* White - dropdowns, popups */
 
+  /* Text hierarchy */
   --color-text-primary: #1d1d1f;
   --color-text-secondary: rgba(0, 0, 0, 0.6);
-  --color-text-tertiary: rgba(0, 0, 0, 0.3);
-  --color-text-disabled: rgba(0, 0, 0, 0.2);
+  --color-text-tertiary: rgba(0, 0, 0, 0.4);
+  --color-text-disabled: rgba(0, 0, 0, 0.25);
 
+  /* Borders */
   --color-border: rgba(0, 0, 0, 0.1);
   --color-border-strong: rgba(0, 0, 0, 0.2);
 
-  /* Shadows need adjustment for light backgrounds */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
-  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.2);
+  /* Shadows - softer for light mode */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.15);
 }
 
-/* Light theme form element overrides */
+/* ---- Header in Light Mode ---- */
+[data-theme="light"] header {
+  background: var(--color-bg-primary);
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Header icon - dark ring for light mode */
+[data-theme="light"] .hawk-icon path:first-of-type {
+  fill: #2a2a2a;
+}
+
+/* Header settings button */
+[data-theme="light"] .header-settings-btn {
+  color: var(--color-text-secondary);
+}
+
+[data-theme="light"] .header-settings-btn:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+/* ---- Form Elements ---- */
+[data-theme="light"] select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+}
+
 [data-theme="light"] select:hover,
 [data-theme="light"] select:focus {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
 [data-theme="light"] input[type="range"]::-webkit-slider-runnable-track {
+  background: var(--color-bg-tertiary);
+}
+
+[data-theme="light"] input[type="range"]::-webkit-slider-thumb {
+  background: var(--color-text-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="light"] input[type="color"] {
+  border: 1px solid var(--color-border-strong);
+}
+
+/* ---- Buttons ---- */
+/* Secondary buttons */
+[data-theme="light"] button.secondary {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] button.secondary:hover {
+  background: var(--color-bg-secondary);
+  filter: brightness(0.95);
+}
+
+/* Output button in header */
+[data-theme="light"] .header-btn.output-btn {
+  background: #d84315;
+}
+
+[data-theme="light"] .header-btn.output-btn:hover {
+  background: #bf360c;
+}
+
+/* ---- Flash Button ---- */
+[data-theme="light"] .flash-btn {
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-border-strong);
+}
+
+[data-theme="light"] .flash-btn:hover {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-text-tertiary);
+}
+
+[data-theme="light"] .flash-btn .flash-icon {
+  stroke: var(--color-text-secondary);
+}
+
+[data-theme="light"] .flash-btn .flash-text {
+  color: var(--color-text-secondary);
+}
+
+/* ---- Blackout Button ---- */
+[data-theme="light"] .blackout-btn {
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-border-strong);
+  color: var(--color-text-secondary);
+}
+
+[data-theme="light"] .blackout-btn:hover {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-text-tertiary);
+}
+
+[data-theme="light"] .blackout-indicator {
+  background: var(--color-text-tertiary);
+}
+
+[data-theme="light"] .blackout-btn.active {
+  background: rgba(230, 74, 25, 0.1);
+  border-color: #E64A19;
+}
+
+/* ---- Profile Button ---- */
+[data-theme="light"] .profile-btn {
+  background: var(--color-bg-elevated);
+  border-color: var(--color-border-strong);
+}
+
+[data-theme="light"] .profile-btn:hover {
+  background: var(--color-bg-tertiary);
+}
+
+/* ---- Add Timer Button ---- */
+[data-theme="light"] .add-timer-btn {
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-border-strong);
+  color: var(--color-text-secondary);
+}
+
+[data-theme="light"] .add-timer-btn:hover {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+}
+
+/* ---- Tab Buttons ---- */
+[data-theme="light"] .tab-icon-btn {
+  color: var(--color-text-tertiary);
+}
+
+[data-theme="light"] .tab-icon-btn:hover {
+  color: var(--color-text-secondary);
+  background: var(--color-bg-tertiary);
+}
+
+[data-theme="light"] .tab-icon-btn.active {
+  color: var(--color-accent);
+}
+
+/* ---- Preset Items ---- */
+[data-theme="light"] .preset-item {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+}
+
+[data-theme="light"] .preset-item:hover {
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-border-strong);
+}
+
+[data-theme="light"] .preset-item.selected {
+  background: rgba(31, 111, 235, 0.1);
+  border-color: var(--color-accent);
+}
+
+[data-theme="light"] .preset-item.playing {
+  background: rgba(230, 74, 25, 0.1);
+  border-color: #E64A19;
+}
+
+/* Icon buttons in presets */
+[data-theme="light"] .icon-btn {
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-border-strong);
+  color: var(--color-text-secondary);
+}
+
+[data-theme="light"] .icon-btn:hover {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] .icon-btn.play-btn:hover,
+[data-theme="light"] .icon-btn.pause-btn:hover {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: var(--color-success);
+  color: var(--color-success);
+}
+
+[data-theme="light"] .icon-btn.stop-btn:hover {
+  background: rgba(230, 74, 25, 0.15);
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+/* ---- Progress Bar ---- */
+[data-theme="light"] .progress-track {
+  background: var(--color-bg-tertiary);
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] .progress-clip {
+  background: rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="light"] .segment-marker {
+  color: var(--color-text-tertiary);
+}
+
+[data-theme="light"] .segment-divider {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="light"] .seek-tooltip {
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-strong);
+  box-shadow: var(--shadow-md);
+}
+
+[data-theme="light"] .seek-line {
+  background: var(--color-text-tertiary);
+}
+
+/* ---- Link Zone ---- */
+[data-theme="light"] .link-zone::before,
+[data-theme="light"] .link-zone::after {
+  background: #aaa;
+}
+
+[data-theme="light"] .link-zone.linked::before,
+[data-theme="light"] .link-zone.linked::after {
+  background: #22c55e;
+}
+
+[data-theme="light"] .preset-item.linked-group {
+  background: rgba(34, 197, 94, 0.08);
+}
+
+/* ---- Settings Tabs ---- */
+[data-theme="light"] .settings-tabs {
+  border-color: var(--color-border);
+}
+
+[data-theme="light"] .settings-tab {
+  color: var(--color-text-secondary);
+}
+
+[data-theme="light"] .settings-tab:hover {
+  background: var(--color-bg-tertiary);
+}
+
+[data-theme="light"] .settings-tab.active {
+  background: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+}
+
+/* ---- Font Picker ---- */
+[data-theme="light"] .font-option {
+  background: var(--color-bg-elevated);
+  border-color: var(--color-border);
+}
+
+[data-theme="light"] .font-option:hover {
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-border-strong);
+}
+
+[data-theme="light"] .font-option.selected {
+  background: rgba(31, 111, 235, 0.1);
+  border-color: var(--color-accent);
+}
+
+/* ---- Modal Overlay ---- */
+[data-theme="light"] .modal-overlay {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="light"] .modal {
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+}
+
+[data-theme="light"] .modal-header {
+  border-color: var(--color-border);
+}
+
+[data-theme="light"] .modal-footer {
+  border-color: var(--color-border);
+  background: var(--color-bg-secondary);
+}
+
+/* ---- Profile Dropdown ---- */
+[data-theme="light"] .profile-dropdown {
+  background: var(--color-bg-elevated);
+  border-color: var(--color-border-strong);
+}
+
+[data-theme="light"] .profile-item:hover {
+  background: var(--color-bg-tertiary);
+}
+
+[data-theme="light"] .profile-dropdown-divider {
+  background: var(--color-border);
+}
+
+[data-theme="light"] .profile-actions button:hover {
+  background: var(--color-bg-tertiary);
+}
+
+/* ---- Confirm Dialog ---- */
+[data-theme="light"] .confirm-dialog {
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+}
+
+/* ---- Keyboard Shortcuts Modal ---- */
+[data-theme="light"] .shortcuts-dialog {
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+}
+
+[data-theme="light"] kbd {
+  background: var(--color-bg-elevated);
+  border-color: var(--color-border-strong);
+  color: var(--color-text-primary);
+}
+
+/* ---- Duration Controls ---- */
+[data-theme="light"] .digit-btn {
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+[data-theme="light"] .digit-btn:hover {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+}
+
+/* ---- Toast Notifications ---- */
+[data-theme="light"] .toast {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+}
+
+/* ---- Scrollbars ---- */
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: var(--color-bg-tertiary);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: #ccc;
+}
+
+/* ---- Custom Sounds List ---- */
+[data-theme="light"] .custom-sound-item {
+  background: var(--color-bg-elevated);
+  border-color: var(--color-border);
+}
+
+[data-theme="light"] .custom-sound-preview:hover {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+}
+
+[data-theme="light"] .custom-sound-delete:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+/* ---- Settings Sections ---- */
+[data-theme="light"] .settings-section {
+  border-color: var(--color-border);
+}
+
+[data-theme="light"] .settings-hint {
+  color: var(--color-text-tertiary);
+}
+
+/* ---- Footer ---- */
+[data-theme="light"] footer {
+  border-top: 1px solid var(--color-border);
+}
+
+/* ---- OSC Status ---- */
+[data-theme="light"] .osc-status {
   background: var(--color-bg-tertiary);
 }
 
@@ -826,6 +1206,49 @@ button:disabled {
 
 .flash-btn.flashing .flash-text {
   animation: flash-text-pulse 2350ms linear forwards;
+}
+
+/* Light mode flash animations */
+@keyframes flash-button-pulse-light {
+  0%, 12.8% { background: #e5e3de; border-color: #ccc; box-shadow: none; }
+  12.85%, 29.8% { background: #fffde7; border-color: #d4a500; box-shadow: 0 0 15px rgba(212, 165, 0, 0.4); }
+  29.85%, 42.6% { background: #e5e3de; border-color: #ccc; box-shadow: none; }
+  42.65%, 59.6% { background: #fffde7; border-color: #d4a500; box-shadow: 0 0 15px rgba(212, 165, 0, 0.4); }
+  59.65%, 72.3% { background: #e5e3de; border-color: #ccc; box-shadow: none; }
+  72.35%, 89.4% { background: #fffde7; border-color: #d4a500; box-shadow: 0 0 15px rgba(212, 165, 0, 0.4); }
+  100% { background: #e5e3de; border-color: #ccc; box-shadow: none; }
+}
+
+@keyframes flash-icon-pulse-light {
+  0%, 12.8% { stroke: #888; fill: none; filter: none; }
+  12.85%, 29.8% { stroke: #d4a500; fill: #d4a500; filter: drop-shadow(0 0 4px #d4a500); }
+  29.85%, 42.6% { stroke: #888; fill: none; filter: none; }
+  42.65%, 59.6% { stroke: #d4a500; fill: #d4a500; filter: drop-shadow(0 0 4px #d4a500); }
+  59.65%, 72.3% { stroke: #888; fill: none; filter: none; }
+  72.35%, 89.4% { stroke: #d4a500; fill: #d4a500; filter: drop-shadow(0 0 4px #d4a500); }
+  100% { stroke: #888; fill: none; filter: none; }
+}
+
+@keyframes flash-text-pulse-light {
+  0%, 12.8% { color: #666; text-shadow: none; }
+  12.85%, 29.8% { color: #b8860b; text-shadow: 0 0 6px rgba(184, 134, 11, 0.5); }
+  29.85%, 42.6% { color: #666; text-shadow: none; }
+  42.65%, 59.6% { color: #b8860b; text-shadow: 0 0 6px rgba(184, 134, 11, 0.5); }
+  59.65%, 72.3% { color: #666; text-shadow: none; }
+  72.35%, 89.4% { color: #b8860b; text-shadow: 0 0 6px rgba(184, 134, 11, 0.5); }
+  100% { color: #666; text-shadow: none; }
+}
+
+[data-theme="light"] .flash-btn.flashing {
+  animation: flash-button-pulse-light 2350ms linear forwards;
+}
+
+[data-theme="light"] .flash-btn.flashing .flash-icon {
+  animation: flash-icon-pulse-light 2350ms linear forwards;
+}
+
+[data-theme="light"] .flash-btn.flashing .flash-text {
+  animation: flash-text-pulse-light 2350ms linear forwards;
 }
 
 /* Blackout button - Apple-style: no box, icon + text */

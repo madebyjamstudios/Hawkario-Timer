@@ -1007,6 +1007,19 @@ ipcMain.handle('window:get-always-on-top', () => {
   };
 });
 
+// Set window background color (for theme switching)
+ipcMain.on('window:set-background-color', (_event, { window, color }) => {
+  try {
+    if (window === 'control' && mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.setBackgroundColor(color);
+    } else if (window === 'settings' && settingsWindow && !settingsWindow.isDestroyed()) {
+      settingsWindow.setBackgroundColor(color);
+    }
+  } catch (err) {
+    console.error('[IPC:window:set-background-color] Error:', err);
+  }
+});
+
 // Confirm dialog with app icon
 ipcMain.handle('dialog:confirm', async (_event, options) => {
   const iconPath = path.join(__dirname, 'icon.png');

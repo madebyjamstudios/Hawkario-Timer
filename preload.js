@@ -137,6 +137,11 @@ contextBridge.exposeInMainWorld('ninja', {
 
   getAlwaysOnTop: () => ipcRenderer.invoke('window:get-always-on-top'),
 
+  // Set window background color (for theme switching)
+  setBackgroundColor: (window, color) => {
+    ipcRenderer.send('window:set-background-color', { window, color });
+  },
+
   // ============ Message Broadcasting ============
 
   // Send message to output (control -> main -> output)

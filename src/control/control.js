@@ -1248,6 +1248,12 @@ function saveAppSettings(settings) {
 
 // ============ Theme Management ============
 
+// Theme background colors (must match CSS variables)
+const THEME_BACKGROUNDS = {
+  light: '#faf9f6',  // Warm cream
+  dark: '#0a0a0a'    // Near black
+};
+
 function applyTheme(appearance) {
   let theme = appearance;
   if (appearance === 'auto') {
@@ -1255,6 +1261,10 @@ function applyTheme(appearance) {
     theme = prefersLight ? 'light' : 'dark'; // Default to dark if no preference
   }
   document.documentElement.setAttribute('data-theme', theme);
+
+  // Update window background color for smooth resizing
+  const bgColor = THEME_BACKGROUNDS[theme] || THEME_BACKGROUNDS.dark;
+  window.ninja.setBackgroundColor('control', bgColor);
 }
 
 // Listen for system theme changes (for auto mode)
@@ -4566,12 +4576,10 @@ function updateRangeDisplays() {
 }
 
 /**
- * Update volume row visibility based on sound selection
+ * Volume row always visible - user may want to set volume before selecting a sound
  */
 function updateVolumeRowVisibility() {
-  if (els.volumeRow && els.soundEnd) {
-    els.volumeRow.style.display = els.soundEnd.value !== 'none' ? 'grid' : 'none';
-  }
+  // No-op: volume slider always visible
 }
 
 // ============ Timer Commands ============
