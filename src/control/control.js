@@ -4307,9 +4307,9 @@ function renderLivePreviewInternal() {
     els.livePreviewTimer.style.color = timerColor;
     els.livePreviewTimer.style.opacity = FIXED_STYLE.opacity;
     els.livePreview.classList.toggle('overtime', !isPureToD && timerState.overtime);
-    // Apply same color to ToD
+    // ToD always uses base color - never warning/overtime colors
     if (showToD && els.livePreviewToD) {
-      els.livePreviewToD.style.color = timerColor;
+      els.livePreviewToD.style.color = fontColor;
     }
   }
 

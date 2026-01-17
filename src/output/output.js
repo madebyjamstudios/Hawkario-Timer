@@ -519,6 +519,7 @@ function renderInternal() {
   let todText = null;
   let showToD = false;
   let color = '#ffffff';
+  let todColor = '#ffffff'; // ToD always uses base color, never warning colors
   let overtime = false;
 
   if (canonicalState) {
@@ -532,6 +533,7 @@ function renderInternal() {
 
     // Calculate warning color based on remaining time (skip for pure ToD mode)
     const baseColor = canonicalState.style?.color || '#ffffff';
+    todColor = baseColor; // ToD always uses base color
     const warnYellowSec = canonicalState.warnYellowSec ?? 60;
     const warnOrangeSec = canonicalState.warnOrangeSec ?? 15;
     const remainingSec = Math.ceil(display.remainingMs / 1000);
@@ -558,6 +560,7 @@ function renderInternal() {
     visible = displayState.visible;
     text = displayState.text;
     color = displayState.color;
+    todColor = displayState.color; // Legacy: use same color
     overtime = displayState.overtime;
   }
 
@@ -609,7 +612,7 @@ function renderInternal() {
   if (showToD && todText) {
     todEl.innerHTML = todText;
     todEl.style.visibility = 'visible';
-    todEl.style.color = color;
+    todEl.style.color = todColor; // ToD always uses base color, never warning colors
   } else {
     todEl.style.visibility = 'hidden';
   }
