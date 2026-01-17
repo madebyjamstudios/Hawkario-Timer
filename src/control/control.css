@@ -436,7 +436,6 @@ button:disabled {
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
 }
 
 /* Timer+ToD within message mode: 75/25 split inside the 34% */
@@ -469,7 +468,6 @@ button:disabled {
   height: 66%;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
 }
 
 /* Timer preview element */
