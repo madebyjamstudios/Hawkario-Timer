@@ -121,8 +121,44 @@ select:focus {
   outline: none;
 }
 
+/* Sliders - Apple-style: thin track, small thumb, accent fill */
 input[type="range"] {
   width: 120px;
+  height: 20px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  background: var(--color-bg-elevated);
+  border-radius: 2px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--color-text-primary);
+  border-radius: 50%;
+  margin-top: -6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: transform var(--transition-quick);
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+}
+
+input[type="range"]:focus {
+  outline: none;
+}
+
+input[type="range"]:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.3), 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 #volumeRow input[type="range"] {
