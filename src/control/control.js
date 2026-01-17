@@ -7787,6 +7787,13 @@ function stopCrashRecoverySaving() {
 // ============ Initialization ============
 
 function init() {
+  // Apple-style: blur selects after selection so focus ring doesn't linger
+  document.addEventListener('change', (e) => {
+    if (e.target.tagName === 'SELECT') {
+      e.target.blur();
+    }
+  });
+
   // Load profiles (with migration from legacy presets)
   loadProfiles();
   updateProfileButton();

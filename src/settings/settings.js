@@ -11,7 +11,6 @@ let isDirty = false;
 // ============ DOM Elements ============
 const els = {
   windowTitle: document.getElementById('windowTitle'),
-  closeBtn: document.getElementById('closeBtn'),
   saveBtn: document.getElementById('saveBtn'),
   preview: document.getElementById('preview'),
   previewTimer: document.getElementById('previewTimer'),
@@ -58,14 +57,18 @@ const FONTS = [
 
 // ============ Initialization ============
 function init() {
+  // Apple-style: blur selects after selection so focus ring doesn't linger
+  document.addEventListener('change', (e) => {
+    if (e.target.tagName === 'SELECT') {
+      e.target.blur();
+    }
+  });
+
   setupTabs();
   setupFontPicker();
   setupDurationControls();
   setupFormListeners();
   setupKeyboardShortcuts();
-
-  // Close button
-  els.closeBtn.addEventListener('click', handleClose);
 
   // Save button
   els.saveBtn.addEventListener('click', saveTimer);
