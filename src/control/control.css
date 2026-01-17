@@ -2303,44 +2303,65 @@ footer small {
   /* Font size set dynamically by autoFitText */
 }
 
-/* Modal preview structure - matches live preview layout */
+/* Modal preview structure - matches output.css exactly */
+.modal-preview .content-box {
+  position: absolute;
+  width: 90%;
+  height: 64%;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+}
+
 .modal-preview .timer-section {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: visible;
 }
 
 .modal-preview .timer-box {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-block;
 }
 
 .modal-preview .tod-box {
   display: none;
+  width: 100%;
+  position: relative;
 }
 
-/* When ToD is enabled: 75/25 split like live preview */
+/* When ToD is enabled: 75/25 split like output */
 .modal-preview .timer-section.with-tod {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: none;
+  width: 100%;
+  height: 100%;
+  display: flex;
   flex-direction: column;
 }
 
 .modal-preview .timer-section.with-tod .timer-box {
   flex: 0 0 75%;
-  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modal-preview .timer-section.with-tod .tod-box {
   display: flex;
   flex: 0 0 25%;
-  width: 100%;
   align-items: center;
   justify-content: center;
 }
 
 .modal-preview .tod-preview {
+  display: inline-block;
   white-space: nowrap;
   overflow: visible;
   text-align: center;

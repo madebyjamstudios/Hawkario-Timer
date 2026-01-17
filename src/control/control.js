@@ -96,6 +96,7 @@ const els = {
 
   // Modal Preview
   modalPreview: document.getElementById('modalPreview'),
+  modalPreviewContentBox: document.querySelector('.modal-preview .content-box'),
   modalPreviewTimer: document.getElementById('modalPreviewTimer'),
   modalPreviewToD: document.getElementById('modalPreviewToD'),
   modalPreviewTimerSection: document.querySelector('.modal-preview .timer-section'),
@@ -3513,25 +3514,28 @@ function updateModalPreview() {
 }
 
 /**
- * Fit modal preview timer and ToD content using calculated dimensions
- * Similar to fitPreviewTimer but for the modal preview
+ * Fit modal preview timer and ToD content - matches fitPreviewTimer exactly
+ * Uses content-box dimensions (90% x 64% of modal-preview)
  */
 function fitModalPreviewContent(hasToD) {
-  if (!els.modalPreviewTimer || !els.modalPreview) return;
+  if (!els.modalPreviewTimer || !els.modalPreviewContentBox) return;
 
-  const containerWidth = els.modalPreview.offsetWidth;
-  const containerHeight = els.modalPreview.offsetHeight;
+  // Get content-box dimensions (matches output structure: 90% x 64%)
+  const contentBoxWidth = els.modalPreviewContentBox.offsetWidth;
+  const contentBoxHeight = els.modalPreviewContentBox.offsetHeight;
 
-  if (containerWidth <= 0 || containerHeight <= 0) {
+  if (contentBoxWidth <= 0 || contentBoxHeight <= 0) {
     // Layout not ready, retry
     setTimeout(() => fitModalPreviewContent(hasToD), 50);
     return;
   }
 
-  // Calculate timer container height based on ToD mode
-  const timerHeight = hasToD ? containerHeight * 0.75 : containerHeight;
-  const maxWidth = containerWidth * 0.95;
-  const maxHeight = timerHeight * 0.9;
+  // Timer container height:
+  // - Timer only: 100% of content-box (fills entire box)
+  // - Timer+ToD: 75% of content-box (timer-box)
+  const timerContainerHeight = hasToD ? contentBoxHeight * 0.75 : contentBoxHeight;
+  const maxWidth = contentBoxWidth;
+  const maxHeight = timerContainerHeight * 0.95;
 
   // Measure timer at base font size
   els.modalPreviewTimer.style.fontSize = '100px';
@@ -3541,17 +3545,17 @@ function fitModalPreviewContent(hasToD) {
   const naturalHeight = els.modalPreviewTimer.offsetHeight;
   if (naturalWidth <= 0 || naturalHeight <= 0) return;
 
-  // Scale to fit
+  // Scale to fit within container
   const scaleW = maxWidth / naturalWidth;
   const scaleH = maxHeight / naturalHeight;
   const scale = Math.min(scaleW, scaleH);
   els.modalPreviewTimer.style.fontSize = Math.floor(100 * scale) + 'px';
 
-  // Fit ToD if visible
+  // Fit ToD if visible (25% of content-box)
   if (hasToD && els.modalPreviewToD) {
-    const todHeight = containerHeight * 0.25;
-    const todMaxWidth = containerWidth * 0.9;
-    const todMaxHeight = todHeight * 0.85;
+    const todContainerHeight = contentBoxHeight * 0.25;
+    const todMaxWidth = contentBoxWidth;
+    const todMaxHeight = todContainerHeight * 0.9;
 
     els.modalPreviewToD.style.fontSize = '100px';
     void els.modalPreviewToD.offsetWidth;
