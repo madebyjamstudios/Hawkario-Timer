@@ -700,95 +700,84 @@ button:disabled {
   transition: all 0.3s ease;
 }
 
-/* Flash button sync animation - matches FlashAnimator timing (2100ms)
-   Pattern: dim(300ms) → glow(400ms) × 3 - ends on glow */
+/* Flash button sync animation - matches FlashAnimator timing (2350ms total)
+   Pattern: dim(300ms) → glow(400ms) × 3 + fade-out(250ms)
+   FlashAnimator: 2100ms animation + 250ms restore = 2350ms total */
 @keyframes flash-button-pulse {
-  /* 0-300ms: Dim - 0% to 14.3% */
-  0%, 14.3% {
+  /* 0-300ms: Dim - 0% to 12.8% */
+  0%, 12.8% {
     background: #2a2a2a;
     border-color: #444;
     box-shadow: none;
   }
-  /* 300-700ms: Glow 1 - 14.3% to 33.3% */
-  14.35% {
+  /* 300-700ms: Glow 1 - 12.8% to 29.8% */
+  12.85%, 29.8% {
     background: #4a4a1a;
     border-color: #ffeb3b;
     box-shadow: 0 0 15px rgba(255, 235, 59, 0.5);
   }
-  33.3% {
-    background: #4a4a1a;
-    border-color: #ffeb3b;
-    box-shadow: 0 0 15px rgba(255, 235, 59, 0.5);
-  }
-  /* 700-1000ms: Dim - 33.3% to 47.6% */
-  33.35% {
+  /* 700-1000ms: Dim - 29.8% to 42.6% */
+  29.85%, 42.6% {
     background: #2a2a2a;
     border-color: #444;
     box-shadow: none;
   }
-  47.6% {
-    background: #2a2a2a;
-    border-color: #444;
-    box-shadow: none;
-  }
-  /* 1000-1400ms: Glow 2 - 47.6% to 66.7% */
-  47.65% {
+  /* 1000-1400ms: Glow 2 - 42.6% to 59.6% */
+  42.65%, 59.6% {
     background: #4a4a1a;
     border-color: #ffeb3b;
     box-shadow: 0 0 15px rgba(255, 235, 59, 0.5);
   }
-  66.7% {
-    background: #4a4a1a;
-    border-color: #ffeb3b;
-    box-shadow: 0 0 15px rgba(255, 235, 59, 0.5);
-  }
-  /* 1400-1700ms: Dim - 66.7% to 81% */
-  66.75% {
+  /* 1400-1700ms: Dim - 59.6% to 72.3% */
+  59.65%, 72.3% {
     background: #2a2a2a;
     border-color: #444;
     box-shadow: none;
   }
-  81% {
-    background: #2a2a2a;
-    border-color: #444;
-    box-shadow: none;
-  }
-  /* 1700-2100ms: Glow 3 - 81% to 100% (ends on yellow) */
-  81.05%, 100% {
+  /* 1700-2100ms: Glow 3 - 72.3% to 89.4% */
+  72.35%, 89.4% {
     background: #4a4a1a;
     border-color: #ffeb3b;
     box-shadow: 0 0 15px rgba(255, 235, 59, 0.5);
+  }
+  /* 2100-2350ms: Fade out - 89.4% to 100% */
+  100% {
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
   }
 }
 
 @keyframes flash-icon-pulse {
-  0%, 14.3% { stroke: #666; fill: none; filter: none; }
-  14.35%, 33.3% { stroke: #ffeb3b; fill: #ffeb3b; filter: drop-shadow(0 0 6px #ffeb3b); }
-  33.35%, 47.6% { stroke: #666; fill: none; filter: none; }
-  47.65%, 66.7% { stroke: #ffeb3b; fill: #ffeb3b; filter: drop-shadow(0 0 6px #ffeb3b); }
-  66.75%, 81% { stroke: #666; fill: none; filter: none; }
-  81.05%, 100% { stroke: #ffeb3b; fill: #ffeb3b; filter: drop-shadow(0 0 6px #ffeb3b); }
+  0%, 12.8% { stroke: #666; fill: none; filter: none; }
+  12.85%, 29.8% { stroke: #ffeb3b; fill: #ffeb3b; filter: drop-shadow(0 0 6px #ffeb3b); }
+  29.85%, 42.6% { stroke: #666; fill: none; filter: none; }
+  42.65%, 59.6% { stroke: #ffeb3b; fill: #ffeb3b; filter: drop-shadow(0 0 6px #ffeb3b); }
+  59.65%, 72.3% { stroke: #666; fill: none; filter: none; }
+  72.35%, 89.4% { stroke: #ffeb3b; fill: #ffeb3b; filter: drop-shadow(0 0 6px #ffeb3b); }
+  100% { stroke: #666; fill: none; filter: none; }
 }
 
 @keyframes flash-text-pulse {
-  0%, 14.3% { color: #888; text-shadow: none; }
-  14.35%, 33.3% { color: #ffeb3b; text-shadow: 0 0 8px #ffeb3b; }
-  33.35%, 47.6% { color: #888; text-shadow: none; }
-  47.65%, 66.7% { color: #ffeb3b; text-shadow: 0 0 8px #ffeb3b; }
-  66.75%, 81% { color: #888; text-shadow: none; }
-  81.05%, 100% { color: #ffeb3b; text-shadow: 0 0 8px #ffeb3b; }
+  0%, 12.8% { color: #888; text-shadow: none; }
+  12.85%, 29.8% { color: #ffeb3b; text-shadow: 0 0 8px #ffeb3b; }
+  29.85%, 42.6% { color: #888; text-shadow: none; }
+  42.65%, 59.6% { color: #ffeb3b; text-shadow: 0 0 8px #ffeb3b; }
+  59.65%, 72.3% { color: #888; text-shadow: none; }
+  72.35%, 89.4% { color: #ffeb3b; text-shadow: 0 0 8px #ffeb3b; }
+  100% { color: #888; text-shadow: none; }
 }
 
 .flash-btn.flashing {
-  animation: flash-button-pulse 2100ms linear forwards;
+  animation: flash-button-pulse 2350ms linear forwards;
 }
 
 .flash-btn.flashing .flash-icon {
-  animation: flash-icon-pulse 2100ms linear forwards;
+  animation: flash-icon-pulse 2350ms linear forwards;
 }
 
 .flash-btn.flashing .flash-text {
-  animation: flash-text-pulse 2100ms linear forwards;
+  animation: flash-text-pulse 2350ms linear forwards;
 }
 
 /* Blackout button - Apple-style: no box, icon + text */
