@@ -146,6 +146,7 @@ const els = {
   // App Settings Fields
   todFormat: document.getElementById('todFormat'),
   timezone: document.getElementById('timezone'),
+  appearance: document.getElementById('appearance'),
   confirmDelete: document.getElementById('confirmDelete'),
   defaultMode: document.getElementById('defaultMode'),
   defaultDuration: document.getElementById('defaultDuration'),
