@@ -258,7 +258,7 @@ button:disabled {
   align-items: center;
   justify-content: center;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   background: transparent;
   box-sizing: border-box;
   user-select: none;
@@ -386,8 +386,7 @@ button:disabled {
   /* Inline-block so parent wraps it exactly */
   display: inline-block;
   white-space: nowrap;
-  line-height: 0.85;
-  padding: 0.1em 0;
+  line-height: 0.75;
   overflow: visible;
   user-select: none;
   -webkit-user-select: none;
