@@ -152,6 +152,8 @@ let currentMessage = null;
 // Track last rendered text/format/mode to only refit when needed
 let lastTimerText = '';
 let lastMessageText = '';
+let lastMessageBold = false;
+let lastMessageItalic = false;
 let lastMessageUppercase = false;
 let lastTimerFormat = '';
 let lastTimerMode = '';
@@ -328,6 +330,8 @@ function handleMessageUpdate(message) {
     // Hide message and restore full layout
     currentMessage = null;
     lastMessageText = '';
+    lastMessageBold = false;
+    lastMessageItalic = false;
     lastMessageUppercase = false;
     messageOverlayEl.classList.remove('visible', 'bold', 'italic', 'uppercase');
 
@@ -369,9 +373,14 @@ function handleMessageUpdate(message) {
   // Wait for layout to update, then fit content (matches preview behavior)
   requestAnimationFrame(() => {
     // Fit message content (when text or formatting changes, or message just became visible)
+    const boldChanged = message.bold !== lastMessageBold;
+    const italicChanged = message.italic !== lastMessageItalic;
     const uppercaseChanged = message.uppercase !== lastMessageUppercase;
-    if (message.text !== lastMessageText || uppercaseChanged || !wasVisible) {
+    const formattingChanged = boldChanged || italicChanged || uppercaseChanged;
+    if (message.text !== lastMessageText || formattingChanged || !wasVisible) {
       lastMessageText = message.text;
+      lastMessageBold = message.bold;
+      lastMessageItalic = message.italic;
       lastMessageUppercase = message.uppercase;
       fitMessageContent();
     }

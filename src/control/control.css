@@ -403,7 +403,6 @@ button:disabled {
   word-wrap: break-word;
   overflow-wrap: break-word;
   white-space: pre-wrap;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 0, 0, 0.5);
   user-select: none;
   -webkit-user-select: none;
   opacity: 0;

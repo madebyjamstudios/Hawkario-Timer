@@ -2593,6 +2593,8 @@ function updateLivePreviewMessage(message) {
     els.livePreviewContentBox.classList.remove('with-message');
     els.livePreviewMessage.classList.remove('visible', 'bold', 'italic', 'uppercase');
     lastPreviewMessageText = '';
+    lastPreviewMessageBold = false;
+    lastPreviewMessageItalic = false;
     lastPreviewMessageUppercase = false;
     // Force layout recalculation
     void els.livePreviewContentBox.offsetHeight;
@@ -2622,9 +2624,14 @@ function updateLivePreviewMessage(message) {
   // Wait for layout to update, then fit content
   requestAnimationFrame(() => {
     // Fit message content (when text or formatting changes, or message just became visible)
+    const boldChanged = message.bold !== lastPreviewMessageBold;
+    const italicChanged = message.italic !== lastPreviewMessageItalic;
     const uppercaseChanged = message.uppercase !== lastPreviewMessageUppercase;
-    if (message.text !== lastPreviewMessageText || uppercaseChanged || !wasVisible) {
+    const formattingChanged = boldChanged || italicChanged || uppercaseChanged;
+    if (message.text !== lastPreviewMessageText || formattingChanged || !wasVisible) {
       lastPreviewMessageText = message.text;
+      lastPreviewMessageBold = message.bold;
+      lastPreviewMessageItalic = message.italic;
       lastPreviewMessageUppercase = message.uppercase;
       fitPreviewMessage();
     }
@@ -3542,6 +3549,8 @@ let startWidth = 0;
 // Track last rendered text/format/mode to only refit when needed
 let lastPreviewTimerText = '';
 let lastPreviewMessageText = '';
+let lastPreviewMessageBold = false;
+let lastPreviewMessageItalic = false;
 let lastPreviewMessageUppercase = false;
 let lastPreviewTimerFormat = '';
 let lastPreviewTimerMode = '';
