@@ -7788,11 +7788,11 @@ function stopCrashRecoverySaving() {
 
 function init() {
   // Apple-style: blur form controls after interaction so focus ring doesn't linger
-  // Applies to selects, checkboxes, and range sliders (not text inputs - those keep focus while typing)
+  // Applies to selects and range sliders (not text inputs - those keep focus while typing)
   document.addEventListener('change', (e) => {
     const tag = e.target.tagName;
     const type = e.target.type;
-    if (tag === 'SELECT' || type === 'checkbox' || type === 'range') {
+    if (tag === 'SELECT' || type === 'range') {
       e.target.blur();
     }
   });
