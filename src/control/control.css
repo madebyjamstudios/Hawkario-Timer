@@ -2536,7 +2536,7 @@ button:disabled {
   background: rgba(248, 81, 73, 0.15);
 }
 
-/* Add Timer button */
+/* Add Timer button - Apple-style: transparent, no border */
 .add-timer-btn {
   display: flex;
   align-items: center;
@@ -2545,8 +2545,8 @@ button:disabled {
   width: auto;
   margin: 0 auto;
   padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  border: none;
   border-radius: 6px;
   color: rgba(255, 255, 255, 0.6);
   font-size: 12px;
@@ -2557,14 +2557,12 @@ button:disabled {
 }
 
 .add-timer-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
   color: rgba(255, 255, 255, 0.9);
 }
 
 .add-timer-btn:active {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 /* Header */
