@@ -3,7 +3,17 @@
  * Detached timer settings editor
  */
 
-import { BUILT_IN_FONTS } from '../shared/fontManager.js';
+// Built-in fonts (duplicated from fontManager.js to avoid ES module import issues)
+const BUILT_IN_FONTS = [
+  { family: 'Inter', weights: [400, 600, 700], description: 'Modern & Clean' },
+  { family: 'Roboto', weights: [400, 700], description: 'Versatile' },
+  { family: 'JetBrains Mono', weights: [400, 600], description: 'Monospace' },
+  { family: 'Oswald', weights: [400, 700], description: 'Bold Condensed' },
+  { family: 'Bebas Neue', weights: [400], description: 'Classic Display' },
+  { family: 'Orbitron', weights: [400, 700], description: 'Futuristic' },
+  { family: 'Teko', weights: [400, 600], description: 'Modern Condensed' },
+  { family: 'Share Tech Mono', weights: [400], description: 'Digital' }
+];
 
 // ============ State ============
 let currentTimerIndex = null;
