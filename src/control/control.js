@@ -3030,6 +3030,7 @@ function updateProgressBar(currentElapsedMs, currentTotalMs) {
     els.progressFill.style.width = '0%';
     els.progressIndicator.style.left = '0%';
     els.progressFill.classList.remove('warning-yellow', 'warning-orange');
+    els.progressFill.classList.add('no-glow'); // Hide shadow at 0%
     cachedTotalMs = 600000;
     return;
   }
@@ -3040,6 +3041,7 @@ function updateProgressBar(currentElapsedMs, currentTotalMs) {
     els.progressFill.style.width = '0%';
     els.progressIndicator.style.left = '0%';
     els.progressFill.classList.remove('warning-yellow', 'warning-orange');
+    els.progressFill.classList.add('no-glow'); // Hide shadow at 0%
     cachedTotalMs = durationMs;
     renderWarningZones();
     renderSmartSegments();
@@ -3052,6 +3054,9 @@ function updateProgressBar(currentElapsedMs, currentTotalMs) {
 
   els.progressFill.style.width = progressPercent + '%';
   els.progressIndicator.style.left = progressPercent + '%';
+
+  // Show/hide glow based on progress (hide at 0% to prevent shadow sticking out)
+  els.progressFill.classList.toggle('no-glow', progressPercent === 0);
 
   // Show indicator only when timer has progress (hide at 0% for clean rounded edges)
   els.progressIndicator.style.opacity = progressPercent === 0 ? '0' : '1';

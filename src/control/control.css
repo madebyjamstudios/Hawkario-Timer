@@ -1979,7 +1979,12 @@ button:disabled {
   border-radius: 0 !important;
   box-shadow: 0 0 8px rgba(74, 222, 128, 0.5);
   animation: none !important;
-  transition: background 0.3s ease, box-shadow 0.3s ease;
+  transition: background 0.3s ease, box-shadow 0.3s ease, opacity 0.15s ease;
+}
+
+/* Hide shadow at 0% progress to prevent glow sticking out at start */
+.progress-track .progress-fill.no-glow {
+  box-shadow: none;
 }
 
 /* Yellow warning state */
