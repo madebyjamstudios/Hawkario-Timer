@@ -484,8 +484,10 @@
 }
 
 [data-theme="light"] .message-text-input {
-  background: var(--color-bg-elevated);
-  border-color: var(--color-border);
+  /* Dark background so light-colored text (like white) remains visible */
+  /* This also serves as a preview of how it appears on dark output display */
+  background: #1a1a1a;
+  border-color: var(--color-border-strong);
   color: var(--color-text-primary);
 }
 
