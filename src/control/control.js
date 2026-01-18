@@ -1328,8 +1328,12 @@ themeMediaQuery.addEventListener('change', themeChangeHandler);
 
 // Store update check result (whether update available or up to date)
 let updateResult = null;
+let isCheckingForUpdates = false; // Debounce flag to prevent rapid clicks
 
 async function checkForUpdates(silent = false) {
+  // Prevent multiple simultaneous update checks
+  if (isCheckingForUpdates) return null;
+
   const statusEl = document.getElementById('updateStatus');
   const checkBtn = document.getElementById('checkUpdates');
   const downloadBtn = document.getElementById('downloadUpdates');
@@ -1337,11 +1341,14 @@ async function checkForUpdates(silent = false) {
 
   if (!statusEl) return null;
 
+  isCheckingForUpdates = true;
+
   if (!silent) {
     statusEl.textContent = 'Checking...';
     statusEl.className = '';
     downloadBtn?.classList.add('hidden');
     restartBtn?.classList.add('hidden');
+    if (checkBtn) checkBtn.disabled = true;
   }
 
   try {
@@ -1386,6 +1393,10 @@ async function checkForUpdates(silent = false) {
       statusEl.className = 'update-error';
     }
     return null;
+  } finally {
+    // Reset debounce flag
+    isCheckingForUpdates = false;
+    if (checkBtn) checkBtn.disabled = false;
   }
 }
 
@@ -3076,7 +3087,10 @@ function updateProgressBar(currentElapsedMs, currentTotalMs) {
 
   // Simple progress bar showing only current timer's status
   cachedTotalMs = currentTotalMs;
-  const progressPercent = Math.min(100, (currentElapsedMs / currentTotalMs) * 100);
+  // Explicit zero-check to prevent division by zero (returns 0 instead of NaN/Infinity)
+  const progressPercent = currentTotalMs > 0
+    ? Math.min(100, (currentElapsedMs / currentTotalMs) * 100)
+    : 0;
 
   els.progressFill.style.width = progressPercent + '%';
   els.progressIndicator.style.left = progressPercent + '%';
