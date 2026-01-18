@@ -119,6 +119,24 @@
   background: var(--color-bg-secondary);
 }
 
+[data-theme="light"] .toast {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: var(--color-bg-secondary);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: var(--color-bg-tertiary);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: #ccc;
+}
+
 /* ============ Base Styles ============ */
 * {
   box-sizing: border-box;
