@@ -3,8 +3,6 @@
  * Detached timer settings editor
  */
 
-import { playSound } from '../shared/sounds.js';
-
 // ============ State ============
 let currentTimerIndex = null;
 let currentTimerName = '';
@@ -369,9 +367,44 @@ function setupFormListeners() {
     const soundType = els.soundEnd.value;
     const volume = parseFloat(els.soundVolume.value) || 0.7;
     if (soundType && soundType !== 'none') {
-      playSound(soundType, volume);
+      playPreviewSound(soundType, volume);
     }
   });
+}
+
+// Simple sound preview using Web Audio API
+let audioContext = null;
+function playPreviewSound(type, volume = 0.5) {
+  if (!audioContext) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  }
+
+  const now = audioContext.currentTime;
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+
+  oscillator.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+
+  // Different sound types
+  const sounds = {
+    chime: { freq: 880, duration: 0.3, type: 'sine' },
+    bell: { freq: 660, duration: 0.4, type: 'triangle' },
+    alert: { freq: 440, duration: 0.2, type: 'square' },
+    gong: { freq: 220, duration: 0.6, type: 'sine' },
+    soft: { freq: 523, duration: 0.25, type: 'sine' }
+  };
+
+  const sound = sounds[type] || sounds.chime;
+
+  oscillator.type = sound.type;
+  oscillator.frequency.setValueAtTime(sound.freq, now);
+
+  gainNode.gain.setValueAtTime(volume * 0.3, now);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, now + sound.duration);
+
+  oscillator.start(now);
+  oscillator.stop(now + sound.duration);
 }
 
 function markDirty() {
