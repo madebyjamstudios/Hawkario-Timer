@@ -3769,13 +3769,24 @@ function fitPreviewTimer() {
   const maxWidth = containerWidth * zoom;
   const maxHeight = containerHeight * 0.95;
 
+  // Temporarily center for consistent measurement
+  const savedJustify = els.livePreviewTimerSection?.style.justifyContent;
+  if (els.livePreviewTimerSection) {
+    els.livePreviewTimerSection.style.justifyContent = 'center';
+  }
+
   // Measure timer at base font size
   els.livePreviewTimer.style.fontSize = '100px';
   void els.livePreviewTimer.offsetWidth;
 
   const naturalWidth = els.livePreviewTimer.offsetWidth;
   const naturalHeight = els.livePreviewTimer.offsetHeight;
-  if (naturalWidth <= 0 || naturalHeight <= 0) return;
+  if (naturalWidth <= 0 || naturalHeight <= 0) {
+    if (els.livePreviewTimerSection) {
+      els.livePreviewTimerSection.style.justifyContent = savedJustify;
+    }
+    return;
+  }
 
   // Scale to fill, cap at edges
   const scaleW = maxWidth / naturalWidth;
@@ -3784,6 +3795,11 @@ function fitPreviewTimer() {
 
   const fontSize = Math.floor(100 * scale);
   els.livePreviewTimer.style.fontSize = fontSize + 'px';
+
+  // Restore alignment
+  if (els.livePreviewTimerSection) {
+    els.livePreviewTimerSection.style.justifyContent = savedJustify;
+  }
 }
 
 /**
@@ -3808,13 +3824,24 @@ function fitPreviewToD() {
   const maxWidth = containerWidth * zoom;
   const maxHeight = containerHeight * 0.90;
 
+  // Temporarily center for consistent measurement
+  const savedJustify = els.livePreviewTimerSection?.style.justifyContent;
+  if (els.livePreviewTimerSection) {
+    els.livePreviewTimerSection.style.justifyContent = 'center';
+  }
+
   // Measure ToD at base font size
   els.livePreviewToD.style.fontSize = '100px';
   void els.livePreviewToD.offsetWidth;
 
   const naturalWidth = els.livePreviewToD.offsetWidth;
   const naturalHeight = els.livePreviewToD.offsetHeight;
-  if (naturalWidth <= 0 || naturalHeight <= 0) return;
+  if (naturalWidth <= 0 || naturalHeight <= 0) {
+    if (els.livePreviewTimerSection) {
+      els.livePreviewTimerSection.style.justifyContent = savedJustify;
+    }
+    return;
+  }
 
   // Scale to fill, cap at edges
   const scaleW = maxWidth / naturalWidth;
@@ -3823,6 +3850,11 @@ function fitPreviewToD() {
 
   const fontSize = Math.floor(100 * scale);
   els.livePreviewToD.style.fontSize = fontSize + 'px';
+
+  // Restore alignment
+  if (els.livePreviewTimerSection) {
+    els.livePreviewTimerSection.style.justifyContent = savedJustify;
+  }
 }
 
 /**
@@ -3844,6 +3876,10 @@ function fitPreviewMessage() {
   // Target 95% of container
   const targetWidth = containerWidth * 0.95;
   const targetHeight = containerHeight * 0.95;
+
+  // Temporarily center for consistent measurement
+  const savedJustify = els.livePreviewMessageSection.style.justifyContent;
+  els.livePreviewMessageSection.style.justifyContent = 'center';
 
   // Set maxWidth to container width - text wraps at container boundary
   els.livePreviewMessage.style.maxWidth = targetWidth + 'px';
@@ -3870,6 +3906,9 @@ function fitPreviewMessage() {
   }
 
   els.livePreviewMessage.style.fontSize = bestFit + 'px';
+
+  // Restore alignment
+  els.livePreviewMessageSection.style.justifyContent = savedJustify;
 }
 
 function setupPreviewResize() {
