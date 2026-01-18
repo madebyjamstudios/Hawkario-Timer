@@ -6293,6 +6293,14 @@ function showPresetMenu(idx, preset, anchorEl) {
   const deleteItem = document.createElement('button');
   deleteItem.className = 'menu-item delete';
   deleteItem.innerHTML = `${ICONS.delete} Delete`;
+
+  // Disable delete if this timer is currently playing
+  const isThisTimerPlaying = activePresetIndex === idx && isRunning;
+  if (isThisTimerPlaying) {
+    deleteItem.disabled = true;
+    deleteItem.title = 'Stop the timer before deleting';
+  }
+
   deleteItem.onclick = async () => {
     menu.remove();
 

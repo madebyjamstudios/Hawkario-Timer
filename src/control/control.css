@@ -2586,6 +2586,20 @@ button:disabled {
   background: rgba(248, 81, 73, 0.15);
 }
 
+.menu-item.delete:disabled {
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.menu-item.delete:disabled svg {
+  stroke: var(--color-text-disabled);
+}
+
+.menu-item.delete:disabled:hover {
+  background: transparent;
+}
+
 /* Add Timer button - Apple-style: transparent, no border */
 .add-timer-btn {
   display: flex;
