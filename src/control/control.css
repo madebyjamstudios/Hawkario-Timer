@@ -4487,7 +4487,7 @@ button.danger:active {
   height: 32px;
   padding: 0;
   border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-sm);
+  border-radius: 10px;
   background: var(--color-bg-elevated);
   cursor: pointer;
 }
@@ -4497,7 +4497,7 @@ button.danger:active {
 }
 
 .color-picker::-webkit-color-swatch {
-  border-radius: 5px;
+  border-radius: 7px;
   border: none;
 }
 

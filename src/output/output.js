@@ -207,13 +207,20 @@ function fitTimerContent() {
   const maxWidth = containerWidth * zoom;
   const maxHeight = containerHeight * 0.95;
 
+  // Temporarily center for consistent measurement
+  const savedJustify = timerSectionEl.style.justifyContent;
+  timerSectionEl.style.justifyContent = 'center';
+
   // Measure timer at base font size
   timerEl.style.fontSize = '100px';
   void timerEl.offsetWidth;
 
   const naturalWidth = timerEl.offsetWidth;
   const naturalHeight = timerEl.offsetHeight;
-  if (naturalWidth <= 0 || naturalHeight <= 0) return;
+  if (naturalWidth <= 0 || naturalHeight <= 0) {
+    timerSectionEl.style.justifyContent = savedJustify;
+    return;
+  }
 
   // Scale to fill, cap at edges
   const scaleW = maxWidth / naturalWidth;
@@ -224,6 +231,9 @@ function fitTimerContent() {
   timerEl.style.fontSize = fontSize + 'px';
   // Force repaint (helps with Electron/macOS resize rendering)
   void timerEl.offsetWidth;
+
+  // Restore alignment
+  timerSectionEl.style.justifyContent = savedJustify;
 }
 
 /**
@@ -256,13 +266,20 @@ function fitToDContent() {
   const maxWidth = containerWidth * zoom;
   const maxHeight = containerHeight * 0.90;
 
+  // Temporarily center for consistent measurement
+  const savedJustify = timerSectionEl.style.justifyContent;
+  timerSectionEl.style.justifyContent = 'center';
+
   // Measure ToD at base font size
   todEl.style.fontSize = '100px';
   void todEl.offsetWidth;
 
   const naturalWidth = todEl.offsetWidth;
   const naturalHeight = todEl.offsetHeight;
-  if (naturalWidth <= 0 || naturalHeight <= 0) return;
+  if (naturalWidth <= 0 || naturalHeight <= 0) {
+    timerSectionEl.style.justifyContent = savedJustify;
+    return;
+  }
 
   // Scale to fill, cap at edges
   const scaleW = maxWidth / naturalWidth;
@@ -271,6 +288,9 @@ function fitToDContent() {
 
   const fontSize = Math.floor(100 * scale);
   todEl.style.fontSize = fontSize + 'px';
+
+  // Restore alignment
+  timerSectionEl.style.justifyContent = savedJustify;
 }
 
 /**
@@ -292,6 +312,10 @@ function fitMessageContent() {
   // Target 95% of container
   const targetWidth = containerWidth * 0.95;
   const targetHeight = containerHeight * 0.95;
+
+  // Temporarily center for consistent measurement
+  const savedJustify = messageSectionEl.style.justifyContent;
+  messageSectionEl.style.justifyContent = 'center';
 
   // Set maxWidth to container width - text wraps at container boundary
   messageOverlayEl.style.maxWidth = targetWidth + 'px';
@@ -318,6 +342,9 @@ function fitMessageContent() {
   }
 
   messageOverlayEl.style.fontSize = bestFit + 'px';
+
+  // Restore alignment
+  messageSectionEl.style.justifyContent = savedJustify;
 }
 
 /**
@@ -431,6 +458,23 @@ function applyStyle(style) {
   const bg = style.background || style.bgColor || '#000000';
   document.body.style.background = bg;
   stageEl.style.background = bg;
+
+  // Content alignment
+  const align = style.align || 'center';
+  const justifyMap = {
+    'left': 'flex-start',
+    'center': 'center',
+    'right': 'flex-end'
+  };
+  const justifyContent = justifyMap[align] || 'center';
+
+  // Apply alignment to timer-section and message-section
+  if (timerSectionEl) {
+    timerSectionEl.style.justifyContent = justifyContent;
+  }
+  if (messageSectionEl) {
+    messageSectionEl.style.justifyContent = justifyContent;
+  }
 }
 
 /**

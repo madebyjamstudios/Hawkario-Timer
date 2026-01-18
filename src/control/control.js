@@ -418,12 +418,19 @@ function setMSInput(input, totalSeconds) {
 }
 
 /**
- * Get selected alignment from toggle buttons
+ * Get selected alignment from toggle buttons or saved settings
  */
 function getSelectedAlign() {
-  if (!els.alignToggle) return 'center';
-  const activeBtn = els.alignToggle.querySelector('.align-toggle-btn.active');
-  return activeBtn?.dataset.align || 'center';
+  // Try to get from toggle buttons first
+  if (els.alignToggle) {
+    const activeBtn = els.alignToggle.querySelector('.align-toggle-btn.active');
+    if (activeBtn?.dataset.align) {
+      return activeBtn.dataset.align;
+    }
+  }
+  // Fall back to saved settings
+  const settings = loadAppSettings();
+  return settings.defaults?.align || 'center';
 }
 
 /**
@@ -4016,6 +4023,8 @@ function getAutoFitPercent() {
 function applyPreview() {
   // Apply live preview styles
   applyLivePreviewStyle();
+  // Apply alignment (global setting)
+  applyLivePreviewAlignment();
 }
 
 // Debounced preview update for performance
@@ -4056,6 +4065,33 @@ function applyLivePreviewStyle() {
 }
 
 /**
+ * Apply alignment to live preview timer and message sections
+ */
+function applyLivePreviewAlignment() {
+  const align = getSelectedAlign();
+
+  // Map align value to CSS justify-content
+  const justifyMap = {
+    'left': 'flex-start',
+    'center': 'center',
+    'right': 'flex-end'
+  };
+  const justifyContent = justifyMap[align] || 'center';
+
+  // Apply to timer section in live preview
+  const timerSection = els.livePreview?.querySelector('.timer-section');
+  if (timerSection) {
+    timerSection.style.justifyContent = justifyContent;
+  }
+
+  // Apply to message section in live preview
+  const messageSection = els.livePreview?.querySelector('.message-section');
+  if (messageSection) {
+    messageSection.style.justifyContent = justifyContent;
+  }
+}
+
+/**
  * Broadcast canonical timer state to output window
  * Uses StageTimer-style sync: send raw timestamps, output computes display
  */
@@ -4084,7 +4120,10 @@ function broadcastTimerState() {
       active: flashState.active,
       startedAt: flashState.startedAt
     },
-    style: activeTimerConfig.style,
+    style: {
+      ...activeTimerConfig.style,
+      align: appSettings.defaults?.align || 'center'
+    },
     todFormat: appSettings.todFormat,
     timezone: appSettings.timezone || 'auto',
     timerZoom: appSettings.timerZoom ?? 100,
