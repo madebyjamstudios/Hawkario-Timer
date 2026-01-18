@@ -3425,6 +3425,8 @@ function openModal(presetIndex = null) {
     els.modalTitle.textContent = 'Edit Timer';
     els.presetName.value = preset.name;
     applyConfig(preset.config);
+    // Tutorial hook - advance if on openEdit step
+    onTutorialAction('openEdit');
   } else {
     // Creating new preset - apply defaults
     els.modalTitle.textContent = 'New Timer';
@@ -4793,6 +4795,8 @@ function sendCommand(command) {
       els.progressIndicator.classList.remove('pulse');
       void els.progressIndicator.offsetWidth; // Force reflow
       els.progressIndicator.classList.add('pulse');
+      // Tutorial hook - advance if on playTimer step
+      onTutorialAction('playTimer');
       break;
 
     case 'pause':
@@ -7032,6 +7036,9 @@ function setupEventListeners() {
       requestAnimationFrame(() => {
         els.presetList.scrollTop = els.presetList.scrollHeight;
       });
+
+      // Tutorial hook - advance if on addTimer step
+      onTutorialAction('addTimer');
     }
   });
 
@@ -8015,6 +8022,291 @@ function stopCrashRecoverySaving() {
   }
 }
 
+// ============ Tutorial System ============
+
+let tutorialStep = 0;
+let tutorialActive = false;
+
+const TUTORIAL_STEPS = [
+  { type: 'modal', step: 1 }, // Welcome
+  {
+    type: 'spotlight',
+    step: 2,
+    target: '#addTimer',
+    text: 'Click <strong>+ Add Timer</strong> to create your first timer',
+    position: 'top',
+    action: 'addTimer'
+  },
+  {
+    type: 'spotlight',
+    step: 3,
+    target: null, // Will be set dynamically to play button
+    text: 'Press <strong>Play</strong> or hit <kbd>Space</kbd> to start',
+    position: 'top',
+    action: 'playTimer'
+  },
+  {
+    type: 'spotlight',
+    step: 4,
+    target: null, // Will be set dynamically to edit button
+    text: 'Click <strong>Edit</strong> to customize colors and fonts',
+    position: 'left',
+    action: 'openEdit'
+  },
+  { type: 'modal', step: 5 } // Done
+];
+
+/**
+ * Check if tutorial should be shown
+ */
+function shouldShowTutorial() {
+  // Don't show if already completed
+  if (localStorage.getItem(STORAGE_KEYS.TUTORIAL_COMPLETE) === 'true') {
+    return false;
+  }
+  // Don't show if user already has content
+  const profile = getActiveProfile();
+  if (profile && (profile.presets.length > 0 || profile.messages.length > 0)) {
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Initialize tutorial event listeners
+ */
+function initTutorial() {
+  document.getElementById('tutorialStart')?.addEventListener('click', () => {
+    tutorialStep = 1;
+    advanceTutorial();
+  });
+
+  document.getElementById('tutorialSkip')?.addEventListener('click', skipTutorial);
+  document.getElementById('tutorialFinish')?.addEventListener('click', completeTutorial);
+  document.getElementById('tutorialSkipStep')?.addEventListener('click', () => {
+    advanceTutorial();
+  });
+}
+
+/**
+ * Show tutorial (welcome modal)
+ */
+function showTutorial() {
+  tutorialActive = true;
+  tutorialStep = 0;
+  const overlay = document.getElementById('tutorialOverlay');
+  overlay?.classList.remove('hidden');
+  overlay?.classList.add('modal-active');
+
+  // Show step 1 (welcome modal)
+  document.querySelector('.tutorial-step[data-step="1"]')?.classList.remove('hidden');
+  document.querySelector('.tutorial-step[data-step="5"]')?.classList.add('hidden');
+  document.getElementById('tutorialModal')?.classList.remove('hidden');
+}
+
+/**
+ * Advance to next tutorial step
+ */
+function advanceTutorial() {
+  tutorialStep++;
+
+  if (tutorialStep >= TUTORIAL_STEPS.length) {
+    completeTutorial();
+    return;
+  }
+
+  const step = TUTORIAL_STEPS[tutorialStep];
+
+  if (step.type === 'modal') {
+    showTutorialModal(step.step);
+  } else if (step.type === 'spotlight') {
+    showTutorialSpotlight(step);
+  }
+}
+
+/**
+ * Show modal step (welcome or done)
+ */
+function showTutorialModal(stepNum) {
+  const overlay = document.getElementById('tutorialOverlay');
+  const modal = document.getElementById('tutorialModal');
+  const spotlight = document.getElementById('tutorialSpotlight');
+  const tooltip = document.getElementById('tutorialTooltip');
+
+  overlay?.classList.add('modal-active');
+  modal?.classList.remove('hidden');
+  spotlight?.classList.add('hidden');
+  tooltip?.classList.add('hidden');
+
+  document.querySelectorAll('.tutorial-step').forEach(el => {
+    el.classList.toggle('hidden', el.dataset.step !== String(stepNum));
+  });
+}
+
+/**
+ * Show spotlight step with tooltip
+ */
+function showTutorialSpotlight(step) {
+  const overlay = document.getElementById('tutorialOverlay');
+  const modal = document.getElementById('tutorialModal');
+  const spotlight = document.getElementById('tutorialSpotlight');
+  const tooltip = document.getElementById('tutorialTooltip');
+  const tooltipText = document.getElementById('tutorialTooltipText');
+
+  overlay?.classList.remove('modal-active');
+  modal?.classList.add('hidden');
+  spotlight?.classList.remove('hidden');
+  tooltip?.classList.remove('hidden');
+
+  // Find target element
+  let target;
+  if (step.target) {
+    target = document.querySelector(step.target);
+  } else if (step.action === 'playTimer') {
+    // Find play button in first preset row
+    target = document.querySelector('.preset-item .play-btn') ||
+             document.querySelector('.preset-item .pause-btn');
+  } else if (step.action === 'openEdit') {
+    target = document.querySelector('.preset-item .edit-btn');
+  }
+
+  if (target) {
+    positionSpotlight(target, spotlight);
+    positionTooltip(target, tooltip, step.position);
+  }
+
+  if (tooltipText) {
+    tooltipText.innerHTML = step.text;
+  }
+}
+
+/**
+ * Position spotlight around target element
+ */
+function positionSpotlight(target, spotlight) {
+  const rect = target.getBoundingClientRect();
+  const padding = 8;
+
+  spotlight.style.left = `${rect.left - padding}px`;
+  spotlight.style.top = `${rect.top - padding}px`;
+  spotlight.style.width = `${rect.width + padding * 2}px`;
+  spotlight.style.height = `${rect.height + padding * 2}px`;
+}
+
+/**
+ * Position tooltip near target element
+ */
+function positionTooltip(target, tooltip, position) {
+  const rect = target.getBoundingClientRect();
+  const gap = 16;
+
+  // Need to make tooltip visible first to get its dimensions
+  tooltip.style.visibility = 'hidden';
+  tooltip.style.display = 'block';
+  const tooltipRect = tooltip.getBoundingClientRect();
+  tooltip.style.visibility = '';
+
+  tooltip.dataset.position = position;
+
+  let left, top;
+
+  switch (position) {
+    case 'bottom':
+      left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+      top = rect.bottom + gap;
+      break;
+    case 'top':
+      left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+      top = rect.top - tooltipRect.height - gap;
+      break;
+    case 'left':
+      left = rect.left - tooltipRect.width - gap;
+      top = rect.top + rect.height / 2 - tooltipRect.height / 2;
+      break;
+    case 'right':
+      left = rect.right + gap;
+      top = rect.top + rect.height / 2 - tooltipRect.height / 2;
+      break;
+  }
+
+  // Keep on screen
+  left = Math.max(16, Math.min(left, window.innerWidth - tooltipRect.width - 16));
+  top = Math.max(16, Math.min(top, window.innerHeight - tooltipRect.height - 16));
+
+  tooltip.style.left = `${left}px`;
+  tooltip.style.top = `${top}px`;
+}
+
+/**
+ * Tutorial action hook - call from existing functions to advance tutorial
+ */
+function onTutorialAction(action) {
+  if (!tutorialActive) return;
+
+  const currentStep = TUTORIAL_STEPS[tutorialStep];
+  if (currentStep?.action === action) {
+    // Small delay to let UI update
+    setTimeout(() => advanceTutorial(), 300);
+  }
+}
+
+/**
+ * Skip tutorial - pre-populate content and close
+ */
+function skipTutorial() {
+  const profile = getActiveProfile();
+  if (profile) {
+    // Create sample timer
+    const sampleTimer = {
+      name: '10:00 Timer',
+      config: { ...getDefaultTimerConfig(), durationSec: 600 },
+      linkedToNext: false
+    };
+
+    // Create sample message
+    const sampleMessage = {
+      id: `msg-${Date.now()}`,
+      text: 'BREAK TIME',
+      bold: true,
+      italic: false,
+      uppercase: true,
+      color: '#ffffff',
+      visible: false
+    };
+
+    profile.presets.push(sampleTimer);
+    profile.messages.push(sampleMessage);
+    saveProfiles();
+    renderPresetList();
+    renderMessageList();
+    updateTabBadges();
+
+    // Select the new timer
+    activePresetIndex = 0;
+    setActiveTimerConfig(profile.presets[0].config);
+    renderPresetList();
+  }
+
+  completeTutorial();
+}
+
+/**
+ * Complete tutorial and clean up
+ */
+function completeTutorial() {
+  tutorialActive = false;
+  localStorage.setItem(STORAGE_KEYS.TUTORIAL_COMPLETE, 'true');
+
+  const overlay = document.getElementById('tutorialOverlay');
+  const spotlight = document.getElementById('tutorialSpotlight');
+  const tooltip = document.getElementById('tutorialTooltip');
+
+  overlay?.classList.add('hidden');
+  overlay?.classList.remove('modal-active');
+  spotlight?.classList.add('hidden');
+  tooltip?.classList.add('hidden');
+}
+
 // ============ Initialization ============
 
 function init() {
@@ -8135,6 +8427,13 @@ function init() {
 
   // Check for updates on startup (silent, shows badge if available)
   checkForUpdatesOnStartup();
+
+  // Initialize onboarding tutorial
+  initTutorial();
+  if (shouldShowTutorial()) {
+    // Small delay to let UI render first
+    setTimeout(showTutorial, 200);
+  }
 }
 
 // Start when DOM is ready

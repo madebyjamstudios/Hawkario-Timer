@@ -18,8 +18,8 @@ html[data-theme="light"] {
 body {
   margin: 0;
   padding: 0;
-  /* SF Pro is the native macOS system font - signals "Mac app" */
-  font-family: 'SF Pro Text', 'SF Pro', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  /* SF Pro (macOS), Segoe UI (Windows), then system fallbacks */
+  font-family: 'SF Pro Text', 'SF Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   font-size: 14px;
   line-height: 1.4;
   color: var(--color-text-primary, #e0e0e0);

@@ -1,12 +1,16 @@
 /**
  * Icon Generator Script
- * Generates all required icon sizes for macOS .icns file from icon.svg
+ * Generates all required icon sizes from icon.svg
+ * - macOS: Generates .icns using iconutil
+ * - Windows/Linux: Generates PNGs (electron-builder auto-converts to .ico)
  */
 
 const sharp = require('sharp');
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+
+const isMac = process.platform === 'darwin';
 
 const ROOT_DIR = path.join(__dirname, '..');
 const ICONS_DIR = path.join(ROOT_DIR, 'assets', 'icons');
@@ -69,18 +73,26 @@ async function generateIcons() {
     .toFile(PNG_PATH);
   console.log('  Created icon.png (1024x1024)');
 
-  // Generate .icns using iconutil
-  console.log('Building icon.icns...');
-  try {
-    execSync(`iconutil -c icns "${ICONSET_DIR}" -o "${ICNS_PATH}"`, { stdio: 'inherit' });
-    console.log('  Created icon.icns');
-  } catch (error) {
-    console.error('Failed to create .icns file:', error.message);
-    process.exit(1);
+  // Generate .icns using iconutil (macOS only)
+  if (isMac) {
+    console.log('Building icon.icns...');
+    try {
+      execSync(`iconutil -c icns "${ICONSET_DIR}" -o "${ICNS_PATH}"`, { stdio: 'inherit' });
+      console.log('  Created icon.icns');
+    } catch (error) {
+      console.error('Failed to create .icns file:', error.message);
+      process.exit(1);
+    }
+
+    // Cleanup iconset folder
+    fs.rmSync(ICONSET_DIR, { recursive: true });
+  } else {
+    console.log('Skipping .icns generation (macOS only)');
+    console.log('Note: electron-builder will auto-convert icon.png to .ico for Windows builds');
+    // Cleanup iconset folder on non-macOS too
+    fs.rmSync(ICONSET_DIR, { recursive: true });
   }
 
-  // Cleanup iconset folder
-  fs.rmSync(ICONSET_DIR, { recursive: true });
   console.log('Done!');
 }
 

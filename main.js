@@ -828,7 +828,9 @@ ipcMain.handle('app:download-updates', async (_event, downloadUrl) => {
   const DOWNLOAD_TIMEOUT = 60000;  // 60 seconds for large files
 
   if (!downloadUrl) {
-    return { success: false, error: 'No download URL available. Please create a GitHub Release with the .dmg attached.' };
+    const isWindows = process.platform === 'win32';
+    const expectedExt = isWindows ? '.exe' : '.dmg';
+    return { success: false, error: `No download URL available. Please create a GitHub Release with the ${expectedExt} attached.` };
   }
 
   // Validate initial URL
@@ -842,7 +844,8 @@ ipcMain.handle('app:download-updates', async (_event, downloadUrl) => {
   }
 
   const downloadsPath = app.getPath('downloads');
-  const fileName = 'Ninja-Timer-latest.dmg';
+  const isWin = process.platform === 'win32';
+  const fileName = isWin ? 'Ninja-Timer-latest.exe' : 'Ninja-Timer-latest.dmg';
   const filePath = pathModule.join(downloadsPath, fileName);
 
   return new Promise((resolve) => {
@@ -1191,8 +1194,11 @@ ipcMain.handle('sounds:select-file', async () => {
 
 // ============ Application Menu ============
 
+const isMac = process.platform === 'darwin';
+
 const menuTemplate = [
-  {
+  // App menu (macOS) or File menu with quit (Windows/Linux)
+  ...(isMac ? [{
     label: 'Ninja Timer',
     submenu: [
       { role: 'about' },
@@ -1205,7 +1211,7 @@ const menuTemplate = [
       { type: 'separator' },
       { role: 'quit' }
     ]
-  },
+  }] : []),
   {
     label: 'File',
     submenu: [
@@ -1215,7 +1221,12 @@ const menuTemplate = [
         click: createOutputWindow
       },
       { type: 'separator' },
-      { role: 'close' }
+      { role: 'close' },
+      // Add quit to File menu on Windows/Linux (macOS has it in app menu)
+      ...(!isMac ? [
+        { type: 'separator' },
+        { role: 'quit' }
+      ] : [])
     ]
   },
   {
@@ -1290,7 +1301,8 @@ const menuTemplate = [
     label: 'Window',
     submenu: [
       { role: 'minimize' },
-      { role: 'zoom' },
+      // 'zoom' role is macOS-only
+      ...(isMac ? [{ role: 'zoom' }] : []),
       { type: 'separator' },
       {
         label: 'Show Control Window',
@@ -1312,8 +1324,11 @@ const menuTemplate = [
           }
         }
       },
-      { type: 'separator' },
-      { role: 'front' }
+      // 'front' role is macOS-only
+      ...(isMac ? [
+        { type: 'separator' },
+        { role: 'front' }
+      ] : [])
     ]
   }
 ];
