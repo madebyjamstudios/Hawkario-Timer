@@ -4497,7 +4497,7 @@ button.danger:active {
 }
 
 .color-picker::-webkit-color-swatch {
-  border-radius: 4px;
+  border-radius: 5px;
   border: none;
 }
 
@@ -4775,4 +4775,54 @@ button.danger:active {
   font-family: inherit;
   font-size: 10px;
   color: var(--color-text-secondary);
+}
+
+/* ============ Alignment Toggle Buttons ============ */
+
+.align-toggle-group {
+  display: inline-flex;
+  gap: 4px;
+  background: var(--color-bg-tertiary);
+  padding: 4px;
+  border-radius: var(--radius-sm);
+}
+
+.align-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: all var(--transition-quick);
+}
+
+.align-toggle-btn:hover {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+}
+
+.align-toggle-btn.active {
+  background: var(--color-bg-elevated);
+  color: var(--color-accent);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Light mode adjustments */
+[data-theme="light"] .align-toggle-group {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .align-toggle-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .align-toggle-btn.active {
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }

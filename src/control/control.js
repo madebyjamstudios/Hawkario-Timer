@@ -168,6 +168,7 @@ const els = {
   defaultWarnYellow: document.getElementById('defaultWarnYellow'),
   defaultWarnOrange: document.getElementById('defaultWarnOrange'),
   timerZoom: document.getElementById('timerZoom'),
+  alignToggle: document.getElementById('alignToggle'),
   outputOnTop: document.getElementById('outputOnTop'),
   controlOnTop: document.getElementById('controlOnTop'),
 
@@ -414,6 +415,15 @@ function setMSInput(input, totalSeconds) {
   const m = Math.floor(totalSeconds / 60);
   const s = totalSeconds % 60;
   input.value = formatMSValue(m, s);
+}
+
+/**
+ * Get selected alignment from toggle buttons
+ */
+function getSelectedAlign() {
+  if (!els.alignToggle) return 'center';
+  const activeBtn = els.alignToggle.querySelector('.align-toggle-btn.active');
+  return activeBtn?.dataset.align || 'center';
 }
 
 /**
@@ -1206,6 +1216,8 @@ const DEFAULT_APP_SETTINGS = {
     shadowSize: 0,
     shadowColor: '#000000',
     bgColor: '#000000',
+    // Alignment
+    align: 'center',
     // Warning defaults
     warnYellowSec: 60,
     warnOrangeSec: 15
@@ -1588,6 +1600,14 @@ function openAppSettings() {
     els.timerZoom.value = settings.timerZoom ?? 100;
   }
 
+  // Load alignment setting
+  if (els.alignToggle) {
+    const currentAlign = settings.defaults?.align || 'center';
+    els.alignToggle.querySelectorAll('.align-toggle-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.align === currentAlign);
+    });
+  }
+
   // Load window stay on top settings from saved settings
   els.outputOnTop.checked = settings.outputOnTop || false;
   els.controlOnTop.checked = settings.controlOnTop || false;
@@ -1671,6 +1691,8 @@ function saveAppSettingsFromForm() {
       shadowSize: parseInt(els.defaultShadowSize?.value, 10) || 0,
       shadowColor: els.defaultShadowColor?.value || '#000000',
       bgColor: els.defaultBgColor?.value || '#000000',
+      // Alignment
+      align: getSelectedAlign(),
       // Warning defaults
       warnYellowSec: getMSSeconds(els.defaultWarnYellow) || 60,
       warnOrangeSec: getMSSeconds(els.defaultWarnOrange) || 15
@@ -4475,6 +4497,9 @@ function renderLivePreviewInternal() {
 // ============ Configuration ============
 
 function getCurrentConfig() {
+  // Get current alignment from app settings (global setting)
+  const currentAlign = appSettings.defaults?.align || 'center';
+
   return {
     mode: els.mode.value,
     durationSec: getDurationSeconds(),
@@ -4488,7 +4513,8 @@ function getCurrentConfig() {
       strokeColor: els.strokeColor.value,
       shadowSize: parseInt(els.shadowSize.value, 10) || 0,
       shadowColor: els.shadowColor.value,
-      bgColor: els.bgColor.value
+      bgColor: els.bgColor.value,
+      align: currentAlign
     },
     sound: {
       endType: els.soundEnd.value || 'none',
@@ -6719,6 +6745,21 @@ function setupEventListeners() {
   els.appSettingsSave.addEventListener('click', saveAppSettingsFromForm);
   els.settingsExport.addEventListener('click', handleExport);
   els.settingsImport.addEventListener('click', () => els.importFile.click());
+
+  // Alignment toggle buttons
+  if (els.alignToggle) {
+    els.alignToggle.querySelectorAll('.align-toggle-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Update active state
+        els.alignToggle.querySelectorAll('.align-toggle-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        // Update live preview alignment
+        applyLivePreviewAlignment();
+        // Update output window alignment in real-time
+        broadcastTimerState();
+      });
+    });
+  }
 
   // Custom Sounds
   if (els.addCustomSound) {

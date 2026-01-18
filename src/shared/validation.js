@@ -72,7 +72,7 @@ function migrateV1Style(style) {
   delete migrated.fontWeight;
   delete migrated.fontSizeVw;
   delete migrated.opacity;
-  delete migrated.align;
+  // Note: align is now supported, don't delete it
   delete migrated.letterSpacing;
   delete migrated.bgMode;
   delete migrated.bgOpacity;
@@ -98,7 +98,8 @@ export function validateStyle(style) {
     strokeColor: validateHexColor(migrated.strokeColor, '#000000'),
     shadowSize: validateNumber(migrated.shadowSize, 0, 0, 50),
     shadowColor: validateHexColor(migrated.shadowColor, '#000000'),
-    bgColor: validateHexColor(migrated.bgColor, '#000000')
+    bgColor: validateHexColor(migrated.bgColor, '#000000'),
+    align: validateAlign(migrated.align)
   };
 }
 
@@ -192,7 +193,8 @@ function getDefaultStyle() {
     strokeColor: '#000000',
     shadowSize: 0,
     shadowColor: '#000000',
-    bgColor: '#000000'
+    bgColor: '#000000',
+    align: 'center'
   };
 }
 
