@@ -3222,87 +3222,27 @@ function initProgressBarInteractivity() {
  * @param {number} targetElapsedMs - Target elapsed time in milliseconds
  */
 function seekToTime(targetElapsedMs) {
-  const chain = getLinkedTimerChain();
+  // Always seek within the current timer only - never switch timers via progress bar click
+  // Timer switching in linked chains should only happen automatically when timers complete
+  const durationMs = activeTimerConfig.durationSec * 1000;
+  const clampedElapsed = Math.max(0, Math.min(targetElapsedMs, durationMs));
 
-  // Check if timer is in fresh/reset state (never started)
-  const timerIsReset = !isRunning && timerState.startedAt === null && timerState.pausedAcc === 0;
-
-  // Handle linked timer chains
-  if (chain.length > 1) {
-    // Find which timer in the chain the target time falls into
-    let cumulativeMs = 0;
-    for (let i = 0; i < chain.length; i++) {
-      const timerEnd = cumulativeMs + chain[i].durationMs;
-      if (targetElapsedMs < timerEnd || i === chain.length - 1) {
-        // Target is in this timer
-        const timerElapsed = targetElapsedMs - cumulativeMs;
-
-        // If timer is in reset state, don't allow switching to different timer via seek
-        // This prevents accidental timer switches when the user just selected a specific timer
-        if (timerIsReset && chain[i].index !== activePresetIndex) {
-          // Instead, seek within current timer only
-          const currentTimerIdx = chain.findIndex(c => c.index === activePresetIndex);
-          if (currentTimerIdx >= 0) {
-            const currentDuration = chain[currentTimerIdx].durationMs;
-            const clampedElapsed = Math.max(0, Math.min(targetElapsedMs, currentDuration));
-            timerState.pausedAcc = clampedElapsed;
-            timerState.startedAt = Date.now();
-          }
-          break;
-        }
-
-        // Switch to this timer if different (allowed when running or paused)
-        if (chain[i].index !== activePresetIndex) {
-          activePresetIndex = chain[i].index;
-          setActiveTimerConfig(chain[i].preset.config);
-          applyConfig(chain[i].preset.config);
-          renderPresetList();
-        }
-
-        // Set elapsed time within this timer
-        const now = Date.now();
-        if (isRunning) {
-          timerState.startedAt = now - timerElapsed;
-          timerState.pausedAcc = 0; // Clear pausedAcc since seeked position is encoded in startedAt
-        } else {
-          timerState.pausedAcc = timerElapsed;
-          timerState.startedAt = now;
-        }
-
-        // Clear ended/overtime state if seeking back
-        const durationMs = chain[i].durationMs;
-        if (timerElapsed < durationMs) {
-          timerState.ended = false;
-          timerState.overtime = false;
-          timerState.overtimeStartedAt = null;
-        }
-
-        break;
-      }
-      cumulativeMs = timerEnd;
-    }
+  const now = Date.now();
+  if (isRunning) {
+    timerState.startedAt = now - clampedElapsed;
+    timerState.pausedAcc = 0; // Clear pausedAcc since seeked position is encoded in startedAt
   } else {
-    // Single timer - simple seek
-    const durationMs = activeTimerConfig.durationSec * 1000;
-    const clampedElapsed = Math.max(0, Math.min(targetElapsedMs, durationMs));
-
-    const now = Date.now();
-    if (isRunning) {
-      timerState.startedAt = now - clampedElapsed;
-      timerState.pausedAcc = 0; // Clear pausedAcc since seeked position is encoded in startedAt
-    } else {
-      timerState.pausedAcc = clampedElapsed;
-      if (timerState.startedAt === null) {
-        timerState.startedAt = now;
-      }
+    timerState.pausedAcc = clampedElapsed;
+    if (timerState.startedAt === null) {
+      timerState.startedAt = now;
     }
+  }
 
-    // Clear ended/overtime state if seeking back
-    if (clampedElapsed < durationMs) {
-      timerState.ended = false;
-      timerState.overtime = false;
-      timerState.overtimeStartedAt = null;
-    }
+  // Clear ended/overtime state if seeking back
+  if (clampedElapsed < durationMs) {
+    timerState.ended = false;
+    timerState.overtime = false;
+    timerState.overtimeStartedAt = null;
   }
 
   broadcastTimerState();
