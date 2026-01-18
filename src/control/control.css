@@ -4508,21 +4508,25 @@ button.danger:active {
 }
 
 .color-picker {
+  -webkit-appearance: none;
+  appearance: none;
   width: 32px;
   height: 32px;
   padding: 0;
   border: 1px solid var(--color-border-strong);
   border-radius: 10px;
-  background: var(--color-bg-elevated);
+  background: transparent;
   cursor: pointer;
+  overflow: hidden;
 }
 
 .color-picker::-webkit-color-swatch-wrapper {
   padding: 0;
+  border-radius: 10px;
 }
 
 .color-picker::-webkit-color-swatch {
-  border-radius: 9px;
+  border-radius: 10px;
   border: none;
 }
 
