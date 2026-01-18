@@ -174,13 +174,15 @@ html, body {
 }
 
 /* ============ Preview Section (Sticky) ============ */
+/* Modal preview - sticky section at top while settings scroll */
 .modal-preview-section {
   position: sticky;
   top: 0;
   z-index: 10;
   background: var(--color-bg-primary);
-  padding-bottom: 12px;
-  margin-bottom: 4px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-md);
 }
 
 .modal-preview-wrapper {
@@ -192,36 +194,87 @@ html, body {
 }
 
 .modal-preview {
-  background: #000;
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 80px;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  position: relative;
+  padding: 4px 8px;
+  box-sizing: border-box;
 }
 
-/* Content box layout to match output window */
-.content-box {
-  width: 100%;
+.modal-preview .timer-preview {
+  display: inline-block;
+  white-space: nowrap;
+  line-height: 0.75;
+  overflow: visible;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Modal preview structure */
+.modal-preview .content-box {
+  position: absolute;
+  inset: 4px;
   display: flex;
   flex-direction: column;
-  align-items: center;
 }
 
-.timer-section {
+.modal-preview .timer-section {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+.modal-preview .timer-box {
+  display: inline-block;
+}
+
+.modal-preview .tod-box {
+  display: none;
+  width: 100%;
+  position: relative;
+}
+
+/* When ToD is enabled: 75/25 split */
+.modal-preview .timer-section.with-tod {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: none;
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
 }
 
-.timer-box {
+.modal-preview .timer-section.with-tod .timer-box {
+  flex: 0 0 75%;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+.modal-preview .timer-section.with-tod .tod-box {
+  display: flex;
+  flex: 0 0 25%;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-preview .tod-preview {
+  display: inline-block;
+  white-space: nowrap;
+  line-height: 0.75;
+  overflow: visible;
+  text-align: center;
+  font-weight: 600;
+}
+
+/* Timer preview base styling */
 .timer-preview {
   font-size: 48px;
   font-weight: 700;
@@ -231,18 +284,7 @@ html, body {
   paint-order: stroke fill;
 }
 
-/* ToD preview */
-.tod-box {
-  display: none;
-  margin-top: 8px;
-}
-
-.timer-section.with-tod .tod-box {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
+/* ToD preview base styling */
 .tod-preview {
   font-size: 20px;
   font-weight: 600;
