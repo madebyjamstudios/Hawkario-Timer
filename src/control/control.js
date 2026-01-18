@@ -3473,6 +3473,18 @@ function saveModal() {
     }
   }
 
+  // Warn about long duration timers in Manual mode (suggest End By for accuracy)
+  const LONG_TIMER_THRESHOLD_SEC = 3600; // 1 hour
+  if (startMode === 'manual') {
+    const durationSec = getDurationSeconds();
+    if (durationSec >= LONG_TIMER_THRESHOLD_SEC) {
+      const hours = Math.floor(durationSec / 3600);
+      console.log(`[Timer] Tip: For ${hours}+ hour timers, consider "End By Time" mode to prevent drift`);
+      // Note: showToast is disabled - uncomment when re-enabled:
+      // showToast(`Tip: For ${hours}+ hour timers, "End By Time" mode prevents drift`, 'info');
+    }
+  }
+
   saveUndoState(); // Save state before changes for undo
 
   const name = els.presetName.value.trim() || 'Timer';
