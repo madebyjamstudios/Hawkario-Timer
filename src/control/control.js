@@ -3097,6 +3097,17 @@ function updateRowProgressBar(idx, progressPercent) {
   }
 }
 
+// Clear all row progress bars (used when switching timers)
+function clearAllRowProgressBars() {
+  const rows = els.presetList.querySelectorAll('.preset-item');
+  rows.forEach(row => {
+    const progressBar = row.querySelector('.row-progress-bar');
+    if (progressBar) {
+      progressBar.style.width = '0%';
+    }
+  });
+}
+
 /**
  * Update the playing class and button states on preset rows without full re-render
  * Only updates innerHTML when state actually changes to avoid interfering with clicks
@@ -6161,6 +6172,7 @@ function renderPresetList() {
         const currentPresets = loadPresets();
         const clickedPreset = currentPresets[idx];
         if (clickedPreset) {
+          clearAllRowProgressBars(); // Clear progress from previous timer
           setActiveTimerConfig(clickedPreset.config);
           applyConfig(clickedPreset.config);
           activePresetIndex = idx;
@@ -6218,6 +6230,7 @@ function renderPresetList() {
         const currentPresets = loadPresets();
         const clickedPreset = currentPresets[idx];
         if (clickedPreset) {
+          clearAllRowProgressBars(); // Clear progress from previous timer
           setActiveTimerConfig(clickedPreset.config);
           applyConfig(clickedPreset.config);
           activePresetIndex = idx;

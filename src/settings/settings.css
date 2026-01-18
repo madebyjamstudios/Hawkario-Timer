@@ -118,18 +118,23 @@ html, body {
   padding: 16px;
 }
 
-/* ============ Preview Section ============ */
-.preview-section {
-  margin-bottom: 16px;
+/* ============ Preview Section (Sticky) ============ */
+.modal-preview-section {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--color-bg-primary);
+  padding-bottom: 12px;
+  margin-bottom: 4px;
 }
 
-.preview-wrapper {
+.modal-preview-wrapper {
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   overflow: hidden;
 }
 
-.preview {
+.modal-preview {
   background: #000;
   padding: 16px;
   display: flex;
@@ -138,12 +143,55 @@ html, body {
   min-height: 80px;
 }
 
+/* Content box layout to match output window */
+.content-box {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.timer-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.timer-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .timer-preview {
   font-size: 48px;
   font-weight: 700;
   color: #fff;
   font-variant-numeric: tabular-nums;
   line-height: 1;
+  paint-order: stroke fill;
+}
+
+/* ToD preview */
+.tod-box {
+  display: none;
+  margin-top: 8px;
+}
+
+.timer-section.with-tod .tod-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tod-preview {
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ============ Duration Controls ============ */
@@ -215,7 +263,7 @@ html, body {
   align-items: center;
   justify-content: center;
   line-height: 1;
-  margin-top: -6px;
+  margin-top: -8px;
 }
 
 /* Hide hours when format is MM:SS */
@@ -275,6 +323,11 @@ html, body {
   to { opacity: 1; }
 }
 
+/* ============ Utility Classes ============ */
+.hidden {
+  display: none !important;
+}
+
 /* ============ Form Layout ============ */
 .kv {
   display: grid;
@@ -309,7 +362,8 @@ label {
 }
 
 input[type="text"],
-input[type="number"] {
+input[type="number"],
+input[type="datetime-local"] {
   background: var(--color-bg-secondary);
   color: var(--color-text-primary);
   border: 1px solid var(--color-border);
@@ -320,10 +374,26 @@ input[type="number"] {
 }
 
 input[type="text"]:focus,
-input[type="number"]:focus {
+input[type="number"]:focus,
+input[type="datetime-local"]:focus {
   border-color: var(--color-accent);
   box-shadow: 0 0 0 3px rgba(31, 111, 235, 0.2);
   outline: none;
+}
+
+/* Datetime-local specific styling */
+input[type="datetime-local"] {
+  color-scheme: dark;
+}
+
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.6;
+  cursor: pointer;
+}
+
+input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
 }
 
 select {

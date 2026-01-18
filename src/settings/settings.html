@@ -76,6 +76,7 @@
           </div>
         </div>
       </div>
+      </div>
 
       <!-- Settings Tab Bar -->
       <div class="settings-tabs">
@@ -102,6 +103,18 @@
               <option value="countdown-tod">C/D + ToD</option>
               <option value="countup-tod">C/U + ToD</option>
             </select>
+          </div>
+          <div class="kv">
+            <label for="startMode">Start</label>
+            <select id="startMode">
+              <option value="manual">Manual</option>
+              <option value="endBy">End By Time</option>
+              <option value="startAt">Start At Time</option>
+            </select>
+          </div>
+          <div class="kv hidden" id="targetTimeRow">
+            <label for="targetTime">Target Time</label>
+            <input id="targetTime" type="datetime-local" />
           </div>
           <div class="kv">
             <label for="format">Format</label>
@@ -227,6 +240,6 @@
     <div id="toastContainer" class="toast-container"></div>
   </div>
 
-  <script src="settings.js"></script>
+  <script type="module" src="settings.js"></script>
 </body>
 </html>

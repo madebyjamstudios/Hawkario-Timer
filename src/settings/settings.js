@@ -3,6 +3,8 @@
  * Detached timer settings editor
  */
 
+import { BUILT_IN_FONTS } from '../shared/fontManager.js';
+
 // ============ State ============
 let currentTimerIndex = null;
 let currentTimerName = '';
@@ -14,6 +16,8 @@ const els = {
   saveBtn: document.getElementById('saveBtn'),
   preview: document.getElementById('preview'),
   previewTimer: document.getElementById('previewTimer'),
+  previewToD: document.getElementById('previewToD'),
+  timerSection: document.querySelector('.timer-section'),
   durationControls: document.getElementById('durationControls'),
   hoursGroup: document.getElementById('hoursGroup'),
   h0Col: document.getElementById('h0Col'),
@@ -22,6 +26,9 @@ const els = {
   // Form fields
   presetName: document.getElementById('presetName'),
   mode: document.getElementById('mode'),
+  startMode: document.getElementById('startMode'),
+  targetTime: document.getElementById('targetTime'),
+  targetTimeRow: document.getElementById('targetTimeRow'),
   format: document.getElementById('format'),
   duration: document.getElementById('duration'),
   allowOvertime: document.getElementById('allowOvertime'),
@@ -43,17 +50,12 @@ const els = {
   warnOrangeSec: document.getElementById('warnOrangeSec')
 };
 
-// ============ Font Options ============
-const FONTS = [
-  { family: 'Inter', name: 'Inter', desc: 'Modern' },
-  { family: 'Roboto', name: 'Roboto', desc: 'Versatile' },
-  { family: 'JetBrains Mono', name: 'JetBrains', desc: 'Mono' },
-  { family: 'Oswald', name: 'Oswald', desc: 'Condensed' },
-  { family: 'Bebas Neue', name: 'Bebas', desc: 'Display' },
-  { family: 'Orbitron', name: 'Orbitron', desc: 'Futuristic' },
-  { family: 'Teko', name: 'Teko', desc: 'Condensed' },
-  { family: 'Share Tech Mono', name: 'Share Tech', desc: 'Digital' }
-];
+// Map BUILT_IN_FONTS to picker format
+const FONTS = BUILT_IN_FONTS.map(f => ({
+  family: f.family,
+  name: f.family.split(' ')[0], // Short name
+  desc: f.description
+}));
 
 // ============ Initialization ============
 function init() {
@@ -120,9 +122,20 @@ function loadTimerData(data) {
   // Populate form fields
   els.presetName.value = preset.name;
   els.mode.value = config.mode || 'countdown';
+  els.startMode.value = config.startMode || 'manual';
   els.format.value = config.format || 'MM:SS';
   els.duration.value = formatDuration(config.durationSec || 600);
   els.allowOvertime.checked = config.allowOvertime !== false;
+
+  // Target time (for startAt/endBy modes)
+  if (config.targetTime) {
+    // Convert ISO string to datetime-local format
+    const dt = new Date(config.targetTime);
+    const localIso = dt.toISOString().slice(0, 16);
+    els.targetTime.value = localIso;
+  } else {
+    els.targetTime.value = '';
+  }
 
   // Appearance
   selectFont(config.style?.fontFamily || 'Inter');
@@ -146,6 +159,7 @@ function loadTimerData(data) {
   updateDurationControlsFormat();
   updateH0ColVisibility();
   updateOvertimeVisibility();
+  updateTargetTimeVisibility();
   updateVolumeVisibility();
   updatePreview();
 
@@ -174,8 +188,9 @@ function saveTimer(silent = false) {
 }
 
 function getCurrentConfig() {
-  return {
+  const config = {
     mode: els.mode.value,
+    startMode: els.startMode.value,
     durationSec: parseDuration(els.duration.value),
     format: els.format.value,
     allowOvertime: els.allowOvertime.checked,
@@ -196,6 +211,13 @@ function getCurrentConfig() {
     warnYellowSec: parseWarningTime(els.warnYellowSec.value),
     warnOrangeSec: parseWarningTime(els.warnOrangeSec.value)
   };
+
+  // Include targetTime if startMode requires it
+  if (els.startMode.value !== 'manual' && els.targetTime.value) {
+    config.targetTime = new Date(els.targetTime.value).toISOString();
+  }
+
+  return config;
 }
 
 // ============ Tabs ============
@@ -327,7 +349,8 @@ function updateDurationControlsFormat() {
 function setupFormListeners() {
   // All inputs trigger dirty state and preview update
   const inputs = [
-    els.presetName, els.mode, els.format, els.duration, els.allowOvertime,
+    els.presetName, els.mode, els.startMode, els.targetTime, els.format,
+    els.duration, els.allowOvertime,
     els.fontWeight, els.fontColor, els.strokeWidth, els.strokeColor,
     els.shadowSize, els.shadowColor, els.bgColor,
     els.soundEnd, els.soundVolume,
@@ -346,10 +369,16 @@ function setupFormListeners() {
     });
   });
 
-  // Mode change affects overtime visibility and duration controls
+  // Mode change affects overtime visibility, duration controls, and ToD preview
   els.mode.addEventListener('change', () => {
     updateOvertimeVisibility();
     updateDurationControlsFormat();
+    updatePreview();
+  });
+
+  // Start mode change affects target time visibility
+  els.startMode.addEventListener('change', () => {
+    updateTargetTimeVisibility();
   });
 
   // Format change affects duration controls
@@ -417,6 +446,12 @@ function updateOvertimeVisibility() {
   els.allowOvertimeRow.style.display = showOvertime ? '' : 'none';
 }
 
+function updateTargetTimeVisibility() {
+  const startMode = els.startMode.value;
+  const showTargetTime = startMode !== 'manual';
+  els.targetTimeRow.classList.toggle('hidden', !showTargetTime);
+}
+
 function updateVolumeVisibility() {
   // No-op: volume slider always visible
 }
@@ -424,20 +459,44 @@ function updateVolumeVisibility() {
 // ============ Preview ============
 function updatePreview() {
   const config = getCurrentConfig();
+  const mode = config.mode;
 
-  // Always show duration in HH:MM:SS format for consistent editing
-  // This section is for adjusting time, not displaying time of day
-  const sec = config.durationSec;
-  const h = Math.floor(sec / 3600);
-  const m = Math.floor((sec % 3600) / 60);
-  const s = sec % 60;
+  // Check if mode includes ToD
+  const showToD = mode === 'tod' || mode === 'countdown-tod' || mode === 'countup-tod';
 
-  // Handle HHH (100+ hours) display
-  const text = h >= 100
-    ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
-    : `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  // Update timer section class for ToD display
+  if (els.timerSection) {
+    els.timerSection.classList.toggle('with-tod', showToD);
+  }
 
-  els.previewTimer.textContent = text;
+  // Timer display
+  if (mode === 'tod') {
+    // Pure ToD mode - show current time
+    const now = new Date();
+    els.previewTimer.textContent = formatTimeOfDay(now);
+  } else {
+    // Show duration in HH:MM:SS format for consistent editing
+    const sec = config.durationSec;
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+
+    // Handle HHH (100+ hours) display
+    const text = h >= 100
+      ? `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+      : `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+
+    els.previewTimer.textContent = text;
+  }
+
+  // ToD preview (for modes that show both)
+  if (showToD && els.previewToD) {
+    const now = new Date();
+    els.previewToD.textContent = formatTimeOfDay(now);
+    els.previewToD.style.display = '';
+  } else if (els.previewToD) {
+    els.previewToD.style.display = 'none';
+  }
 
   // Update preview styles
   const style = config.style;
@@ -463,6 +522,14 @@ function updatePreview() {
   } else {
     els.previewTimer.style.textShadow = 'none';
   }
+}
+
+// Format time of day
+function formatTimeOfDay(date) {
+  const h = date.getHours();
+  const m = date.getMinutes();
+  const s = date.getSeconds();
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
 // ============ Keyboard Shortcuts ============
