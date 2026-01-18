@@ -3102,12 +3102,13 @@ function initProgressBarInteractivity() {
     els.seekLine.style.left = percent + '%';
     els.seekTooltip.style.left = percent + '%';
 
-    // Calculate time at position
+    // Calculate time at position (use active timer's format)
+    const format = activeTimerConfig?.format || 'MM:SS';
     if (cachedTotalMs > 0) {
       const timeAtPosition = (percent / 100) * cachedTotalMs;
-      els.seekTooltip.textContent = formatTimePlain(timeAtPosition, 'MM:SS');
+      els.seekTooltip.textContent = formatTimePlain(timeAtPosition, format);
     } else {
-      els.seekTooltip.textContent = '--:--';
+      els.seekTooltip.textContent = format === 'HH:MM:SS' ? '--:--:--' : '--:--';
     }
   });
 
